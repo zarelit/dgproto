@@ -5,7 +5,7 @@
 \textclass article
 \begin_preamble
 \usepackage{turnstile}
-\newcommand\believes{\sttstile{}{}}
+\newcommand{\believes}{\sttstile{}{}}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
