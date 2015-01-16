@@ -6,6 +6,7 @@
 \begin_preamble
 \usepackage{turnstile}
 \newcommand{\believes}{\sttstile{}{}}
+\newcommand{\secret}[1]{\xrightleftharpoons{#1}}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
