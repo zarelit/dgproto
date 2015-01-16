@@ -12,6 +12,7 @@
 \newcommand{\encryptedfor}[2]{\lbrace #2 \rbrace_{e_#1}}
 \newcommand{\signed}[2]{\lbrace #2 \rbrace_{e^{-1}_{#1}}}
 \newcommand{\key}[1]{\xleftrightarrow{#1}}
+\newcommand{\said}{$\,$\ooalign{$\mid$\cr$\,\sim$}}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
