@@ -10,7 +10,7 @@
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <unistd.h>
+#include <inttypes.h>
 #include <netinet/in.h>
 #include <openssl/evp.h>
 
