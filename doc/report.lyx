@@ -12,6 +12,11 @@
 \newcommand{\encryptedfor}[2]{\lbrace #2 \rbrace_{e_#1}}
 \newcommand{\signed}[2]{\lbrace #2 \rbrace_{e^{-1}_{#1}}}
 \newcommand{\key}[1]{\xleftrightarrow{#1}}
+\newcommand{\said}{$\,$\ooalign{$\mid$\cr$\,\sim$}}
+\newcommand{\publickey}[1]{\xmapsto{e_{#1}} #1}
+\newcommand{\sees}{\triangleleft}
+\newcommand{\authority}{\Rightarrow}
+\newcommand{\combined}[2]{\langle #1 \rangle _{#2}}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
@@ -100,18 +105,102 @@ Giuliano Peraz
 \end_layout
 
 \begin_layout Standard
-\begin_inset Newpage newpage
+\begin_inset Newpage pagebreak
 \end_inset
 
 
 \end_layout
 
 \begin_layout Part
-BAN Logic Test
+Introduction
 \end_layout
 
 \begin_layout Standard
-Inizio paragrafo
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Part
+Protocol design & analysis
+\end_layout
+
+\begin_layout Section
+Real protocol
+\end_layout
+
+\begin_layout Subsection
+Protocol Objectives
+\end_layout
+
+\begin_layout Itemize
+Key Authentication
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Formula $A\believes A\key{K}B$
+\end_inset
+
+,
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+quad
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $B\believes A\key{K}B$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Key Confirmation
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Formula $A\believes B\believes A\key{K}B$
+\end_inset
+
+,
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+quad
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $B\believes A\believes A\key{K}B$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Part
+Protocol implementation
 \end_layout
 
 \end_body
