@@ -15,6 +15,7 @@
 \newcommand{\said}{$\,$\ooalign{$\mid$\cr$\,\sim$}}
 \newcommand{\publickey}[1]{\xmapsto{e_{#1}} #1}
 \newcommand{\sees}{\triangleleft}
+\newcommand{\authority}{\Rightarrow}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
