@@ -111,12 +111,70 @@ Giuliano Peraz
 
 \end_layout
 
-\begin_layout Part
-BAN Logic Test
+\begin_layout Section
+Real protocol
 \end_layout
 
-\begin_layout Standard
-Inizio paragrafo
+\begin_layout Subsection
+Protocol Objectives
+\end_layout
+
+\begin_layout Itemize
+Key Authentication
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Formula $A\believes A\key{K}B$
+\end_inset
+
+,
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+quad
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $B\believes A\key{K}B$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Key Confirmation
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Formula $A\believes B\believes A\key{K}B$
+\end_inset
+
+,
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+quad
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $B\believes A\believes A\key{K}B$
+\end_inset
+
+
 \end_layout
 
 \end_body
