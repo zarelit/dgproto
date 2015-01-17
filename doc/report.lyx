@@ -12,11 +12,17 @@
 \newcommand{\encryptedfor}[2]{\lbrace #2 \rbrace_{e_#1}}
 \newcommand{\signed}[2]{\lbrace #2 \rbrace_{e^{-1}_{#1}}}
 \newcommand{\key}[1]{\xleftrightarrow{#1}}
-\newcommand{\said}{$\,$\ooalign{$\mid$\cr$\,\sim$}}
 \newcommand{\publickey}[1]{\xmapsto{e_{#1}} #1}
 \newcommand{\sees}{\triangleleft}
 \newcommand{\authority}{\Rightarrow}
 \newcommand{\combined}[2]{\langle #1 \rangle _{#2}}
+
+% Based on this question
+% https://tex.stackexchange.com/questions/217755/how-do-i-write-logical-iff-symbol
+\makeatletter
+\newcommand{\said}{\mathrel{\mathpalette\@gdw@\relax}}
+\newcommand{\@gdw@}[2]{\ooalign{$\m@th#1\mid$\cr$\m@th#1\:\sim$\cr}}
+\makeatother
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
