@@ -144,20 +144,7 @@ Key Authentication
 \end_inset
 
 ,
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-quad
-\end_layout
-
-\end_inset
-
-
-\begin_inset Formula $B\believes A\key{K}B$
+\begin_inset Formula $\quad B\believes A\key{K}B$
 \end_inset
 
 
@@ -173,18 +160,15 @@ Key Confirmation
 \end_inset
 
 ,
-\begin_inset ERT
-status open
-
-\begin_layout Plain Layout
-
-
-\backslash
-quad
-\end_layout
-
+\begin_inset Formula $\quad B\believes A\believes A\key{K}B$
 \end_inset
 
+
+\end_layout
+
+\begin_layout Subsection
+Real protocol messages
+\end_layout
 
 \begin_inset Formula $B\believes A\believes A\key{K}B$
 \end_inset
