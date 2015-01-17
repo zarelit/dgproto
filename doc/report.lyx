@@ -97,6 +97,7 @@ David Costa
 \end_layout
 
 \begin_layout Author
+\noindent
 Giuliano Peraz
 \end_layout
 
@@ -115,7 +116,60 @@ Giuliano Peraz
 Introduction
 \end_layout
 
+\begin_layout Section
+Scenario (in Italian)
+\end_layout
+
 \begin_layout Standard
+\noindent
+Si consideri un’applicazione distribuita di tipo cliente-servitore in cui
+ ciascun processo possiede una coppia di chiavi pubblica e privata.
+\end_layout
+
+\begin_layout Standard
+\noindent
+Si assuma che il servitore conosca la chiave pubblica di ogni suo cliente
+ (i certificati non sono necessari).
+\end_layout
+
+\begin_layout Standard
+\noindent
+Si specifichi, si analizzi, si progetti ed, infine, si implementi un protocollo
+ crittografico che soddisfa i seguenti requisiti:
+\end_layout
+
+\begin_layout Itemize
+\noindent
+al termine dell’esecuzione del protocollo, viene stabilita una chiave di
+ sessione tra cliente e servitore;
+\end_layout
+
+\begin_layout Itemize
+\noindent
+al termine dell’esecuzione del protocollo, il cliente ritiene che il servitore
+ dispone della chiave di sessione e viceversa;
+\end_layout
+
+\begin_layout Standard
+\noindent
+La specifica del protocollo deve mettere chiaramente in evidenza le ipotesi
+ sotto le quali il protocollo funziona correttamente.
+\end_layout
+
+\begin_layout Standard
+\noindent
+L’implementazione deve comprende la realizzazione di un prototipo in cui
+ il server ed il cliente si scambiano del materiale (testo o binario) cifrato
+ con la chiave si sessione .
+\end_layout
+
+\begin_layout Standard
+Le attività di specifica, analisi e progetto dovranno essere documentate
+ da una concisa relazione scritta.
+\end_layout
+
+\begin_layout Standard
+\noindent
 \begin_inset Newpage pagebreak
 \end_inset
 
@@ -151,6 +205,7 @@ Key Authentication
 \end_layout
 
 \begin_layout Itemize
+\noindent
 Key Confirmation
 \begin_inset Newline newline
 \end_inset
@@ -186,6 +241,7 @@ Real protocol messages
 \end_layout
 
 \begin_layout Standard
+\noindent
 \begin_inset Formula $K=\combined{K_{AB}}{N_{a},N_{b}}$
 \end_inset
 
@@ -213,7 +269,6 @@ Idealized Protocol
 \end_layout
 
 \begin_layout Standard
-\noindent
 \begin_inset Formula $M1\quad A\to B:\quad\encryptedfor{B}{\signed{A}{N_{a}},\; A\said A\secret{N_{a}}B}$
 \end_inset
 
@@ -244,6 +299,34 @@ Idealized Protocol
 
 \end_layout
 
+\begin_layout Section
+Proof by BAN logic
+\end_layout
+
+\begin_layout Subsection*
+Initial suppositions
+\end_layout
+
+\begin_layout Subsection*
+\noindent
+After message M1
+\end_layout
+
+\begin_layout Subsection*
+\noindent
+After message M2
+\end_layout
+
+\begin_layout Subsection*
+\noindent
+After message M3
+\end_layout
+
+\begin_layout Subsection*
+\noindent
+After message M4
+\end_layout
+
 \begin_layout Standard
 \begin_inset Newpage pagebreak
 \end_inset
@@ -252,6 +335,7 @@ Idealized Protocol
 \end_layout
 
 \begin_layout Part
+\noindent
 Protocol implementation
 \end_layout
 
