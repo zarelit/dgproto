@@ -208,6 +208,42 @@ Real protocol messages
 
 \end_layout
 
+\begin_layout Section
+Idealized Protocol
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Formula $M1\quad A\to B:\quad\encryptedfor{B}{\signed{A}{N_{a}},\; A\said A\secret{N_{a}}B}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Formula $M2\quad B\to A:\quad\encryptedfor{A}{N_{a},\;\signed{B}{N_{b}},\; B\said A\secret{N_{b}}B}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Formula $M3\quad A\to B:\quad\encrypted{K=\combined{K_{AB}}{N_{a},N_{b}}}{\mathrm{H\mathit{(N_{b})},\; A\key{K}B}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Formula $M4\quad B\to A:\quad\encrypted{K}{\mathrm{H\mathit{(N_{a})},\; A\key{K}B}}$
+\end_inset
+
+
+\end_layout
+
 \begin_layout Standard
 \begin_inset Newpage pagebreak
 \end_inset
