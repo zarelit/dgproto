@@ -179,7 +179,30 @@ Real protocol messages
 
 \begin_layout Standard
 \noindent
-\begin_inset Formula $M2\quad A\to B:\quad B,\;\encryptedfor{A}{N_{a},\;\signed{B}{N_{b}}}$
+\begin_inset Formula $M2\quad B\to A:\quad B,\;\encryptedfor{A}{N_{a},\;\signed{B}{N_{b}}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $K=\combined{K_{AB}}{N_{a},N_{b}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Formula $M3\quad A\to B:\quad\encrypted{K}{\mathrm{H}(N_{b})}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Formula $M4\quad B\to A:\quad\encrypted{K}{\mathrm{H}(N_{a})}$
 \end_inset
 
 
