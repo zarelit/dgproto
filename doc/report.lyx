@@ -4,7 +4,10 @@
 \begin_header
 \textclass article
 \begin_preamble
+% Gives us the "believe" symbol
 \usepackage{turnstile}
+
+% Simple predicates
 \newcommand{\believes}{\sttstile{}{}}
 \newcommand{\secret}[1]{\xrightleftharpoons{#1}}
 \newcommand{\fresh}[1]{\#(#1)}
@@ -24,6 +27,8 @@
 \newcommand{\@gdw@}[2]{\ooalign{$\m@th#1\mid$\cr$\m@th#1\:\sim$\cr}}
 \makeatother
 
+%% Postulates
+% Message Meaning
 \newcommand{\meaningI}[4]{\frac{#1\;\;\believes\;\; #2\key{#4}#1,\;\;\; #1\sees\encrypted{#4}{#3}}{#1\;\;\believes\;\; #2\said #3}}
 \end_preamble
 \use_default_options true
@@ -378,12 +383,140 @@ After message M4
 Protocol implementation
 \end_layout
 
+\begin_layout Part
+Test BAN Logic in Latex
+\end_layout
+
 \begin_layout Standard
+Simple predicates
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $A\believes B$
+\end_inset
+
+, A 
+\backslash
+believes B
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $A\said B$
+\end_inset
+
+, A 
+\backslash
+said B
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $A\key{K}B$
+\end_inset
+
+, A 
+\backslash
+key{K} B
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $A\secret{K}B$
+\end_inset
+
+, A 
+\backslash
+secret{K} B
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $P\sees Q$
+\end_inset
+
+, P 
+\backslash
+sees Q
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\encrypted{K}{X}$
+\end_inset
+
+, 
+\backslash
+encrypted{K}{X}
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\encryptedfor{A}{X}$
+\end_inset
+
+, 
+\backslash
+encryptedfor {A}{X}
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\signed{A}{X}$
+\end_inset
+
+, 
+\backslash
+signed{A}{X}
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\fresh{N}$
+\end_inset
+
+, 
+\backslash
+fresh{N}
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\publickey{Q}$
+\end_inset
+
+, 
+\backslash
+publickey{Q}
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\authority{N_{a}}$
+\end_inset
+
+, 
+\backslash
+authority{N_a}
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\combined{X}{Y}$
+\end_inset
+
+, 
+\backslash
+combined{X}{Y}
+\end_layout
+
+\begin_layout Standard
+Postulates
+\end_layout
+
+\begin_layout Enumerate
+Message Meaning
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
 \begin_inset Formula $\meaningI{P}{Q}{X}{K}$
 \end_inset
 
-
+,
+\backslash
+meaningI{P}{Q}{X}{K}
 \end_layout
 
+\end_deeper
 \end_body
 \end_document
