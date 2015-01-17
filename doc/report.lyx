@@ -307,6 +307,22 @@ Proof by BAN logic
 Initial suppositions
 \end_layout
 
+\begin_layout Standard
+According to the scenario: 
+\begin_inset Formula $B\believes\publickey{A}$
+\end_inset
+
+.
+ Since there are no certificates involved, the only feasible ways for the
+ client to authenticate the server is via a shared secret or by letting
+ the client know the server's public key.
+ We chose for the latter thus 
+\begin_inset Formula $A\believes\publickey{B}$
+\end_inset
+
+ must hold in order for the protocol to work correctly.
+\end_layout
+
 \begin_layout Subsection*
 \noindent
 After message M1
