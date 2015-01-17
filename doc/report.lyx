@@ -328,6 +328,21 @@ According to the scenario:
 After message M1
 \end_layout
 
+\begin_layout Standard
+\begin_inset Formula $A\believes\fresh{N_{a}}$
+\end_inset
+
+, 
+\begin_inset Formula $B\believes A\said A\secret{N_{a}}B$
+\end_inset
+
+, 
+\begin_inset Formula $A\believes A\secret{N_{a}}B$
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection*
 \noindent
 After message M2
