@@ -170,7 +170,8 @@ Key Confirmation
 Real protocol messages
 \end_layout
 
-\begin_inset Formula $B\believes A\believes A\key{K}B$
+\begin_layout Standard
+\begin_inset Formula $M1\quad A\to B:\quad A,\;\encryptedfor{B}{\signed{A}{N_{a}}}$
 \end_inset
 
 
