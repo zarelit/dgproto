@@ -40,6 +40,9 @@
 
 % Jurisdiction rule
 \newcommand{\jurisdiction}[3]{\frac{#1 \; \believes \; #2 \; \believes\; #3, \;\; #1 \; \believes \; #2 \authority{#3}}{#1 \; \believes \; #3}}
+
+% Other postulates
+\newcommand{\freshcouple}[3]{\frac{#1\;\believes\fresh{#2}}{#1\;\believes\fresh{#2,\, #3}}}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
@@ -98,7 +101,7 @@
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
-\tracking_changes true
+\tracking_changes false
 \output_changes false
 \html_math_output 0
 \html_css_as_file 0
@@ -522,7 +525,7 @@ Message Meaning
 \begin_inset Formula $\meaningI{P}{Q}{X}{K}$
 \end_inset
 
-,
+, 
 \backslash
 meaningI{P}{Q}{X}{K}
 \end_layout
@@ -531,7 +534,7 @@ meaningI{P}{Q}{X}{K}
 \begin_inset Formula $\meaningII{P}{Q}{X}$
 \end_inset
 
-,
+, 
 \backslash
 meaningII{P}{Q}{X}
 \end_layout
@@ -540,7 +543,7 @@ meaningII{P}{Q}{X}
 \begin_inset Formula $\meaningIII{P}{Q}{X}{Y}$
 \end_inset
 
-,
+, 
 \backslash
 meaningIII{P}{Q}{X}{Y}
 \end_layout
@@ -570,9 +573,24 @@ Jurisdiction rule
 \begin_inset Formula $\jurisdiction{P}{Q}{X}$
 \end_inset
 
-,
+, 
 \backslash
 jurisdiction{P}{Q}{X}
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Other postulates
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset Formula $\freshcouple{P}{X}{Y}$
+\end_inset
+
+, 
+\backslash
+freshcouple{X}{Y}
 \end_layout
 
 \end_deeper
