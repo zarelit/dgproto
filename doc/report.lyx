@@ -4,7 +4,10 @@
 \begin_header
 \textclass article
 \begin_preamble
+% Gives us the "believe" symbol
 \usepackage{turnstile}
+
+% Simple predicates
 \newcommand{\believes}{\sttstile{}{}}
 \newcommand{\secret}[1]{\xrightleftharpoons{#1}}
 \newcommand{\fresh}[1]{\#(#1)}
@@ -12,11 +15,34 @@
 \newcommand{\encryptedfor}[2]{\lbrace #2 \rbrace_{e_#1}}
 \newcommand{\signed}[2]{\lbrace #2 \rbrace_{e^{-1}_{#1}}}
 \newcommand{\key}[1]{\xleftrightarrow{#1}}
-\newcommand{\said}{$\,$\ooalign{$\mid$\cr$\,\sim$}}
 \newcommand{\publickey}[1]{\xmapsto{e_{#1}} #1}
 \newcommand{\sees}{\triangleleft}
 \newcommand{\authority}{\Rightarrow}
 \newcommand{\combined}[2]{\langle #1 \rangle _{#2}}
+
+% Based on this question
+% https://tex.stackexchange.com/questions/217755/how-do-i-write-logical-iff-symbol
+\makeatletter
+\newcommand{\said}{\mathrel{\mathpalette\@gdw@\relax}}
+\newcommand{\@gdw@}[2]{\ooalign{$\m@th#1\mid$\cr$\m@th#1\:\sim$\cr}}
+\makeatother
+
+%% Postulates
+% Message Meaning
+\newcommand{\meaningI}[4]{\frac{#1\;\;\believes\;\; #2\key{#4}#1,\;\;\; #1\sees\encrypted{#4}{#3}}{#1\;\;\believes\;\; #2\said #3}}
+
+\newcommand{\meaningII}[3]{\frac{#1\;\;\believes\;\; \publickey{Q},\;\;\; #1\sees\signed{#2}{#3}}{#1\;\;\believes\;\; #2\said #3}}
+
+\newcommand{\meaningIII}[4]{\frac{#1\;\;\believes\;\; #2\secret{#4}#1,\;\;\; #1\sees\combined{#4}{#3}}{#1\;\;\believes\;\; #2\said #3}}
+
+% Nonce verification rule
+\newcommand{\nonce}[3]{\frac{P\;\believes\;\fresh{#3},\; #1\;\believes\; #2 \sees #3}{#1\;\believes\; #2\; \believes \; #3}}
+
+% Jurisdiction rule
+\newcommand{\jurisdiction}[3]{\frac{#1 \; \believes \; #2 \; \believes\; #3, \;\; #1 \; \believes \; #2 \authority{#3}}{#1 \; \believes \; #3}}
+
+% Other postulates
+\newcommand{\freshcouple}[3]{\frac{#1\;\believes\fresh{#2}}{#1\;\believes\fresh{#2,\, #3}}}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
@@ -97,6 +123,7 @@ David Costa
 \end_layout
 
 \begin_layout Author
+\noindent
 Giuliano Peraz
 \end_layout
 
@@ -115,7 +142,60 @@ Giuliano Peraz
 Introduction
 \end_layout
 
+\begin_layout Section
+Scenario (in Italian)
+\end_layout
+
 \begin_layout Standard
+\noindent
+Si consideri un’applicazione distribuita di tipo cliente-servitore in cui
+ ciascun processo possiede una coppia di chiavi pubblica e privata.
+\end_layout
+
+\begin_layout Standard
+\noindent
+Si assuma che il servitore conosca la chiave pubblica di ogni suo cliente
+ (i certificati non sono necessari).
+\end_layout
+
+\begin_layout Standard
+\noindent
+Si specifichi, si analizzi, si progetti ed, infine, si implementi un protocollo
+ crittografico che soddisfa i seguenti requisiti:
+\end_layout
+
+\begin_layout Itemize
+\noindent
+al termine dell’esecuzione del protocollo, viene stabilita una chiave di
+ sessione tra cliente e servitore;
+\end_layout
+
+\begin_layout Itemize
+\noindent
+al termine dell’esecuzione del protocollo, il cliente ritiene che il servitore
+ dispone della chiave di sessione e viceversa;
+\end_layout
+
+\begin_layout Standard
+\noindent
+La specifica del protocollo deve mettere chiaramente in evidenza le ipotesi
+ sotto le quali il protocollo funziona correttamente.
+\end_layout
+
+\begin_layout Standard
+\noindent
+L’implementazione deve comprende la realizzazione di un prototipo in cui
+ il server ed il cliente si scambiano del materiale (testo o binario) cifrato
+ con la chiave si sessione .
+\end_layout
+
+\begin_layout Standard
+Le attività di specifica, analisi e progetto dovranno essere documentate
+ da una concisa relazione scritta.
+\end_layout
+
+\begin_layout Standard
+\noindent
 \begin_inset Newpage pagebreak
 \end_inset
 
@@ -151,6 +231,7 @@ Key Authentication
 \end_layout
 
 \begin_layout Itemize
+\noindent
 Key Confirmation
 \begin_inset Newline newline
 \end_inset
@@ -186,6 +267,7 @@ Real protocol messages
 \end_layout
 
 \begin_layout Standard
+\noindent
 \begin_inset Formula $K=\combined{K_{AB}}{N_{a},N_{b}}$
 \end_inset
 
@@ -213,7 +295,6 @@ Idealized Protocol
 \end_layout
 
 \begin_layout Standard
-\noindent
 \begin_inset Formula $M1\quad A\to B:\quad\encryptedfor{B}{\signed{A}{N_{a}},\; A\said A\secret{N_{a}}B}$
 \end_inset
 
@@ -244,6 +325,65 @@ Idealized Protocol
 
 \end_layout
 
+\begin_layout Section
+Proof by BAN logic
+\end_layout
+
+\begin_layout Subsection*
+Initial suppositions
+\end_layout
+
+\begin_layout Standard
+According to the scenario: 
+\begin_inset Formula $B\believes\publickey{A}$
+\end_inset
+
+.
+ Since there are no certificates involved, the only feasible ways for the
+ client to authenticate the server is via a shared secret or by letting
+ the client know the server's public key.
+ We chose for the latter thus 
+\begin_inset Formula $A\believes\publickey{B}$
+\end_inset
+
+ must hold in order for the protocol to work correctly.
+\end_layout
+
+\begin_layout Subsection*
+\noindent
+After message M1
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $A\believes\fresh{N_{a}}$
+\end_inset
+
+, 
+\begin_inset Formula $B\believes A\said A\secret{N_{a}}B$
+\end_inset
+
+, 
+\begin_inset Formula $A\believes A\secret{N_{a}}B$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+\noindent
+After message M2
+\end_layout
+
+\begin_layout Subsection*
+\noindent
+After message M3
+\end_layout
+
+\begin_layout Subsection*
+\noindent
+After message M4
+\end_layout
+
 \begin_layout Standard
 \begin_inset Newpage pagebreak
 \end_inset
@@ -252,8 +392,207 @@ Idealized Protocol
 \end_layout
 
 \begin_layout Part
+\noindent
 Protocol implementation
 \end_layout
 
+\begin_layout Part
+Test BAN Logic in Latex
+\end_layout
+
+\begin_layout Standard
+Simple predicates
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $A\believes B$
+\end_inset
+
+, A 
+\backslash
+believes B
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $A\said B$
+\end_inset
+
+, A 
+\backslash
+said B
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $A\key{K}B$
+\end_inset
+
+, A 
+\backslash
+key{K} B
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $A\secret{K}B$
+\end_inset
+
+, A 
+\backslash
+secret{K} B
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $P\sees Q$
+\end_inset
+
+, P 
+\backslash
+sees Q
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\encrypted{K}{X}$
+\end_inset
+
+, 
+\backslash
+encrypted{K}{X}
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\encryptedfor{A}{X}$
+\end_inset
+
+, 
+\backslash
+encryptedfor {A}{X}
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\signed{A}{X}$
+\end_inset
+
+, 
+\backslash
+signed{A}{X}
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\fresh{N}$
+\end_inset
+
+, 
+\backslash
+fresh{N}
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\publickey{Q}$
+\end_inset
+
+, 
+\backslash
+publickey{Q}
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\authority{N_{a}}$
+\end_inset
+
+, 
+\backslash
+authority{N_a}
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\combined{X}{Y}$
+\end_inset
+
+, 
+\backslash
+combined{X}{Y}
+\end_layout
+
+\begin_layout Standard
+Postulates
+\end_layout
+
+\begin_layout Enumerate
+Message Meaning
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset Formula $\meaningI{P}{Q}{X}{K}$
+\end_inset
+
+, 
+\backslash
+meaningI{P}{Q}{X}{K}
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $\meaningII{P}{Q}{X}$
+\end_inset
+
+, 
+\backslash
+meaningII{P}{Q}{X}
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $\meaningIII{P}{Q}{X}{Y}$
+\end_inset
+
+, 
+\backslash
+meaningIII{P}{Q}{X}{Y}
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Nonce Verification
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset Formula $\nonce{P}{Q}{X}$
+\end_inset
+
+, 
+\backslash
+nonce{P}{Q}{X}
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Jurisdiction rule
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset Formula $\jurisdiction{P}{Q}{X}$
+\end_inset
+
+, 
+\backslash
+jurisdiction{P}{Q}{X}
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Other postulates
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset Formula $\freshcouple{P}{X}{Y}$
+\end_inset
+
+, 
+\backslash
+freshcouple{X}{Y}
+\end_layout
+
+\end_deeper
 \end_body
 \end_document
