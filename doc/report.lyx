@@ -30,6 +30,10 @@
 %% Postulates
 % Message Meaning
 \newcommand{\meaningI}[4]{\frac{#1\;\;\believes\;\; #2\key{#4}#1,\;\;\; #1\sees\encrypted{#4}{#3}}{#1\;\;\believes\;\; #2\said #3}}
+
+\newcommand{\meaningII}[3]{\frac{#1\;\;\believes\;\; \publickey{Q},\;\;\; #1\sees\signed{#2}{#3}}{#1\;\;\believes\;\; #2\said #3}}
+
+\newcommand{\meaningIII}[4]{\frac{#1\;\;\believes\;\; #2\secret{#4}#1,\;\;\; #1\sees\combined{#4}{#3}}{#1\;\;\believes\;\; #2\said #3}}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
@@ -515,6 +519,24 @@ Message Meaning
 ,
 \backslash
 meaningI{P}{Q}{X}{K}
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $\meaningII{P}{Q}{X}$
+\end_inset
+
+,
+\backslash
+meaningII{P}{Q}{X}
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $\meaningIII{P}{Q}{X}{Y}$
+\end_inset
+
+,
+\backslash
+meaningIII{P}{Q}{X}{Y}
 \end_layout
 
 \end_deeper
