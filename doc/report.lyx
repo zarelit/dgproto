@@ -37,6 +37,9 @@
 
 % Nonce verification rule
 \newcommand{\nonce}[3]{\frac{P\;\believes\;\fresh{#3},\; #1\;\believes\; #2 \sees #3}{#1\;\believes\; #2\; \believes \; #3}}
+
+% Jurisdiction rule
+\newcommand{\jurisdiction}[3]{\frac{#1 \; \believes \; #2 \; \believes\; #3, \;\; #1 \; \believes \; #2 \authority{#3}}{#1 \; \believes \; #3}}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
@@ -95,7 +98,7 @@
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
-\tracking_changes false
+\tracking_changes true
 \output_changes false
 \html_math_output 0
 \html_css_as_file 0
@@ -555,6 +558,21 @@ Nonce Verification
 , 
 \backslash
 nonce{P}{Q}{X}
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Jurisdiction rule
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset Formula $\jurisdiction{P}{Q}{X}$
+\end_inset
+
+,
+\backslash
+jurisdiction{P}{Q}{X}
 \end_layout
 
 \end_deeper
