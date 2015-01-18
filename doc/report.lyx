@@ -34,6 +34,9 @@
 \newcommand{\meaningII}[3]{\frac{#1\;\;\believes\;\; \publickey{Q},\;\;\; #1\sees\signed{#2}{#3}}{#1\;\;\believes\;\; #2\said #3}}
 
 \newcommand{\meaningIII}[4]{\frac{#1\;\;\believes\;\; #2\secret{#4}#1,\;\;\; #1\sees\combined{#4}{#3}}{#1\;\;\believes\;\; #2\said #3}}
+
+% Nonce verification rule
+\newcommand{\nonce}[3]{\frac{P\;\believes\;\fresh{#3},\; #1\;\believes\; #2 \sees #3}{#1\;\believes\; #2\; \believes \; #3}}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
@@ -537,6 +540,21 @@ meaningII{P}{Q}{X}
 ,
 \backslash
 meaningIII{P}{Q}{X}{Y}
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Nonce Verification
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+\begin_inset Formula $\nonce{P}{Q}{X}$
+\end_inset
+
+, 
+\backslash
+nonce{P}{Q}{X}
 \end_layout
 
 \end_deeper
