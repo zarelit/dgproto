@@ -43,6 +43,10 @@
 
 % Other postulates
 \newcommand{\freshcouple}[3]{\frac{#1\;\believes\fresh{#2}}{#1\;\believes\fresh{#2,\, #3}}}
+
+% Two secret parts of the key
+\newcommand{\secretNa}{A\secret{N_{a}}B}
+\newcommand{\secretNb}{A\secret{N_{b}}B}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
