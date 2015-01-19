@@ -298,7 +298,7 @@ Idealized Protocol
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $M1\quad A\to B:\quad\encryptedfor{B}{\signed{A}{N_{a}},\; A\said \secretNa}$
+\begin_inset Formula $M1\quad A\to B:\quad\encryptedfor{B}{\signed{A}{N_{a}},\; A\said\secretNa}$
 \end_inset
 
 
@@ -306,7 +306,7 @@ Idealized Protocol
 
 \begin_layout Standard
 \noindent
-\begin_inset Formula $M2\quad B\to A:\quad\encryptedfor{A}{N_{a},\;\signed{B}{N_{b}},\; B\said \secretNb}$
+\begin_inset Formula $M2\quad B\to A:\quad\encryptedfor{A}{N_{a},\;\signed{B}{N_{b}},\; B\said\secretNb}$
 \end_inset
 
 
@@ -362,11 +362,11 @@ After message M1
 \end_inset
 
 , 
-\begin_inset Formula $B\believes A\said \secretNa$
+\begin_inset Formula $B\believes A\said\secretNa$
 \end_inset
 
 , 
-\begin_inset Formula $A\believes \secretNa$
+\begin_inset Formula $A\believes\secretNa$
 \end_inset
 
 
@@ -378,7 +378,7 @@ After message M2
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $A\believes B\said \secretNb$
+\begin_inset Formula $A\believes B\said\secretNb$
 \end_inset
 
 , 
@@ -386,7 +386,7 @@ After message M2
 \end_inset
 
 , 
-\begin_inset Formula $B\believes \secretNb$
+\begin_inset Formula $B\believes\secretNb$
 \end_inset
 
 
@@ -394,7 +394,7 @@ After message M2
 
 \begin_layout Standard
 Since 
-\begin_inset Formula $\frac{A\believes\fresh{N_{a}}}{A\believes\fresh{N_{a},N_{b},B\said \secretNb}}$
+\begin_inset Formula $\frac{A\believes\fresh{N_{a}}}{A\believes\fresh{N_{a},N_{b},B\said\secretNb}}$
 \end_inset
 
 ,
@@ -413,7 +413,7 @@ Since
 \uwave off
 \noun off
 \color none
-\begin_inset Formula $\frac{A\believes\fresh{N_{a},N_{b},B\said \secretNb},\quad A\believes B\said(N_{a},N_{b},\secretNb)}{A\ \believes B\believes(N_{a},N_{b},\secretNb)}$
+\begin_inset Formula $\frac{A\believes\fresh{N_{a},N_{b},B\said\secretNb},\quad A\believes B\said(N_{a},N_{b},\secretNb)}{A\ \believes B\believes(N_{a},N_{b},\secretNb)}$
 \end_inset
 
 ,
@@ -432,14 +432,14 @@ Since
 \uwave off
 \noun off
 \color none
-\begin_inset Formula $\frac{A\believes B\believes(N_{a},N_{b},\secretNb)}{A\believes B\believes \secretNb}$
+\begin_inset Formula $\frac{A\believes B\believes(N_{a},N_{b},\secretNb)}{A\believes B\believes\secretNb}$
 \end_inset
 
 
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $\frac{A\believes B\believes \secretNb,\quad A\believes B\authority{(\secretNb)}}{A\believes \secretNb}$
+\begin_inset Formula $\frac{A\believes B\believes\secretNb,\quad A\believes B\authority{(\secretNb)}}{A\believes\secretNb}$
 \end_inset
 
 .
@@ -458,11 +458,11 @@ is generated involving both A and B and considering
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $B\believes A\said \secretNa$
+\begin_inset Formula $B\believes A\said\secretNa$
 \end_inset
 
  and 
-\begin_inset Formula $B\believes \secretNb$
+\begin_inset Formula $B\believes\secretNb$
 \end_inset
 
 .
