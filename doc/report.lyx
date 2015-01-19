@@ -358,15 +358,24 @@ After message M1
 \end_layout
 
 \begin_layout Standard
+A generated the secret 
+\begin_inset Formula $N_{a}$
+\end_inset
+
+thus: 
 \begin_inset Formula $A\believes\fresh{N_{a}}$
 \end_inset
 
 , 
-\begin_inset Formula $B\believes A\said\secretNa$
+\begin_inset Formula $A\believes\secretNa$
 \end_inset
 
-, 
-\begin_inset Formula $A\believes\secretNa$
+.
+\end_layout
+
+\begin_layout Standard
+From B point of view: 
+\begin_inset Formula $\meaningII{B}{A}{\secretNa}$
 \end_inset
 
 
