@@ -526,6 +526,41 @@ After M3 and M4 we obtain the required key confirmation objective.
 Protocol implementation
 \end_layout
 
+\begin_layout Itemize
+\begin_inset Formula $e_{a},e_{b}$
+\end_inset
+
+: EC 256-bit in dei files
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $N_{a},N_{b}$
+\end_inset
+
+: nonces 128-bit random
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $A,B$
+\end_inset
+
+ : 1 byte ASCII
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\mathrm{H}(N_{a}),\mathrm{H}(N_{b})$
+\end_inset
+
+ :SHA-256 (NSA approved)
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $K=H(N_{a}|N_{b}|"FzHtp3IcplOQnTSloTyyYPOiVT5iCjbMao")$
+\end_inset
+
+: SHA-256 + salt
+\end_layout
+
 \begin_layout Standard
 \begin_inset Newpage newpage
 \end_inset
