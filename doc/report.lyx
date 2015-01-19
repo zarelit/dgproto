@@ -298,7 +298,7 @@ Idealized Protocol
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $M1\quad A\to B:\quad\encryptedfor{B}{\signed{A}{N_{a}},\; A\said\secretNa}$
+\begin_inset Formula $M1\quad A\to B:\quad\encryptedfor{B}{\signed{A}{N_{a},\;\secretNa}}$
 \end_inset
 
 
@@ -306,7 +306,7 @@ Idealized Protocol
 
 \begin_layout Standard
 \noindent
-\begin_inset Formula $M2\quad B\to A:\quad\encryptedfor{A}{N_{a},\;\signed{B}{N_{b}},\; B\said\secretNb}$
+\begin_inset Formula $M2\quad B\to A:\quad\encryptedfor{A}{N_{a},\;\signed{B}{N_{b},\;\secretNb}}$
 \end_inset
 
 
