@@ -31,12 +31,12 @@
 % Message Meaning
 \newcommand{\meaningI}[4]{\frac{#1\;\;\believes\;\; #2\key{#4}#1,\;\;\; #1\sees\encrypted{#4}{#3}}{#1\;\;\believes\;\; #2\said #3}}
 
-\newcommand{\meaningII}[3]{\frac{#1\;\;\believes\;\; \publickey{Q},\;\;\; #1\sees\signed{#2}{#3}}{#1\;\;\believes\;\; #2\said #3}}
+\newcommand{\meaningII}[3]{\frac{#1\;\;\believes\;\; \publickey{#2},\;\;\; #1\sees\signed{#2}{#3}}{#1\;\;\believes\;\; #2\said #3}}
 
 \newcommand{\meaningIII}[4]{\frac{#1\;\;\believes\;\; #2\secret{#4}#1,\;\;\; #1\sees\combined{#4}{#3}}{#1\;\;\believes\;\; #2\said #3}}
 
 % Nonce verification rule
-\newcommand{\nonce}[3]{\frac{P\;\believes\;\fresh{#3},\; #1\;\believes\; #2 \sees #3}{#1\;\believes\; #2\; \believes \; #3}}
+\newcommand{\nonce}[3]{\frac{#1\;\believes\;\fresh{#3},\; #1\;\believes\; #2 \sees #3}{#1\;\believes\; #2\; \believes \; #3}}
 
 % Jurisdiction rule
 \newcommand{\jurisdiction}[3]{\frac{#1 \; \believes \; #2 \; \believes\; #3, \;\; #1 \; \believes \; #2 \authority{#3}}{#1 \; \believes \; #3}}
