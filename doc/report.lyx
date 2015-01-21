@@ -408,6 +408,11 @@ A wants to communicate with B.
 \end_inset
 
  because it doesn't need to check against all the public keys it knows.
+ Once received the message 
+\begin_inset Formula $B$
+\end_inset
+
+ decrypts the message and verifies the signature.
 \end_layout
 
 \begin_layout Enumerate
@@ -440,6 +445,11 @@ are then sent encrypted for
 \end_inset
 
  in plaintext for the same reason of the previous point.
+ 
+\begin_inset Formula $A$
+\end_inset
+
+ decrypts the message and verifies the signature.
 \end_layout
 
 \begin_layout Enumerate
@@ -450,7 +460,79 @@ are then sent encrypted for
 \begin_inset Formula $B$
 \end_inset
 
- now have enough information to calculate the session key.
+ now calculate the session key by applying a function that ensures that
+ all the bits of the key are dependent on each secret 
+\begin_inset Formula $N_{a}$
+\end_inset
+
+ and 
+\begin_inset Formula $N_{b}$
+\end_inset
+
+, i.e.
+ an hash.
+ The session key is generated and it never shows up as a piece of information
+ in a protocol message so a verification is needed to check whether both
+ partecipants has the same key; this is done by issuing two challenges.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $A$
+\end_inset
+
+ proves to 
+\begin_inset Formula $B$
+\end_inset
+
+ that it knows the session key by hashing 
+\begin_inset Formula $N_{b}$
+\end_inset
+
+ and sending it to 
+\begin_inset Formula $B$
+\end_inset
+
+ encrypted with the session key 
+\begin_inset Formula $K$
+\end_inset
+
+.
+ 
+\begin_inset Formula $B$
+\end_inset
+
+ decrypts it and verifies the hash.
+ 
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $B$
+\end_inset
+
+ does the same, hashing 
+\begin_inset Formula $N_{a}$
+\end_inset
+
+and sending it to 
+\begin_inset Formula $A$
+\end_inset
+
+ encrypted with the session key 
+\begin_inset Formula $K$
+\end_inset
+
+.
+ 
+\begin_inset Formula $A$
+\end_inset
+
+ must then decrypt the message and verify the hash.
+\end_layout
+
+\begin_layout Standard
+If any verification fails during the execution of the protocol, no further
+ messages should be sent and the execution should be stopped (e.g.
+ by closing the connection).
 \end_layout
 
 \begin_layout Section
@@ -821,7 +903,7 @@ name "part:Protocol-implementation"
 \end_layout
 
 \begin_layout Itemize
-\begin_inset Formula $K=H(N_{a}|N_{b}|"FzHtp3IcplOQnTSloTyyYPOiVT5iCjbMao")$
+\begin_inset Formula $K=H(N_{a}|N_{b}|"FzHp3CbMao")$
 \end_inset
 
 : SHA-256 + salt
