@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <inttypes.h>
-#include <arpa/inet.h> // For hton* and ntoh* byte conversion functions
+#include <arpa/inet.h>  // For hton* and ntoh* byte conversion functions,
+                        // inet_pton, inet_ntop, 
 #include <netinet/in.h>
 #include <openssl/evp.h>
