@@ -428,7 +428,11 @@ Since
 
 \begin_layout Standard
 \align center
-\begin_inset Formula $\frac{A\believes\fresh{N_{a}}}{A\believes\fresh{N_{a},N_{b},B\said\secretNb}}$
+\begin_inset Formula 
+\[
+\frac{A\believes\fresh{N_{a}}}{A\believes\fresh{N_{a},N_{b},B\said\secretNb}}
+\]
+
 \end_inset
 
 , 
@@ -452,7 +456,11 @@ then, for the Nonce Verification Rule:
 \uwave off
 \noun off
 \color none
-\begin_inset Formula $\frac{A\believes\fresh{N_{a},N_{b},B\said\secretNb},\quad A\believes B\said(N_{a},N_{b},\secretNb)}{A\ \believes B\believes(N_{a},N_{b},\secretNb)}$
+\begin_inset Formula 
+\[
+\frac{A\believes\fresh{N_{a},N_{b},B\said\secretNb},\quad A\believes B\said(N_{a},N_{b},\secretNb)}{A\ \believes B\believes(N_{a},N_{b},\secretNb)}
+\]
+
 \end_inset
 
 ,
@@ -476,7 +484,11 @@ applying the postulates were seen into the course slides we obtain:
 \uwave off
 \noun off
 \color none
-\begin_inset Formula $\frac{A\believes B\believes(N_{a},N_{b},\secretNb)}{A\believes B\believes\secretNb}$
+\begin_inset Formula 
+\[
+\frac{A\believes B\believes(N_{a},N_{b},\secretNb)}{A\believes B\believes\secretNb}
+\]
+
 \end_inset
 
 ,
@@ -488,7 +500,11 @@ and, for the Jurisdiction Rule:
 
 \begin_layout Standard
 \align center
-\begin_inset Formula $\frac{A\believes B\believes\secretNb,\quad A\believes B\authority{(\secretNb)}}{A\believes\secretNb}$
+\begin_inset Formula 
+\[
+\frac{A\believes B\believes\secretNb,\quad A\believes B\authority{(\secretNb)}}{A\believes\secretNb}
+\]
+
 \end_inset
 
 .
