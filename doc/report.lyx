@@ -350,16 +350,19 @@ According to the scenario:
 \end_inset
 
  must hold in order for the protocol to work correctly.
- Without this assumption our protocol (as far as any other protocol) is
- subject to Man-In-The-Middle attack.
+\end_layout
+
+\begin_layout Standard
+Without this assumption our protocol (as far as any other protocol) is subject
+ to Man-In-The-Middle attack.
  Also, since B is considered a server from the A's point of view, and since
- we use two shared secret for building the session key, one from the client
+ we use two shared secrets for building the session key, one from the client
  and one from the server, we may suppose that 
 \begin_inset Formula $A\believes B\authority{(\secretNb)}$
 \end_inset
 
 , that is the client trusts the server in generating shared secret, but
- not the viceversa.
+ not viceversa.
 \end_layout
 
 \begin_layout Subsection*
