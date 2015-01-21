@@ -71,7 +71,16 @@
 \index_command default
 \paperfontsize default
 \spacing single
-\use_hyperref false
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
 \papersize a4paper
 \use_geometry false
 \use_package amsmath 1
@@ -267,11 +276,52 @@ Real protocol messages
 \end_inset
 
 
+\begin_inset Newline newline
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
 \noindent
-\begin_inset Formula $K=\combined{K_{AB}}{N_{a},N_{b}}$
+The key is a function of 
+\begin_inset Formula $N_{a}$
+\end_inset
+
+ and 
+\begin_inset Formula $N_{b}$
+\end_inset
+
+.
+ In order to make it more readable we define 
+\begin_inset Formula $\mbox{\mbox{\ensuremath{K=\combined{K_{AB}}{N_{a},N_{b}}}}}$
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+The way 
+\begin_inset Formula $N_{a}$
+\end_inset
+
+ and 
+\begin_inset Formula $N_{b}$
+\end_inset
+
+ are combined to create 
+\begin_inset Formula $K$
+\end_inset
+
+ is explained 
+\begin_inset CommandInset ref
+LatexCommand vpageref
+reference "part:Protocol-implementation"
+
+\end_inset
+
+
+\begin_inset Newline newline
 \end_inset
 
 
@@ -291,6 +341,116 @@ Real protocol messages
 \end_inset
 
 
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\mathrm{H}$
+\end_inset
+
+ is an hash function whose output size is appropriate (see 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "part:Protocol-implementation"
+
+\end_inset
+
+).
+ 
+\end_layout
+
+\begin_layout Subsection
+Protocol actions
+\end_layout
+
+\begin_layout Standard
+A wants to communicate with B.
+ In order to do this a session key must be estabilished by executing the
+ following actions:
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $A$
+\end_inset
+
+ generates a random number 
+\begin_inset Formula $N_{a}$
+\end_inset
+
+, signs it with its own key and encrypts it for 
+\begin_inset Formula $B$
+\end_inset
+
+ using the public key 
+\begin_inset Formula $e_{B}$
+\end_inset
+
+.
+ This quantity is then sent to 
+\begin_inset Formula $B$
+\end_inset
+
+ in a message together with the name of 
+\begin_inset Formula $A$
+\end_inset
+
+ in plaintext.
+ The presence of the name of 
+\begin_inset Formula $A$
+\end_inset
+
+ unencrypted in the message allows a faster verification of the message
+ for 
+\begin_inset Formula $B$
+\end_inset
+
+ because it doesn't need to check against all the public keys it knows.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $B$
+\end_inset
+
+ generates a random number 
+\begin_inset Formula $N_{b}$
+\end_inset
+
+ and signs it with its own key.
+ The signed 
+\begin_inset Formula $N_{b}$
+\end_inset
+
+and plain 
+\begin_inset Formula $N_{a}$
+\end_inset
+
+are then sent encrypted for 
+\begin_inset Formula $A$
+\end_inset
+
+ using the public key 
+\begin_inset Formula $e_{A}$
+\end_inset
+
+ together with the name of 
+\begin_inset Formula $B$
+\end_inset
+
+ in plaintext for the same reason of the previous point.
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset Formula $A$
+\end_inset
+
+ and 
+\begin_inset Formula $B$
+\end_inset
+
+ now have enough information to calculate the session key.
 \end_layout
 
 \begin_layout Section
@@ -342,10 +502,16 @@ According to the scenario:
 \end_inset
 
 .
- Since there are no certificates involved, the only feasible ways for the
+\end_layout
+
+\begin_layout Standard
+Since there are no certificates involved, the only feasible ways for the
  client to authenticate the server is via a shared secret or by letting
  the client know the server's public key.
- We chose for the latter thus 
+\end_layout
+
+\begin_layout Standard
+We chose for the latter thus 
 \begin_inset Formula $A\believes\publickey{B}$
 \end_inset
 
@@ -355,7 +521,11 @@ According to the scenario:
 \begin_layout Standard
 Without this assumption our protocol (like other protocols) is subject to
  Man-In-The-Middle attack.
- Also, since B is considered a server from the A's point of view, and since
+ 
+\end_layout
+
+\begin_layout Standard
+Also, since B is considered a server from the A's point of view, and since
  we use two shared secrets for building the session key, one from the client
  and one from the server, we may suppose that 
 \begin_inset Formula $A\believes B\authority{(\secretNb)}$
@@ -613,6 +783,13 @@ After M3 and M4 we obtain the required key confirmation objective.
 \begin_layout Part
 \noindent
 Protocol implementation
+\begin_inset CommandInset label
+LatexCommand label
+name "part:Protocol-implementation"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Itemize
