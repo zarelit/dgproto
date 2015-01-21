@@ -373,6 +373,10 @@ A generated the secret
 \end_inset
 
 thus: 
+\end_layout
+
+\begin_layout Standard
+\align center
 \begin_inset Formula $A\believes\fresh{N_{a}}$
 \end_inset
 
@@ -384,7 +388,11 @@ thus:
 \end_layout
 
 \begin_layout Standard
-From B point of view: 
+From B's point of view:
+\end_layout
+
+\begin_layout Standard
+\align center
 \begin_inset Formula $\meaningII{B}{A}{\secretNa}$
 \end_inset
 
@@ -413,6 +421,10 @@ After message M2
 
 \begin_layout Standard
 Since 
+\end_layout
+
+\begin_layout Standard
+\align center
 \begin_inset Formula $\frac{A\believes\fresh{N_{a}}}{A\believes\fresh{N_{a},N_{b},B\said\secretNb}}$
 \end_inset
 
@@ -424,6 +436,7 @@ then, for the Nonce Verification Rule:
 \end_layout
 
 \begin_layout Standard
+\align center
 
 \family roman
 \series medium
@@ -443,10 +456,11 @@ then, for the Nonce Verification Rule:
 \end_layout
 
 \begin_layout Standard
-Applying the postulates were seen into the course slides we obtain:
+applying the postulates were seen into the course slides we obtain:
 \end_layout
 
 \begin_layout Standard
+\align center
 
 \family roman
 \series medium
@@ -462,14 +476,15 @@ Applying the postulates were seen into the course slides we obtain:
 \begin_inset Formula $\frac{A\believes B\believes(N_{a},N_{b},\secretNb)}{A\believes B\believes\secretNb}$
 \end_inset
 
-
+,
 \end_layout
 
 \begin_layout Standard
-And, for the Jurisdiction Rule:
+and, for the Jurisdiction Rule:
 \end_layout
 
 \begin_layout Standard
+\align center
 \begin_inset Formula $\frac{A\believes B\believes\secretNb,\quad A\believes B\authority{(\secretNb)}}{A\believes\secretNb}$
 \end_inset
 
@@ -517,6 +532,11 @@ After message M3
 \end_layout
 
 \begin_layout Standard
+By applying the Nonce Verification Rule:
+\end_layout
+
+\begin_layout Standard
+\align center
 \begin_inset Formula $\frac{B\believes A\said A\key{K}B,\quad B\believes\fresh{(A\key{K}B}}{B\believes A\believes A\key{K}B}$
 \end_inset
 
@@ -529,6 +549,11 @@ After message M4
 \end_layout
 
 \begin_layout Standard
+By applying the Nonce Verification Rule:
+\end_layout
+
+\begin_layout Standard
+\align center
 \begin_inset Formula $\frac{A\believes B\said A\key{K}B,\quad A\believes\fresh{(A\key{K}B}}{A\believes B\believes A\key{K}B}$
 \end_inset
 
@@ -537,7 +562,8 @@ After message M4
 
 \begin_layout Standard
 After M3 and M4 we obtain the required key confirmation objective.
- As a side effect, key freshness is also obtained.
+ As a side effect, key freshness is also obtained thanks to the fact each
+ part has generated the session key in the current session of the protocol.
 \end_layout
 
 \begin_layout Standard
