@@ -15,3 +15,5 @@
 
 #define SRV_PORT "1096"
 #define SRV_MAX_CONN 20
+
+#define SALT "FzHp3CbMao"
