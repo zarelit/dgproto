@@ -2,16 +2,12 @@
  * David Costa <david.costa@ieee.org>, Giuliano Peraz <giuliano.peraz@gmail.com>
  */
 
-// Guard directives
-#ifndef CLIENT_H
-#define CLIENT_H 1
-
 #include <stdio.h>
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <unistd.h>
+#include <inttypes.h>
+#include <arpa/inet.h>  // For hton* and ntoh* byte conversion functions,
+                        // inet_pton, inet_ntop, 
 #include <netinet/in.h>
 #include <openssl/evp.h>
-
-#endif

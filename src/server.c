@@ -7,9 +7,10 @@
  * message the protocol is started. The server must wait until the socket is over.
  */
 
-#include <common.h>
+#include "../include/common.h"
 
-int main (void)
+int main (int argc, char **argv)
 {
-	return 0;
+    
+    return 0;
 }
