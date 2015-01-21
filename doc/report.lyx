@@ -458,7 +458,7 @@ then, for the Nonce Verification Rule:
 \color none
 \begin_inset Formula 
 \[
-\frac{A\believes\fresh{N_{a},N_{b},B\said\secretNb},\quad A\believes B\said(N_{a},N_{b},\secretNb)}{A\ \believes B\believes(N_{a},N_{b},\secretNb)}
+\frac{A\believes\fresh{N_{a},N_{b},\secretNb},\quad A\believes B\said(N_{a},N_{b},\secretNb)}{A\ \believes B\believes(N_{a},N_{b},\secretNb)}
 \]
 
 \end_inset
