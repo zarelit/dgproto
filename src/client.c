@@ -18,6 +18,7 @@ int main (int argc, char** argv)
 {
 	struct addrinfo query;
 	struct addrinfo *servers;
+	int servfd;
 
 	FILE* file_to_send;
 
@@ -49,6 +50,24 @@ int main (int argc, char** argv)
 		perror("Cannot open the file to send");
 		exit(EXIT_FAILURE);
 	}
+
+	/*
+	 * Step 0:
+	 * Open a TCP connection with the server.
+	 */
+	printf("About to connect to server\n");
+	servfd = socket(servers->ai_family, servers->ai_socktype, servers->ai_protocol);
+	if(servfd == -1){
+		perror("Cannot create socket");
+		exit(EXIT_FAILURE);
+	}
+
+	s = connect(servfd,servers->ai_addr, servers->ai_addrlen);
+	if(s){
+		perror("Cannot connect to server");
+		exit(EXIT_FAILURE);
+	}
+	printf("Connection to server opened\n");
 
 	/*
 	 * cleanup and quit
