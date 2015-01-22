@@ -8,6 +8,24 @@
  */
 
 #include "../include/common.h"
+#include "../include/protocol.h"
+
+
+struct addrinfo init_hints (void)
+{
+    struct addrinfo hints;
+    // Setup the socket for the server to listen to incoming connections
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE; // use my IP
+    hints.ai_protocol = 0;
+    hints.ai_addrlen = 0;
+    hints.ai_addr = NULL;
+    hints.ai_canonname = NULL;
+    hints.ai_next = NULL;
+
+    return hints;
+}
 
 /**
  * Useful function for retrieving the binary representation of the IP address (IPv4 or IPv6) in
@@ -30,15 +48,7 @@ int main (int argc, char **argv)
     int yes = 1, ret_val;
     char str_addr[INET_ADDRSTRLEN]; // for printing human readable IP
 
-    // Setup the socket for the server to listen to incoming connections
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE; // use my IP
-    hints.ai_protocol = 0;
-    hints.ai_addrlen = 0;
-    hints.ai_addr = NULL;
-    hints.ai_canonname = NULL;
-    hints.ai_next = NULL;
+    hints = init_hints();
 
     if ((ret_val = getaddrinfo(NULL, SRV_PORT, &hints, &servinfo)) != 0)
     {
@@ -76,8 +86,8 @@ int main (int argc, char **argv)
     }
 
     printf("server: waiting for connections...\n");
+    sin_size = sizeof(client_addr);
     while(1) { // main accept() loop
-        sin_size = sizeof(client_addr);
         con_fd = accept(sock_fd, (struct sockaddr *)&client_addr, &sin_size);
         if (con_fd == -1) {
             perror("accept");
@@ -86,6 +96,7 @@ int main (int argc, char **argv)
         inet_ntop(client_addr.ss_family, get_in_addr((struct sockaddr*)&client_addr), str_addr,
                   sizeof(str_addr));
         printf("server: got connection from %s\n", str_addr);
+        
     }
     close(con_fd);
 
