@@ -1,0 +1,10 @@
+Il server è un programma che deve fare le seguenti cose:
+- aprire un socket sul proprio IP
+- aspettare la connessione di un client
+- iniziare il protocollo D&G con il client
+- terminare con successo il protocollo D&G
+- attendere un certo tempo (30 sec) per la ricezione di dati sul socket
+- Se entro il timeout non succede nulla => chiudi connessione
+- Altrimenti ricevi dati e salvali somewhere.
+- Al termine della sessione di scambio dati (tramite le chiamate di sistema)
+  si chiude il socket e tanti saluti
