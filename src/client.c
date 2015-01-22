@@ -15,5 +15,9 @@
 
 int main (int argc, char** argv)
 {
+	if(argc != 3){
+		printf("Usage: %s <Server IPv4> <file to send>\n",argv[0]);
+		exit(EXIT_FAILURE);
+	}
 	return 0;
 }
