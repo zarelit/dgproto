@@ -362,7 +362,7 @@ Key Authentication says each part of the protocol must know the key K is
 \begin_layout Standard
 The structure of our protocol reaches also another objective that isn't
  explain in the specification: Key Freshness.
- The way this object is met is to create the same fresh key in each part
+ The way this object is met is to create the same fresh key for each part
  involved in the protocol.
 \end_layout
 
@@ -647,13 +647,37 @@ Idealized Protocol
 \end_layout
 
 \begin_layout Standard
+The idealized protocol is a translation of each crypted part of the real
+ protocol messages in an appropriate form that explicits the meaning of
+ each message rather than what the message transport through the network.
+ In this section we will show which are the messages of the idealized protocol,
+ including the implicit information and which is the meaning of each message.
+\end_layout
+
+\begin_layout Standard
+If you are interested in the proof of the absence of problem into this protocol
+ using BAN logic please go to section 
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "sec:Proof-by-BAN"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Idealized Messages
+\end_layout
+
+\begin_layout Itemize
 \begin_inset Formula $M1\quad A\to B:\quad\encryptedfor{B}{\signed{A}{N_{a},\;\secretNa}}$
 \end_inset
 
 
 \end_layout
 
-\begin_layout Standard
+\begin_layout Itemize
 \noindent
 \begin_inset Formula $M2\quad B\to A:\quad\encryptedfor{A}{N_{a},\;\signed{B}{N_{b},\;\secretNb}}$
 \end_inset
@@ -661,7 +685,7 @@ Idealized Protocol
 
 \end_layout
 
-\begin_layout Standard
+\begin_layout Itemize
 \noindent
 \begin_inset Formula $M3\quad A\to B:\quad\encrypted{K=\combined{K_{AB}}{N_{a},N_{b}}}{\mathrm{H\mathit{(N_{b})},\; A\key{K}B}}$
 \end_inset
@@ -669,7 +693,7 @@ Idealized Protocol
 
 \end_layout
 
-\begin_layout Standard
+\begin_layout Itemize
 \noindent
 \begin_inset Formula $M4\quad B\to A:\quad\encrypted{K}{\mathrm{H\mathit{(N_{a})},\; A\key{K}B}}$
 \end_inset
@@ -677,8 +701,79 @@ Idealized Protocol
 
 \end_layout
 
+\begin_layout Subsection
+Idealized message meaning
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+M1
+\series default
+: A says to B that the nounce 
+\begin_inset Formula $N_{a}$
+\end_inset
+
+ A has just generated is good for generating the key.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+M2
+\series default
+: B says to A that the nounce 
+\begin_inset Formula $N_{b}$
+\end_inset
+
+ B has just generated is good for generating the key.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+M3
+\series default
+: A says to B that 
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\uuline off
+\uwave off
+\noun off
+\color none
+
+\begin_inset Formula $K=\combined{K_{AB}}{N_{a},N_{b}}$
+\end_inset
+
+is the session key for this session.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+M4
+\series default
+: B says to A that 
+\begin_inset Formula $K$
+\end_inset
+
+ is the session key also for him.
+\end_layout
+
 \begin_layout Section
 Proof by BAN logic
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Proof-by-BAN"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection*
@@ -705,11 +800,8 @@ We chose for the latter thus
 \end_inset
 
  must hold in order for the protocol to work correctly.
-\end_layout
-
-\begin_layout Standard
-Without this assumption our protocol (like other protocols) is subject to
- Man-In-The-Middle attack.
+ Without this assumption our protocol (like other protocols) is subject
+ to Man-In-The-Middle attack.
  
 \end_layout
 
