@@ -10,7 +10,7 @@
  * through the unsecure channel.
  */
 
-#include <common.h>
+#include "../include/common.h"
 
 
 int main (void)
