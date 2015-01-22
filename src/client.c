@@ -12,6 +12,10 @@
 
 #include "../include/common.h"
 #include <string.h>
+#include <sys/stat.h>
+
+//! How much of the file we work with at a time
+#define CHUNK_SIZE 512
 
 /**
  * Wrapper around send() that manages partial transmissions
@@ -20,16 +24,32 @@
  * \param buf pointer to the data
  * \param len length of the data to be sent in bytes
  */
-void sendbuf(int sock, void* buf, ssize_t len);
+void sendbuf(int sock, unsigned char* buf, ssize_t len);
+
+/**
+ * Determine file size or quit
+ */
+ssize_t getfsize(FILE* fd);
 
 int main (int argc, char** argv)
 {
+	/*
+	 * Network related variables
+	 */
 	struct addrinfo query;
 	struct addrinfo *servers;
 	int servfd;
 
+	/*
+	 * File related variables
+	 */
 	FILE* file_to_send;
+	ssize_t fsize;
+	unsigned char ptextbuf[CHUNK_SIZE];
 
+	/*
+	 * Other variables
+	 */
 	int s; // exit status of some calls, used for error checking.
 
 	if(argc != 3){
@@ -78,19 +98,33 @@ int main (int argc, char** argv)
 	printf("Connection to server opened\n");
 
 	/*
+	 * Step 5:
+	 * Send the file to the server
+	 */
+	// Get file size - used to show progress
+	fsize = getfsize(file_to_send);
+
+	printf("Sending the file to the server...\n");
+
+	printf("File sent.\n");
+
+
+
+	/*
 	 * cleanup and quit
 	 */
+	close(servfd);
 	fclose(file_to_send);
 	return EXIT_SUCCESS;
 }
 
-void sendbuf(int sock, void* buf, ssize_t len){
+void sendbuf(int sock, unsigned char* buf, ssize_t len){
 	ssize_t sent=0;
 	ssize_t n=0;
 
 	while(sent != len){
 		// Always try to send the whole buffer
-		n = send(sock, buf[sent], len - sent);
+		n = send(sock, &buf[sent], len - sent, 0);
 
 		// Check for errors or update the index of what has already been sent
 		if(n != -1){
@@ -100,4 +134,16 @@ void sendbuf(int sock, void* buf, ssize_t len){
 			exit(EXIT_FAILURE);
 		}
 	}
+}
+
+ssize_t getfsize(FILE* fd){
+	struct stat status;
+	int x;
+	x=fstat(fileno(fd), &status);
+	if(x){
+		perror("Cannot determine file size.");
+		exit(EXIT_FAILURE);
+	}
+
+	return status.st_size;
 }
