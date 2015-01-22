@@ -19,6 +19,8 @@ int main (int argc, char** argv)
 	struct addrinfo query;
 	struct addrinfo *servers;
 
+	FILE* file_to_send;
+
 	int s; // exit status of some calls, used for error checking.
 
 	if(argc != 3){
@@ -39,5 +41,18 @@ int main (int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
 
+	/*
+	 * Verify existence and readability of the file we have to send
+	 */
+	file_to_send = fopen(argv[2],"r");
+	if(!file_to_send){
+		perror("Cannot open the file to send");
+		exit(EXIT_FAILURE);
+	}
+
+	/*
+	 * cleanup and quit
+	 */
+	fclose(file_to_send);
 	return EXIT_SUCCESS;
 }
