@@ -19,5 +19,5 @@ int main (int argc, char** argv)
 		printf("Usage: %s <Server IPv4> <file to send>\n",argv[0]);
 		exit(EXIT_FAILURE);
 	}
-	return 0;
+	return EXIT_SUCCESS;
 }
