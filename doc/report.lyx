@@ -144,6 +144,17 @@ Giuliano Peraz
 \end_layout
 
 \begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename secure com.svg
+	width 80text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 \begin_inset Newpage pagebreak
 \end_inset
 
