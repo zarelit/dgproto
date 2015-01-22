@@ -26,8 +26,9 @@ int main (int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
 
-	// Ask the system to resolv the name if needed and build a valid
-	// addrinfo in order to connect.
+	/*
+	 * Obtain a valid address for server or quit
+	 */
 	memset(&query, 0, sizeof query);	// Erase unneeded fields
 	query.ai_family = AF_INET;			// IPv4 only
 	query.ai_socktype = SOCK_STREAM;	// Protocol runs on TCP
