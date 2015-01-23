@@ -48,8 +48,10 @@ int main (int argc, char **argv)
     int yes = 1, ret_val;
     char str_addr[INET_ADDRSTRLEN]; // for printing human readable IP
 
+    // Initializing struct for binding
     hints = init_hints();
 
+    // Get the list of available
     if ((ret_val = getaddrinfo(NULL, SRV_PORT, &hints, &servinfo)) != 0)
     {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(ret_val));
@@ -96,7 +98,7 @@ int main (int argc, char **argv)
         inet_ntop(client_addr.ss_family, get_in_addr((struct sockaddr*)&client_addr), str_addr,
                   sizeof(str_addr));
         printf("server: got connection from %s\n", str_addr);
-        
+
     }
     close(con_fd);
 
