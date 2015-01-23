@@ -15,6 +15,7 @@
 
 #define SRV_PORT "1096"
 #define SRV_MAX_CONN 20
+<<<<<<< HEAD
 
 /**
  * Dimension of the buffer. Default is 1024 Bytes
@@ -22,3 +23,5 @@
 #define BUF_DIM 1024
 
 #define SALT "FzHp3CbMao"
+=======
+>>>>>>> 9afc01156b1f27cedb061147a7b1381f52abb678

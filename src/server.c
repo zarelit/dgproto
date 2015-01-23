@@ -106,12 +106,19 @@ int main (int argc, char **argv)
         {
             printf("Server: Client has closed the connection\n");
             close(con_fd);
-            break;
         }
         else if (recvd_bytes == -1)
         {
             perror("recv");
-            continue;
+        }
+        else
+        {
+            printf("Print all the buffer");
+            // Print what we have received
+            for (int i = 0; i < BUF_DIM; i ++)
+            {
+                printf("%d", recv_buffer[i]);
+            }
         }
     }
     close(sock_fd);

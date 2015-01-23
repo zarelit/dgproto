@@ -7,6 +7,8 @@
 #include <string.h>
 #include <stdint.h>
 
+#define SALT "FzHp3CbMao"
+
 /**
  * This function permits to create in one single shot the first message of the D&G protocol.
  * The first message simply contains a cleartext identifier of who wants to start the protocol and
