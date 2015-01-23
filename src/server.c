@@ -10,6 +10,12 @@
 #include "../include/common.h"
 #include "../include/protocol.h"
 
+typedef struct server_state
+{
+    BIGNUM *Nb;
+    uint8_t *session_key;
+
+} srv_state;
 
 struct addrinfo init_hints (void)
 {
@@ -25,6 +31,13 @@ struct addrinfo init_hints (void)
     hints.ai_next = NULL;
 
     return hints;
+}
+
+
+BIGNUM *create_random_nonce (void)
+{
+    BIGNUM* nonce;
+    
 }
 
 /**
@@ -45,13 +58,15 @@ int main (int argc, char **argv)
     struct addrinfo hints, *servinfo, *it;
     struct sockaddr_storage client_addr; // connector's address information
     socklen_t sin_size;
-    int yes = 1, ret_val;
+    int yes = 1, ret_val, recvd_bytes, sent_bytes;
     char str_addr[INET_ADDRSTRLEN]; // for printing human readable IP
+    uint8_t recv_buffer[BUF_DIM];
+    uint8_t send_buffer[BUF_DIM];
 
     // Initializing struct for binding
     hints = init_hints();
 
-    // Get the list of available
+    // Get the list of available Internet addresses
     if ((ret_val = getaddrinfo(NULL, SRV_PORT, &hints, &servinfo)) != 0)
     {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(ret_val));
@@ -77,17 +92,17 @@ int main (int argc, char **argv)
     }
     // If all the elements in the list aren't available to be bound exits with an error
     if (it == NULL) {
-        fprintf(stderr, "server: failed to bind the socket\n");
+        fprintf(stderr, "Server: failed to bind the socket\n");
         return 2;
     }
-    freeaddrinfo(servinfo); // all done with this structure
+    freeaddrinfo(servinfo); // Destroy the list
     if (listen(sock_fd, SRV_MAX_CONN) == -1)
     {
         perror("listen");
         exit(1);
     }
 
-    printf("server: waiting for connections...\n");
+    printf("Server: waiting for connections...\n");
     sin_size = sizeof(client_addr);
     while(1) { // main accept() loop
         con_fd = accept(sock_fd, (struct sockaddr *)&client_addr, &sin_size);
@@ -97,10 +112,31 @@ int main (int argc, char **argv)
         }
         inet_ntop(client_addr.ss_family, get_in_addr((struct sockaddr*)&client_addr), str_addr,
                   sizeof(str_addr));
-        printf("server: got connection from %s\n", str_addr);
+        printf("Server: got connection from %s\n", str_addr);
 
+        // Start the receiving of the client messages
+        recvd_bytes = recv(con_fd, &recv_buffer, BUF_DIM, 0);
+        if (recvd_bytes == 0)
+        {
+            printf("Server: Client has closed the connection\n");
+            close(con_fd);
+        }
+        else if (recvd_bytes == -1)
+        {
+            perror("recv");
+        }
+        else
+        {
+            printf("Print all the buffer");
+            // Print what we have received
+            for (int i = 0; i < BUF_DIM; i ++)
+            {
+                printf("%d", recv_buffer[i]);
+            }
+            if (verifymessage_m1(recv_buffer))
+        }
     }
-    close(con_fd);
+    close(sock_fd);
 
     return 0;
 }

@@ -60,3 +60,65 @@ uint8_t* create_m3 (uint64_t *msg_len, BIGNUM* key, BIGNUM** Nb);
  * \returns a byte string that contains the message ready to be sent.
  */
 uint8_t* create_m4 (uint64_t *msg_len, BIGNUM* key, BIGNUM** Na);
+
+/**
+ * This function contains the key generation algorithm.
+ * \param Nb the nounce of the server.
+ * \param Na the nounce of the client.
+ * \returns the shared session key for secure communication thorugh unsecure channel.
+ */
+uint8_t *generate_key (BIGNUM *Na, BIGNUM *Nb);
+
+/**
+ * This function creates a totally new random nonce. It is a BIGNUM because we need 128 bit of this
+ * number and there aren't primitive types that are as long as needed so far.
+ * \returns a pointer to a big num structure, initialized to a random value.
+ */
+BIGNUM *generate_random_nonce (void);
+
+/**
+ * This function checks the correctness of the first message of the message. It verify the
+ * correctness of the sign present in the message. In this case the sign must belong to the client.
+ * \param msg the message received by the server.
+ * \returns 0 if the verify process fails
+ * \returns 1 otherwise.
+ * \returns -1 on error with errno being set consequently.
+ */
+int verifymessage_m1 (uint8_t *msg);
+
+/**
+ * This function checks the correctness of the second message of the protocol.
+ * It verify the correctness of the sign present in the message. In this case the sign must
+ * belong to the server.
+ * It also verify if the nounce Na is the same the client sent before in the message M1.
+ * \param msg the message received by the client.
+ * \param Na the client-side generated nonce to be verified.
+ * \returns 0 if the verify process fails
+ * \returns 1 otherwise.
+ * \returns -1 on error with errno being set consequently.
+ */
+int verifymessage_m2 (uint8_t *msg, BIGNUM *Na);
+
+/**
+ * This function checks the correctness of the third message of the protocol. It verify if the hash
+ * into the message is the same of the hash of the Nb nounce of the server.
+ * \param msg the message received by the server.
+ * \param Nb the server-side generated nonce.
+ * \param key the shared session key in order to decrypt correctly the message.
+ * \returns 0 if the verify process fails
+ * \returns 1 otherwise.
+ * \returns -1 on error with errno being set consequently.
+ */
+int verifymessage_m3 (uint8_t *msg, BIGNUM *Nb, uint8_t *key);
+
+/**
+ * This function checks the correctness of the fourth message of the protocol. It verify if the hash
+ * into the message is the same of the hash of the Na nounce of the client.
+ * \param msg the message received by the server.
+ * \param Na the client-side generated nonce.
+ * \param key the shared session key in order to decrypt correctly the message.
+ * \returns 0 if the verify process fails
+ * \returns 1 otherwise.
+ * \returns -1 on error with errno being set consequently.
+ */
+int verifymessage_m4 (uint8_t *msg, BIGNUM *Na, uint8_t *key);
