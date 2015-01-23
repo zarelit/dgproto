@@ -67,7 +67,7 @@ uint8_t* create_m4 (uint64_t *msg_len, BIGNUM* key, BIGNUM** Na);
  * \param Na the nounce of the client.
  * \returns the shared session key for secure communication thorugh unsecure channel.
  */
-unsigned char *generate_key (BIGNUM *Na, BIGNUM *Nb);
+uint8_t *generate_key (BIGNUM *Na, BIGNUM *Nb);
 
 /**
  * This function checks the correctness of the first message of the message. It verify the
@@ -77,7 +77,7 @@ unsigned char *generate_key (BIGNUM *Na, BIGNUM *Nb);
  * \returns 1 otherwise.
  * \returns -1 on error with errno being set consequently.
  */
-int verifymessage_m1 (unsigned char *msg);
+int verifymessage_m1 (uint8_t *msg);
 
 /**
  * This function checks the correctness of the second message of the protocol.
@@ -90,7 +90,7 @@ int verifymessage_m1 (unsigned char *msg);
  * \returns 1 otherwise.
  * \returns -1 on error with errno being set consequently.
  */
-int verifymessage_m2 (unsigned char *msg, BIGNUM *Na);
+int verifymessage_m2 (uint8_t *msg, BIGNUM *Na);
 
 /**
  * This function checks the correctness of the third message of the protocol. It verify if the hash
@@ -102,7 +102,7 @@ int verifymessage_m2 (unsigned char *msg, BIGNUM *Na);
  * \returns 1 otherwise.
  * \returns -1 on error with errno being set consequently.
  */
-int verifymessage_m3 (unsigned char *msg, BIGNUM *Nb, unsigned char *key);
+int verifymessage_m3 (uint8_t *msg, BIGNUM *Nb, uint8_t *key);
 
 /**
  * This function checks the correctness of the fourth message of the protocol. It verify if the hash
@@ -114,4 +114,4 @@ int verifymessage_m3 (unsigned char *msg, BIGNUM *Nb, unsigned char *key);
  * \returns 1 otherwise.
  * \returns -1 on error with errno being set consequently.
  */
-int verifymessage_m3 (unsigned char *msg, BIGNUM *Na, unsigned char *key);
+int verifymessage_m3 (uint8_t *msg, BIGNUM *Na, uint8_t *key);
