@@ -10,6 +10,13 @@
 #include "../include/common.h"
 #include "../include/protocol.h"
 
+typedef struct server_state
+{
+    BIGNUM *Nb;
+    uint8_t *session_key;
+
+} srv_state;
+
 struct addrinfo init_hints (void)
 {
     struct addrinfo hints;
@@ -24,6 +31,13 @@ struct addrinfo init_hints (void)
     hints.ai_next = NULL;
 
     return hints;
+}
+
+
+BIGNUM *create_random_nonce (void)
+{
+    BIGNUM* nonce;
+    
 }
 
 /**
@@ -46,8 +60,8 @@ int main (int argc, char **argv)
     socklen_t sin_size;
     int yes = 1, ret_val, recvd_bytes, sent_bytes;
     char str_addr[INET_ADDRSTRLEN]; // for printing human readable IP
-    char recv_buffer[BUF_DIM];
-    char send_buffer[BUF_DIM];
+    uint8_t recv_buffer[BUF_DIM];
+    uint8_t send_buffer[BUF_DIM];
 
     // Initializing struct for binding
     hints = init_hints();
@@ -119,6 +133,7 @@ int main (int argc, char **argv)
             {
                 printf("%d", recv_buffer[i]);
             }
+            if (verifymessage_m1(recv_buffer))
         }
     }
     close(sock_fd);
