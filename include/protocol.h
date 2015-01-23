@@ -114,4 +114,4 @@ int verifymessage_m3 (uint8_t *msg, BIGNUM *Nb, uint8_t *key);
  * \returns 1 otherwise.
  * \returns -1 on error with errno being set consequently.
  */
-int verifymessage_m3 (uint8_t *msg, BIGNUM *Na, uint8_t *key);
+int verifymessage_m4 (uint8_t *msg, BIGNUM *Na, uint8_t *key);
