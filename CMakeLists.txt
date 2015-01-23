@@ -3,6 +3,12 @@
 # to chat between two users who want to exchange messages in a secure way.
 cmake_minimum_required (VERSION 2.6)
 project (checure)
+find_package(OpenSSL REQUIRED)
+
 add_executable (client src/client.c src/protocol.c)
 add_executable (server src/server.c)
 
+target_link_libraries(client ${OPENSSL_LIBRARIES})
+target_link_libraries(server ${OPENSSL_LIBRARIES})
+target_link_libraries(client ${OPENSSL_EXTRA_LIBRARIES})
+target_link_libraries(server ${OPENSSL_EXTRA_LIBRARIES})
