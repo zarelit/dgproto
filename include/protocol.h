@@ -70,6 +70,13 @@ uint8_t* create_m4 (uint64_t *msg_len, BIGNUM* key, BIGNUM** Na);
 uint8_t *generate_key (BIGNUM *Na, BIGNUM *Nb);
 
 /**
+ * This function creates a totally new random nonce. It is a BIGNUM because we need 128 bit of this
+ * number and there aren't primitive types that are as long as needed so far.
+ * \returns a pointer to a big num structure, initialized to a random value.
+ */
+BIGNUM *generate_random_nonce (void);
+
+/**
  * This function checks the correctness of the first message of the message. It verify the
  * correctness of the sign present in the message. In this case the sign must belong to the client.
  * \param msg the message received by the server.
