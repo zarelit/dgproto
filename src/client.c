@@ -13,6 +13,7 @@
 #include "../include/common.h"
 #include <string.h>
 #include <sys/stat.h>
+#include "../include/protocol.h"
 
 //! How much of the file we work with at a time
 #define CHUNK_SIZE 512

@@ -3,6 +3,6 @@
 # to chat between two users who want to exchange messages in a secure way.
 cmake_minimum_required (VERSION 2.6)
 project (checure)
-add_executable (client src/client.c)
+add_executable (client src/client.c src/protocol.c)
 add_executable (server src/server.c)
 
