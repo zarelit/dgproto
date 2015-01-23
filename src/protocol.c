@@ -37,3 +37,21 @@ uint8_t* create_m4 (uint64_t *msg_len, BIGNUM* key, BIGNUM** Nb)
 
     return msg;
 }
+
+BIGNUM *generate_random_nonce (void){
+	BIGNUM* nonce = BN_new();
+	int x;
+
+	if(!nonce){
+		fprintf(stderr,"Out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+
+	x=BN_rand(nonce, 128, 0, 0);
+	if(!x){
+		fprintf(stderr,"Cannot generate a random nonce\n");
+		exit(EXIT_FAILURE);
+	}
+
+	return nonce;
+}
