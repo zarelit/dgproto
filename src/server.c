@@ -27,7 +27,8 @@ typedef struct server_state
  * \returns a struct addrinfo filled with the hints in order to query the operating system for
  * the socket to make client to connect to.
  */
-struct addrinfo init_hints (void)
+struct addrinfo
+init_hints (void)
 {
     struct addrinfo hints;
     // Setup the socket for the server to listen to incoming connections
@@ -50,7 +51,8 @@ struct addrinfo init_hints (void)
  * \param ss a pointer to a server state structure. If it is NULL the function will print an error
  * and returns immediately.
  */
-void init_server_state (srv_state *ss)
+void
+init_server_state (srv_state *ss)
 {
     if (ss == NULL)
     {
@@ -94,7 +96,8 @@ wait_connection (int socket_fd, struct sockaddr *addr)
  * Useful function for retrieving the binary representation of the IP address (IPv4 or IPv6) in
  * order to print it successfully later with a call to inet_ntop().
  */
-void *get_in_addr (struct sockaddr *sa)
+void
+*get_in_addr (struct sockaddr *sa)
 {
     void *in_addr;
     in_addr = (sa -> sa_family == AF_INET)? (void*)&(((struct sockaddr_in*) sa) -> sin_addr) :
@@ -102,7 +105,8 @@ void *get_in_addr (struct sockaddr *sa)
     return in_addr;
 }
 
-int main (int argc, char **argv)
+int
+main (int argc, char **argv)
 {
     srv_state sstate;
     int sock_fd, con_fd; // listen on sock_fd, new connection on con_fd
