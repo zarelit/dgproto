@@ -13,6 +13,7 @@
 typedef struct server_state
 {
     BIGNUM *Nb;
+    struct sockaddr_in addr;
     uint8_t *session_key;
     uint8_t *buffer;
     int acc_skt; // Socket for accepting incoming requests
@@ -60,6 +61,33 @@ void init_server_state (srv_state *ss)
     ss -> session_key = NULL;
     ss -> buffer = malloc(BUF_DIM * sizeof(uint8_t));
     acc_skt = comm_skt = 0;
+}
+
+/**
+ * It makes the server to wait an incoming connection on the socket passed by parameter.
+ * After a client is connected, the function will return the connection socket for the communication
+ * to begin.
+ * \param socket_fd the socket file descriptor where the server has to wait a connection to.
+ * \returns the file descriptor for the communication socket with the client.
+ * \returns -1 if an error has occourred and sets errno.
+ */
+int
+wait_connection (int socket_fd, struct sockaddr *addr)
+{
+    int comm_skt;
+    char str_addr[INET_ADDRSTRLEN]; // for printing human readable IP
+    socklen_t sin_size = sizeof(sockaddr_storage);
+    struct sockaddr_storage client_addr;
+    comm_skt = accept(socket_fd, addr, &sin_size);
+    if (comm_skt == -1)
+    {
+        perror("accept");
+        return -1;
+    }
+    inet_ntop(client_addr.ss_family, get_in_addr(addr, str_addr,
+                  sizeof(char));
+    printf("Server: got connection from %s\n", str_addr);
+    return comm_skt;
 }
 
 /**
@@ -128,7 +156,11 @@ int main (int argc, char **argv)
     sin_size = sizeof(client_addr);
     while(1) {
         // Here there are the main command for the server
-        if (wait_connection(sock_fd))
+        if (wait_connection(sock_fd) == -1)
+        {
+            perror("wait_connection");
+            continue;
+        }
         con_fd = accept(sock_fd, (struct sockaddr *)&client_addr, &sin_size);
         if (con_fd == -1) {
             perror("accept");
