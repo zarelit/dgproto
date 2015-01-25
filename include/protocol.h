@@ -22,7 +22,7 @@
  * bit described in the protocol report.
  * \returns a byte string that contains the message ready to be sent.
  */
-uint8_t* create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM** Na);
+uint8_t* create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na);
 
 /**
  * This function permits to create in one single shot the second message of the D&G protocol.
@@ -37,7 +37,7 @@ uint8_t* create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM** Na);
  * bit described in the protocol report.
  * \returns a byte string that contains the message ready to be sent.
  */
-uint8_t* create_m2 (uint64_t *msg_len, uint8_t id, BIGNUM** Nb);
+uint8_t* create_m2 (uint64_t *msg_len, uint8_t id, BIGNUM* Nb);
 
 /**
  * This function permits to create in one single shot the third message of the D&G protocol.
@@ -48,7 +48,7 @@ uint8_t* create_m2 (uint64_t *msg_len, uint8_t id, BIGNUM** Nb);
  * \param Nb the nonce to be hashed and crypted.
  * \returns a byte string that contains the message ready to be sent.
  */
-uint8_t* create_m3 (uint64_t *msg_len, BIGNUM* key, BIGNUM** Nb);
+uint8_t* create_m3 (uint64_t *msg_len, BIGNUM* key, BIGNUM* Nb);
 
 /**
  * This function permits to create in one single shot the fourth message of the D&G protocol.
@@ -59,7 +59,7 @@ uint8_t* create_m3 (uint64_t *msg_len, BIGNUM* key, BIGNUM** Nb);
  * \param Na the nonce to be hashed and crypted.
  * \returns a byte string that contains the message ready to be sent.
  */
-uint8_t* create_m4 (uint64_t *msg_len, BIGNUM* key, BIGNUM** Na);
+uint8_t* create_m4 (uint64_t *msg_len, BIGNUM* key, BIGNUM* Na);
 
 /**
  * This function contains the key generation algorithm.
