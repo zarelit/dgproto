@@ -22,3 +22,11 @@ void sendbuf(int sock, unsigned char* buf, ssize_t len){
 		}
 	}
 }
+
+void hexdump(int fd, unsigned char* buf, size_t buflen){
+	int i;
+
+	for(i=0; i<buflen; i++){
+		fprintf(fd,"%0hhX",buf[i]);
+	}
+}

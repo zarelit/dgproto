@@ -10,6 +10,13 @@
 
 #include "../include/protocol.h"
 
+void hexdump(unsigned char* buf, size_t buflen){
+	int i;
+	for (i=0; i<buflen; i++){
+
+	}
+}
+
 uint8_t* create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 {
 	// The whole message M1
