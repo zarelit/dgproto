@@ -285,27 +285,7 @@ main (int argc, char **argv)
         printf("Server: starting D&G protocol");
         ret_val = run_protocol(sstate);
 
-        // Start the receiving of the client messages
-        recvd_bytes = recv(con_fd, &recv_buffer, BUF_DIM, 0);
-        if (recvd_bytes == 0)
-        {
-            printf("Server: Client has closed the connection\n");
-            close(con_fd);
-        }
-        else if (recvd_bytes == -1)
-        {
-            perror("recv");
-        }
-        else
-        {
-            printf("Print all the buffer");
-            // Print what we have received
-            for (i = 0; i < BUF_DIM; i ++)
-            {
-                printf("%d", recv_buffer[i]);
-            }
-            if (verifymessage_m1(recv_buffer)){}
-        }
+        // TODO: now we wait here until the client doesn't send something creepy
     }
     close(sstate.acc_skt);
     close(sstate.comm_skt);
