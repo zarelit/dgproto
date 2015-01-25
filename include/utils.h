@@ -3,6 +3,7 @@
  */
 
 #include <sys/socket.h>
+#include <stdio.h>
 
 /**
  * Wrapper around send() that manages partial transmissions
@@ -15,6 +16,6 @@ void sendbuf(int sock, unsigned char* buf, ssize_t len);
 
 /**
  * writes to a file descriptor the hexdump of buf
- * \param fd the file descriptor used for output. can be stderr, for example
+ * \param fh the file used for output. can be stderr, for example
  */
-void hexdump(int fd, unsigned char* buf, size_t buflen);
+void hexdump(FILE* fh, unsigned char* buf, size_t buflen);
