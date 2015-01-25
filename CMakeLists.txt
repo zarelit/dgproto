@@ -12,3 +12,6 @@ target_link_libraries(client ${OPENSSL_LIBRARIES})
 target_link_libraries(server ${OPENSSL_LIBRARIES})
 target_link_libraries(client ${OPENSSL_EXTRA_LIBRARIES})
 target_link_libraries(server ${OPENSSL_EXTRA_LIBRARIES})
+
+# Copy the keys under the build directory
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/keys DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
