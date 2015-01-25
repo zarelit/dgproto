@@ -27,6 +27,6 @@ void hexdump(FILE *fh, unsigned char* buf, size_t buflen){
 	int i;
 
 	for(i=0; i<buflen; i++){
-		fprintf(fh,"%0hhX",buf[i]);
+		fprintf(fh,"%02hhX",buf[i]);
 	}
 }
