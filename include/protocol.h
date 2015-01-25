@@ -3,6 +3,7 @@
  */
 
 #include <openssl/evp.h>
+#include <openssl/pem.h>
 #include <openssl/bn.h> // Big NUMs
 #include <string.h>
 #include <stdint.h>
