@@ -44,6 +44,25 @@ struct addrinfo init_hints (void)
 
 
 /**
+ * This function will initialize the server state to a known state: all pointers to NULL, integers
+ * to 0 and it allocates a buffer of `#BUF_DIM` bytes.
+ * \param ss a pointer to a server state structure. If it is NULL the function will print an error
+ * and returns immediately.
+ */
+void init_server_state (srv_state *ss)
+{
+    if (ss == NULL)
+    {
+        fprintf(stderr, "%s: Server state pointer can't be NULL", __func__);
+        return;
+    }
+    ss -> Nb = NULL;
+    ss -> session_key = NULL;
+    ss -> buffer = malloc(BUF_DIM * sizeof(uint8_t));
+    acc_skt = comm_skt = 0;
+}
+
+/**
  * Useful function for retrieving the binary representation of the IP address (IPv4 or IPv6) in
  * order to print it successfully later with a call to inet_ntop().
  */
@@ -57,15 +76,15 @@ void *get_in_addr (struct sockaddr *sa)
 
 int main (int argc, char **argv)
 {
+    srv_state sstate;
     int sock_fd, con_fd; // listen on sock_fd, new connection on con_fd
     struct addrinfo hints, *servinfo, *it;
     struct sockaddr_storage client_addr; // connector's address information
     socklen_t sin_size;
     int yes = 1, ret_val, i = 0;
     char str_addr[INET_ADDRSTRLEN]; // for printing human readable IP
-    uint8_t recv_buffer[BUF_DIM];
-    uint8_t send_buffer[BUF_DIM];
 
+    init_server_state(&sstate);
     // Initializing struct for binding
     hints = init_hints();
 
