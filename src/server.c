@@ -137,10 +137,10 @@ run_protocol (srv_state *ss)
 {
     uint64_t recv_bytes, msg_len;
     uint8_t ret_val = 0, *msg, *tmp;
-    msg_name msg;
+    msg_name msg_name;
 
     // Receive and verify the first message
-    ret_val = receive_message(msg.M1, ss);
+    ret_val = receive_message(msg_name.M1, ss);
     if (ret_val == -1)
     {
         perror("receive_message");
@@ -153,14 +153,15 @@ run_protocol (srv_state *ss)
         goto exit_run_protocol;
     }
 
-    // Message m2
+    // Create and send message m2 and the key
     ss -> Nb = generate_random_nonce();
     msg = create_m2(&msg_len, 1, ss -> Nb);
-    // If this function fails then the program will brutally exit
-    sendbuf(ss -> comm_skt, msg, msg_len);
+    sendbuf(ss -> comm_skt, msg, msg_len); // It exits the program on error
     ss -> key = generate_key(ss -> Na, ss -> Nb)
+    free(msg);
+
     // Receive and verify the message m3
-    ret_val = receive_message(msg.M3, ss);
+    ret_val = receive_message(msg_name.M3, ss);
     if (ret_val == -1)
     {
         perror("receive_message");
@@ -174,6 +175,9 @@ run_protocol (srv_state *ss)
     }
 
     // The last message of the protocol
+    msg = create_m4(&msg_len, ss -> session_key, ss -> Na);
+    sendbuf(ss -> comm_skt, msg, msg_len); // It exits the program on error
+    ret_val = 0;
 
 exit_run_protocol:
     if (msg != NULL) free(msg);
