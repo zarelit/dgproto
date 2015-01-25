@@ -112,7 +112,6 @@ main (int argc, char **argv)
     int sock_fd, con_fd; // listen on sock_fd, new connection on con_fd
     struct addrinfo hints, *servinfo, *it;
     struct sockaddr_storage client_addr; // connector's address information
-    socklen_t sin_size;
     int yes = 1, ret_val, i = 0;
     char str_addr[INET_ADDRSTRLEN]; // for printing human readable IP
 
@@ -129,20 +128,20 @@ main (int argc, char **argv)
     // loop through all the results of the list and bind to the first available
     for (it = servinfo; it != NULL; it = it -> ai_next)
     {
-        if ((sock_fd = socket(it -> ai_family, it -> ai_socktype, it -> ai_protocol)) == -1)
+        if ((sstate.acc_skt = socket(it -> ai_family, it -> ai_socktype, it -> ai_protocol)) == -1)
         {
             continue;
         }
-        if (setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+        if (setsockopt(sstate.acc_skt, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
         {
             perror("setsockopt");
             exit(1);
         }
-        if (bind(sock_fd, it -> ai_addr, it -> ai_addrlen) == 0)
+        if (bind(sstate.acc_skt, it -> ai_addr, it -> ai_addrlen) == 0)
         {
             break;
         }
-        close(sock_fd);
+        close(sstate.acc_skt);
     }
     // If all the elements in the list aren't available to be bound exits with an error
     if (it == NULL) {
@@ -150,30 +149,19 @@ main (int argc, char **argv)
         return 2;
     }
     freeaddrinfo(servinfo); // Destroy the list
-    if (listen(sock_fd, SRV_MAX_CONN) == -1)
+    if (listen(sstate.acc_skt, SRV_MAX_CONN) == -1)
     {
         perror("listen");
         exit(1);
     }
-
     printf("Server: waiting for connections...\n");
-    sin_size = sizeof(client_addr);
     while(1) {
         // Here there are the main command for the server
-        if (wait_connection(sock_fd) == -1)
+        if (sstate.comm_skt = wait_connection(sstate.acc_skt) == -1)
         {
             perror("wait_connection");
             continue;
         }
-        con_fd = accept(sock_fd, (struct sockaddr *)&client_addr, &sin_size);
-        if (con_fd == -1) {
-            perror("accept");
-            continue;
-        }
-        inet_ntop(client_addr.ss_family, get_in_addr((struct sockaddr*)&client_addr), str_addr,
-                  sizeof(str_addr));
-        printf("Server: got connection from %s\n", str_addr);
-
         // Start the receiving of the client messages
         recvd_bytes = recv(con_fd, &recv_buffer, BUF_DIM, 0);
         if (recvd_bytes == 0)
@@ -196,7 +184,9 @@ main (int argc, char **argv)
             if (verifymessage_m1(recv_buffer)){}
         }
     }
-    close(sock_fd);
+    close(sstate.acc_skt);
+    close(sstate.comm_skt);
+    free(sstate.buffer);
 
     return 0;
 }
