@@ -12,7 +12,22 @@
 
 uint8_t* create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 {
+	// The whole message M1
     uint8_t* msg;
+
+	// The private key of the client
+	EVP_PKEY* ckey;
+	FILE* ckeyfh;
+
+
+	// Load client key, called client.pem
+	ckeyfh = fopen("keys/client.pem","r");
+	ckey = PEM_read_PrivateKey(ckeyfh, &ckey, NULL, NULL);
+	if(!ckey){
+		fprintf(stderr,"Cannot read client key from file %s\n");
+		exit(EXIT_FAILURE);
+	}	
+
 
     return msg;
 }
