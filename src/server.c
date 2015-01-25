@@ -9,6 +9,7 @@
 
 #include "../include/common.h"
 #include "../include/protocol.h"
+#include "../include/utils.h"
 
 typedef struct server_state
 {
@@ -21,6 +22,12 @@ typedef struct server_state
     int comm_skt; // Socket for communicating
 } srv_state;
 
+/**
+ * Name of the messages of the protocol. For more information see report.pdf.
+ */
+typedef enum {
+    M1, M2, M3, M4
+} msg_name;
 
 /**
  * This function is in charge of initializing the struct addrinfo with the hints for the operating
@@ -67,6 +74,59 @@ init_server_state (srv_state *ss)
 }
 
 /**
+ * This function is in charge of receiving the message msg of the D&G protocol.
+ * \param msg the message of the protocol to be received. It could be M1, M2, M3, M4
+ * \param ss a pointer to a server_state structure
+ * \returns -1 if an error has occourred.
+ * \returns 0 if the message is not valid, that is it doesn't contain what expected.
+ * \returns 1 if all has gone as expected.
+ */
+int
+receive_message (msg_name msg, srv_state *ss)
+{
+    int ret_val = 0;
+
+    ret_val = recv(ss -> comm_skt, ss -> buffer, BUF_DIM, 0);
+    if (ret_val == 0)
+    {
+        printf("Server: Client has closed the connection\n");
+        ret_val = -1;
+        goto exit_run_protocol;
+    }
+    else if (ret_val == -1)
+    {
+        perror("recv");
+        goto exit_run_protocol;
+    }
+
+    switch(msg)
+    {
+        case M1:
+            ret_val = verifymessage_m1(ss -> buffer);
+            break;
+
+        case M2:
+            ret_val = verifymessage_m2(ss -> buffer);
+            break;
+
+        case M3:
+            ret_val = verifymessage_m3(ss -> buffer);
+            break;
+
+        case M4:
+            ret_val = verifymessage_m4(ss -> buffer);
+            break;
+
+        default:
+            fprintf(stderr, "Invalid msg_name");
+            ret_val = -1;
+            break;
+    }
+exit_receive_message:
+    return ret_val;
+}
+
+/**
  * This function makes the protocol to begin for establishing a session key between server and the
  * client in order to make them to communicate in a secure way thorugh a unsecure channel.
  * \param ss the server state that contains all the needed field for the communication to be started
@@ -77,45 +137,43 @@ run_protocol (srv_state *ss)
 {
     uint64_t recv_bytes, msg_len;
     uint8_t ret_val = 0, *msg, *tmp;
-    recv_bytes = recv(ss -> comm_skt, ss -> buffer, BUF_DIM, 0);
-    if (recv_bytes == 0)
+    msg_name msg;
+
+    // Receive and verify the first message
+    ret_val = receive_message(msg.M1, ss);
+    if (ret_val == -1)
     {
-        printf("Server: Client has closed the connection\n");
+        perror("receive_message");
+        goto exit_run_protocol;
+    }
+    else if (ret_val == 0)
+    {
+        fprintf(stderr, "Error validating message number 1");
         ret_val = -1;
+        goto exit_run_protocol;
     }
-    else if (recv_bytes == -1)
+
+    // Message m2
+    ss -> Nb = generate_random_nonce();
+    msg = create_m2(&msg_len, 1, ss -> Nb);
+    // If this function fails then the program will brutally exit
+    sendbuf(ss -> comm_skt, msg, msg_len);
+    ss -> key = generate_key(ss -> Na, ss -> Nb)
+    // Receive and verify the message m3
+    ret_val = receive_message(msg.M3, ss);
+    if (ret_val == -1)
     {
-        perror("recv");
+        perror("receive_message");
+        goto exit_run_protocol;
+    }
+    else if (ret_val == 0)
+    {
+        fprintf(stderr, "Error validating message number 3");
         ret_val = -1;
+        goto exit_run_protocol;
     }
-    else
-    {
-        ret_val = verifymessage_m1(ss -> buffer);
-        if (ret_val == 0)
-        {
-            printf("The verify of the message M1 has failed.")
-            ret_val = -1;
-            goto exit_run_protocol;
-        }
-        else if (ret_val == -1)
-        {
-            perror("verifymessage_m1");
-            goto exit_run_protocol;
-        }
-        ss -> Nb = generate_random_nonce();
-        msg = create_m2(&msg_len, 1, ss -> Nb);
-        ret_val = 0;
-        do
-        {
-            ret_val = send(ss -> comm_skt, msg, msg_len, 0);
-            if (ret_val == -1)
-            {
-                perror("send");
-                goto exit_run_protocol;
-            }
-            
-        } while (ret_val < msg_len)
-    }
+
+    // The last message of the protocol
 
 exit_run_protocol:
     if (msg != NULL) free(msg);
