@@ -14,9 +14,18 @@ typedef struct server_state
 {
     BIGNUM *Nb;
     uint8_t *session_key;
-
+    uint8_t *buffer;
+    int acc_skt; // Socket for accepting incoming requests
+    int comm_skt; // Socket for communicating
 } srv_state;
 
+
+/**
+ * This function is in charge of initializing the struct addrinfo with the hints for the operating
+ * system when querying a port for the server.
+ * \returns a struct addrinfo filled with the hints in order to query the operating system for
+ * the socket to make client to connect to.
+ */
 struct addrinfo init_hints (void)
 {
     struct addrinfo hints;
@@ -33,12 +42,6 @@ struct addrinfo init_hints (void)
     return hints;
 }
 
-
-BIGNUM *create_random_nonce (void)
-{
-    BIGNUM* nonce;
-    
-}
 
 /**
  * Useful function for retrieving the binary representation of the IP address (IPv4 or IPv6) in
@@ -58,7 +61,7 @@ int main (int argc, char **argv)
     struct addrinfo hints, *servinfo, *it;
     struct sockaddr_storage client_addr; // connector's address information
     socklen_t sin_size;
-    int yes = 1, ret_val, recvd_bytes, sent_bytes;
+    int yes = 1, ret_val, i = 0;
     char str_addr[INET_ADDRSTRLEN]; // for printing human readable IP
     uint8_t recv_buffer[BUF_DIM];
     uint8_t send_buffer[BUF_DIM];
@@ -104,7 +107,9 @@ int main (int argc, char **argv)
 
     printf("Server: waiting for connections...\n");
     sin_size = sizeof(client_addr);
-    while(1) { // main accept() loop
+    while(1) {
+        // Here there are the main command for the server
+        if (wait_connection(sock_fd))
         con_fd = accept(sock_fd, (struct sockaddr *)&client_addr, &sin_size);
         if (con_fd == -1) {
             perror("accept");
@@ -129,11 +134,11 @@ int main (int argc, char **argv)
         {
             printf("Print all the buffer");
             // Print what we have received
-            for (int i = 0; i < BUF_DIM; i ++)
+            for (i = 0; i < BUF_DIM; i ++)
             {
                 printf("%d", recv_buffer[i]);
             }
-            if (verifymessage_m1(recv_buffer))
+            if (verifymessage_m1(recv_buffer)){}
         }
     }
     close(sock_fd);
