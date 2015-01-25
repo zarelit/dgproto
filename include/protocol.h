@@ -60,7 +60,7 @@ uint8_t* create_m3 (uint64_t *msg_len, BIGNUM* key, BIGNUM* Nb);
  * \param Na the nonce to be hashed and crypted.
  * \returns a byte string that contains the message ready to be sent.
  */
-uint8_t* create_m4 (uint64_t *msg_len, BIGNUM* key, BIGNUM* Na);
+uint8_t* create_m4 (uint64_t *msg_len, uint8_t* key, BIGNUM* Na);
 
 /**
  * This function contains the key generation algorithm.
