@@ -12,7 +12,8 @@
 
 typedef struct server_state
 {
-    BIGNUM *Nb;
+    BIGNUM *Nb; // Server random nonce
+    BIGNUM *Na; // Client-created random nonce
     struct sockaddr_in addr;
     uint8_t *session_key;
     uint8_t *buffer;
@@ -63,6 +64,62 @@ init_server_state (srv_state *ss)
     ss -> session_key = NULL;
     ss -> buffer = malloc(BUF_DIM * sizeof(uint8_t));
     acc_skt = comm_skt = 0;
+}
+
+/**
+ * This function makes the protocol to begin for establishing a session key between server and the
+ * client in order to make them to communicate in a secure way thorugh a unsecure channel.
+ * \param ss the server state that contains all the needed field for the communication to be started
+ * \returns 0 if the protocol has success, -1 otherwise.
+ */
+int
+run_protocol (srv_state *ss)
+{
+    uint64_t recv_bytes, msg_len;
+    uint8_t ret_val = 0, *msg, *tmp;
+    recv_bytes = recv(ss -> comm_skt, ss -> buffer, BUF_DIM, 0);
+    if (recv_bytes == 0)
+    {
+        printf("Server: Client has closed the connection\n");
+        ret_val = -1;
+    }
+    else if (recv_bytes == -1)
+    {
+        perror("recv");
+        ret_val = -1;
+    }
+    else
+    {
+        ret_val = verifymessage_m1(ss -> buffer);
+        if (ret_val == 0)
+        {
+            printf("The verify of the message M1 has failed.")
+            ret_val = -1;
+            goto exit_run_protocol;
+        }
+        else if (ret_val == -1)
+        {
+            perror("verifymessage_m1");
+            goto exit_run_protocol;
+        }
+        ss -> Nb = generate_random_nonce();
+        msg = create_m2(&msg_len, 1, ss -> Nb);
+        ret_val = 0;
+        do
+        {
+            ret_val = send(ss -> comm_skt, msg, msg_len, 0);
+            if (ret_val == -1)
+            {
+                perror("send");
+                goto exit_run_protocol;
+            }
+            
+        } while (ret_val < msg_len)
+    }
+
+exit_run_protocol:
+    if (msg != NULL) free(msg);
+    return ret_val;
 }
 
 /**
@@ -154,14 +211,18 @@ main (int argc, char **argv)
         perror("listen");
         exit(1);
     }
-    printf("Server: waiting for connections...\n");
     while(1) {
-        // Here there are the main command for the server
+        printf("Server: waiting for connections...\n");
         if (sstate.comm_skt = wait_connection(sstate.acc_skt) == -1)
         {
             perror("wait_connection");
             continue;
         }
+
+        printf("Server: client connected");
+        printf("Server: starting D&G protocol");
+        ret_val = run_protocol(sstate);
+
         // Start the receiving of the client messages
         recvd_bytes = recv(con_fd, &recv_buffer, BUF_DIM, 0);
         if (recvd_bytes == 0)
