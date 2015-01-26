@@ -11,6 +11,7 @@
 #include <arpa/inet.h>  // For hton* and ntoh* byte conversion functions,
                         // inet_pton, inet_ntop,
 #include <netinet/in.h>
+#include <netdb.h>
 #include <openssl/evp.h>
 #include <unistd.h>
 

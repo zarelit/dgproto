@@ -39,6 +39,7 @@ struct addrinfo
 init_hints (void)
 {
     struct addrinfo hints;
+
     // Setup the socket for the server to listen to incoming connections
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
@@ -70,7 +71,7 @@ init_server_state (srv_state *ss)
     ss -> Nb = NULL;
     ss -> session_key = NULL;
     ss -> buffer = malloc(BUF_DIM * sizeof(uint8_t));
-    acc_skt = comm_skt = 0;
+    ss -> acc_skt = ss -> comm_skt = 0;
 }
 
 /**
@@ -91,12 +92,12 @@ receive_message (msg_name msg, srv_state *ss)
     {
         printf("Server: Client has closed the connection\n");
         ret_val = -1;
-        goto exit_run_protocol;
+        goto exit_receive_message;
     }
     else if (ret_val == -1)
     {
         perror("recv");
-        goto exit_run_protocol;
+        goto exit_receive_message;
     }
 
     switch(msg)
@@ -106,15 +107,15 @@ receive_message (msg_name msg, srv_state *ss)
             break;
 
         case M2:
-            ret_val = verifymessage_m2(ss -> buffer);
+            ret_val = verifymessage_m2(ss -> buffer, ss -> Na);
             break;
 
         case M3:
-            ret_val = verifymessage_m3(ss -> buffer);
+            ret_val = verifymessage_m3(ss -> buffer, ss -> Nb, ss -> session_key);
             break;
 
         case M4:
-            ret_val = verifymessage_m4(ss -> buffer);
+            ret_val = verifymessage_m4(ss -> buffer, ss -> Na, ss -> session_key);
             break;
 
         default:
@@ -136,11 +137,10 @@ int
 run_protocol (srv_state *ss)
 {
     uint64_t recv_bytes, msg_len;
-    uint8_t ret_val = 0, *msg, *tmp;
-    msg_name msg_name;
+    uint8_t ret_val = 0, *msg;
 
     // Receive and verify the first message
-    ret_val = receive_message(msg_name.M1, ss);
+    ret_val = receive_message(M1, ss);
     if (ret_val == -1)
     {
         perror("receive_message");
@@ -157,11 +157,11 @@ run_protocol (srv_state *ss)
     ss -> Nb = generate_random_nonce();
     msg = create_m2(&msg_len, 1, ss -> Nb);
     sendbuf(ss -> comm_skt, msg, msg_len); // It exits the program on error
-    ss -> key = generate_key(ss -> Na, ss -> Nb)
+    ss -> session_key = generate_key(ss -> Na, ss -> Nb);
     free(msg);
 
     // Receive and verify the message m3
-    ret_val = receive_message(msg_name.M3, ss);
+    ret_val = receive_message(M3, ss);
     if (ret_val == -1)
     {
         perror("receive_message");
@@ -185,6 +185,20 @@ exit_run_protocol:
 }
 
 /**
+ * Useful function for retrieving the binary representation of the IP address (IPv4 or IPv6) in
+ * order to print it successfully later with a call to inet_ntop().
+ */
+const void
+*get_in_addr (struct sockaddr *sa)
+{
+    void *in_addr;
+
+    in_addr = (sa -> sa_family == AF_INET)? (void*)&(((struct sockaddr_in*) sa) -> sin_addr) :
+                                            (void*)&(((struct sockaddr_in6*) sa) -> sin6_addr);
+    return in_addr;
+}
+
+/**
  * It makes the server to wait an incoming connection on the socket passed by parameter.
  * After a client is connected, the function will return the connection socket for the communication
  * to begin.
@@ -193,35 +207,23 @@ exit_run_protocol:
  * \returns -1 if an error has occourred and sets errno.
  */
 int
-wait_connection (int socket_fd, struct sockaddr *addr)
+wait_connection (int socket_fd)
 {
     int comm_skt;
     char str_addr[INET_ADDRSTRLEN]; // for printing human readable IP
-    socklen_t sin_size = sizeof(sockaddr_storage);
-    struct sockaddr_storage client_addr;
-    comm_skt = accept(socket_fd, addr, &sin_size);
+    socklen_t sin_size = sizeof(struct sockaddr);
+    struct sockaddr client_addr;
+
+    comm_skt = accept(socket_fd, &client_addr, &sin_size);
     if (comm_skt == -1)
     {
         perror("accept");
         return -1;
     }
-    inet_ntop(client_addr.ss_family, get_in_addr(addr, str_addr,
+    inet_ntop(client_addr.sa_family, get_in_addr(&client_addr), str_addr,
                   sizeof(char));
     printf("Server: got connection from %s\n", str_addr);
     return comm_skt;
-}
-
-/**
- * Useful function for retrieving the binary representation of the IP address (IPv4 or IPv6) in
- * order to print it successfully later with a call to inet_ntop().
- */
-void
-*get_in_addr (struct sockaddr *sa)
-{
-    void *in_addr;
-    in_addr = (sa -> sa_family == AF_INET)? (void*)&(((struct sockaddr_in*) sa) -> sin_addr) :
-                                            (void*)&(((struct sockaddr_in6*) sa) -> sin6_addr);
-    return in_addr;
 }
 
 int
@@ -283,7 +285,7 @@ main (int argc, char **argv)
 
         printf("Server: client connected");
         printf("Server: starting D&G protocol");
-        ret_val = run_protocol(sstate);
+        ret_val = run_protocol(&sstate);
 
         // TODO: now we wait here until the client doesn't send something creepy
     }

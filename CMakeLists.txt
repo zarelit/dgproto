@@ -6,7 +6,7 @@ project (checure)
 find_package(OpenSSL REQUIRED)
 
 add_executable (client src/client.c src/protocol.c src/utils.c)
-add_executable (server src/server.c)
+add_executable (server src/server.c src/protocol.c src/utils.c)
 
 target_link_libraries(client ${OPENSSL_LIBRARIES})
 target_link_libraries(server ${OPENSSL_LIBRARIES})

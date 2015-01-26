@@ -9,15 +9,10 @@
  */
 
 #include "../include/protocol.h"
+#include "../include/utils.h"
 
-void hexdump(unsigned char* buf, size_t buflen){
-	int i;
-	for (i=0; i<buflen; i++){
-
-	}
-}
-
-uint8_t* create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
+uint8_t*
+create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 {
 	// The whole message M1
     uint8_t* msg;
@@ -33,34 +28,38 @@ uint8_t* create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 	if(!ckey){
 		fprintf(stderr,"Cannot read client key from file %s\n");
 		exit(EXIT_FAILURE);
-	}	
+	}
 
 
     return msg;
 }
 
-uint8_t* create_m2 (uint64_t *msg_len, uint8_t id, BIGNUM* Nb)
+uint8_t*
+create_m2 (uint64_t *msg_len, uint8_t id, BIGNUM* Nb)
 {
     uint8_t* msg;
 
     return msg;
 }
 
-uint8_t* create_m3 (uint64_t *msg_len, BIGNUM* key, BIGNUM* Nb)
+uint8_t*
+create_m3 (uint64_t *msg_len, BIGNUM* key, BIGNUM* Nb)
 {
     uint8_t* msg;
 
     return msg;
 }
 
-uint8_t* create_m4 (uint64_t *msg_len, BIGNUM* key, BIGNUM* Nb)
+uint8_t*
+create_m4 (uint64_t *msg_len, uint8_t* key, BIGNUM* Nb)
 {
     uint8_t* msg;
 
     return msg;
 }
 
-BIGNUM *generate_random_nonce (void){
+BIGNUM*
+generate_random_nonce (void){
 	BIGNUM* nonce = BN_new();
 	int x;
 
@@ -76,4 +75,34 @@ BIGNUM *generate_random_nonce (void){
 	}
 
 	return nonce;
+}
+
+uint8_t
+*generate_key (BIGNUM *Na, BIGNUM *Nb)
+{
+    return NULL;
+}
+
+int
+verifymessage_m1 (uint8_t *msg)
+{
+    return 0;
+}
+
+int
+verifymessage_m2 (uint8_t *msg, BIGNUM *Na)
+{
+    return 0;
+}
+
+int
+verifymessage_m3 (uint8_t *msg, BIGNUM *Nb, uint8_t *key)
+{
+    return 0;
+}
+
+int
+verifymessage_m4 (uint8_t *msg, BIGNUM *Na, uint8_t *key)
+{
+    return 0;
 }
