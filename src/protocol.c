@@ -122,13 +122,20 @@ create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 		exit(EXIT_FAILURE);
 	}
 
+	// the whole message is encrypted + 1 byte of the id
+	*msg_len = enclen + sizeof(id);
+	msg = malloc(*msg_len);
 
+	// build the message, prepending the ID and copying the encrypted part.
+	msg[0] = id;
+	memcpy(&msg[1],enc,enc_len);
 
 	/*
 	 * Cleanup
 	 */
 	free(sig);
 	free(Na_value);
+	free(enc);
     return msg;
 }
 
