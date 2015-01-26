@@ -35,6 +35,8 @@ create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 
 	// Encryption related variables
 	EVP_PKEY_CTX* encctx;
+	unsigned char* enc; // actual encrypted content
+	size_t enclen; // length of the encrypted content
 
 	// Load client key, called client.pem
 	ckeyfh = fopen("keys/client.pem","r");
@@ -93,6 +95,34 @@ create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 	/*
 	 * Step 2: Encrypt the signed Na using the server public key
 	 */
+	// create encryption context
+	encctx = EVP_PKEY_CTX_new(skey,NULL);
+	if (!encctx){
+		fprintf(stderr,"Cannot create an encryption context\n");
+		exit(EXIT_FAILURE);
+	}
+	if (EVP_PKEY_encrypt_init(ctx) <= 0){
+		fprintf(stderr,"Cannot create an encryption context\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Determine buffer length */
+	if (EVP_PKEY_encrypt(encctx, NULL, &enclen, sig, siglen) <= 0)
+		exit(EXIT_FAILURE);
+
+	enc = malloc(enclen);
+	if (!enc){
+		fprintf(stderr,"Out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Do the actual encryption
+	if (EVP_PKEY_encrypt(encctx, enc, &enclen, sig, siglen) <= 0){
+		fprintf(stderr,"Cannot sign nonce Na\n");
+		exit(EXIT_FAILURE);
+	}
+
+
 
 	/*
 	 * Cleanup
