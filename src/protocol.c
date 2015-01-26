@@ -20,6 +20,9 @@ create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 	// The private key of the client
 	EVP_PKEY* ckey;
 	FILE* ckeyfh;
+	// The public key of the server
+	EVP_PKEY* skey;
+	FILE* skeyfh;
 
 
 	// Load client key, called client.pem
@@ -27,6 +30,14 @@ create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 	ckey = PEM_read_PrivateKey(ckeyfh, &ckey, NULL, NULL);
 	if(!ckey){
 		fprintf(stderr,"Cannot read client key from file %s\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Load server key, called server.pem
+	skeyfh = fopen("keys/server.pem","r");
+	skey = PEM_read_PUBKEY(skeyfh, &skey, NULL, NULL);
+	if(!skey){
+		fprintf(stderr,"Cannot read server key from file %s\n");
 		exit(EXIT_FAILURE);
 	}
 
