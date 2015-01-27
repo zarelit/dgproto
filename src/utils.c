@@ -61,17 +61,17 @@ read_iv_from_file (FILE* iv_file)
 }
 
 uint8_t*
-do_aes256_crypt (uint8_t* msg, uint8_t* key, uint64_t* msg_len)
+do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
 {
     EVP_CIPHER_CTX *ctx;
     uint8_t *encr_msg;
     size_t enc_len, bsize; // Encypted message length and block size of the cipher
 
-    EVP_CIPHER_CTX_Init(ctx);
+    EVP_CIPHER_CTX_init(ctx);
 }
 
 uint8_t*
-do_aes256_decrypt (uint8_t* msg, uint8_t* key, uint64_t* msg_len)
+do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
 {
 
 }
