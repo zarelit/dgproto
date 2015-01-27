@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <openssl/evp.h>
+#include <openssl/pem.h>
 #include <unistd.h>
 
 #define SRV_PORT "1096"

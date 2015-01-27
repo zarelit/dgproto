@@ -41,3 +41,15 @@ uint8_t* do_aes256_crypt (uint8_t* msg, uint8_t* key, uint64_t* msg_len);
  * \returns a string of bytes which contains the decrypted message.
  */
 uint8_t* do_aes256_decrypt (uint8_t* msg, uint8_t* key, uint64_t* msg_len);
+
+/**
+ * Sign something
+ * \param keypath is a string with the path to a PEM private key
+ * \param payload is the string to be signed
+ * \param plen is the length of payload in bytes
+ * \param slen is the actual length of the signed content
+ * \returns a buffer with the signed content.
+ * \warning the result is dynamically allocated. Memory must be freed manually.
+ */
+uint8_t*
+sign(const char* keypath, const uint8_t* payload, const size_t plen, size_t* slen);

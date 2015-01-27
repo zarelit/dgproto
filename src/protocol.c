@@ -17,16 +17,12 @@ create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 	// The whole message M1
     uint8_t* msg;
 
-	// The private key of the client
-	EVP_PKEY* ckey;
-	FILE* ckeyfh;
 	// The public key of the server
 	EVP_PKEY* skey;
 	FILE* skeyfh;
 
 
 	// Signing related variables
-	EVP_PKEY_CTX* sigctx; // context
 	unsigned char* sig; // actual signature
 	size_t siglen; //length of the signature
 	unsigned char* Na_value; // Bytes of Na in big-endian format
@@ -37,14 +33,6 @@ create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 	EVP_PKEY_CTX* encctx;
 	unsigned char* enc; // actual encrypted content
 	size_t enclen; // length of the encrypted content
-
-	// Load client key, called client.pem
-	ckeyfh = fopen("keys/client.pem","r");
-	ckey = PEM_read_PrivateKey(ckeyfh, &ckey, NULL, NULL);
-	if(!ckey){
-		fprintf(stderr,"Cannot read client key from file keys/client.pem\n");
-		exit(EXIT_FAILURE);
-	}
 
 	// Load server key, called server.pem
 	skeyfh = fopen("keys/server.pem","r");
@@ -64,33 +52,7 @@ create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 	/*
 	 * Step 1: Sign Na
 	 */
-	// create signing context 
-	sigctx = EVP_PKEY_CTX_new(ckey, NULL);
-	if (!sigctx){
-		fprintf(stderr,"Cannot create a signing context\n");
-		exit(EXIT_FAILURE);
-	}
-	if (EVP_PKEY_sign_init(sigctx) <= 0){
-		fprintf(stderr,"Cannot create a signing context\n");
-		exit(EXIT_FAILURE);
-	}
-
-	// Ask the maximum signature size to OpenSSL when signing
-	// a quantity like Na
-	if (EVP_PKEY_sign(ctx, NULL, &siglen, Na_value, Na_size ) <= 0)
-		exit(EXIT_FAILURE);
-
-	sig = malloc(siglen);
-	if(!sig){
-		fprintf(stderr,"Out of memory\n");
-		exit(EXIT_FAILURE);
-	}
-
-	// Do the real signature
-	if (EVP_PKEY_sign(sigctx, sig, &siglen, Na_value, Na_size) <= 0){
-		fprintf(stderr,"Cannot sign nonce Na\n");
-		exit(EXIT_FAILURE);
-	}
+	sig = sign("keys/client.pem", Na_value, Na_size, &siglen);
 
 	/*
 	 * Step 2: Encrypt the signed Na using the server public key
@@ -101,7 +63,7 @@ create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 		fprintf(stderr,"Cannot create an encryption context\n");
 		exit(EXIT_FAILURE);
 	}
-	if (EVP_PKEY_encrypt_init(ctx) <= 0){
+	if (EVP_PKEY_encrypt_init(encctx) <= 0){
 		fprintf(stderr,"Cannot create an encryption context\n");
 		exit(EXIT_FAILURE);
 	}
@@ -128,7 +90,7 @@ create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 
 	// build the message, prepending the ID and copying the encrypted part.
 	msg[0] = id;
-	memcpy(&msg[1],enc,enc_len);
+	memcpy(&msg[1],enc,enclen);
 
 	/*
 	 * Cleanup

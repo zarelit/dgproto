@@ -75,3 +75,49 @@ do_aes256_decrypt (uint8_t* msg, uint8_t* key, uint64_t* msg_len)
 {
 
 }
+
+uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, size_t* slen){
+
+	FILE* ckeyfh;
+	EVP_PKEY* ckey;
+	EVP_PKEY_CTX* sigctx; 
+	uint8_t *sig;
+	size_t siglen;
+
+	// Load signing key
+	ckeyfh = fopen(keypath,"r");
+	ckey = PEM_read_PrivateKey(ckeyfh, &ckey, NULL, NULL);
+	if(!ckey){
+		fprintf(stderr,"Cannot read signing key from file %s\n", keypath);
+		exit(EXIT_FAILURE);
+	}
+
+	// create signing context 
+	sigctx = EVP_PKEY_CTX_new(ckey, NULL);
+	if (!sigctx){
+		fprintf(stderr,"Cannot create a signing context\n");
+		exit(EXIT_FAILURE);
+	}
+	if (EVP_PKEY_sign_init(sigctx) <= 0){
+		fprintf(stderr,"Cannot create a signing context\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Ask the maximum signature size that will result in signing the payload
+	if (EVP_PKEY_sign(sigctx, NULL, slen, payload, plen ) <= 0)
+		exit(EXIT_FAILURE);
+
+	sig = malloc(*slen);
+	if(!sig){
+		fprintf(stderr,"Out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Do the real signature
+	if (EVP_PKEY_sign(sigctx, sig, &siglen, payload, plen) <= 0){
+		fprintf(stderr,"Signing operation failed\n");
+		exit(EXIT_FAILURE);
+	}
+
+	return sig;
+}
