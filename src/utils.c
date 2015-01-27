@@ -30,3 +30,15 @@ void hexdump(FILE *fh, unsigned char* buf, size_t buflen){
 		fprintf(fh,"%02hhX",buf[i]);
 	}
 }
+
+uint8_t*
+do_aes256_crypt (uint8_t* msg, uint8_t* key, uint64_t* msg_len)
+{
+    
+}
+
+uint8_t*
+do_aes256_decrypt (uint8_t* msg, uint8_t* key, uint64_t* msg_len)
+{
+
+}
