@@ -61,17 +61,99 @@ read_iv_from_file (FILE* iv_file)
 }
 
 uint8_t*
-do_aes256_crypt (uint8_t* msg, uint8_t* key, uint64_t* msg_len)
+do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
 {
     EVP_CIPHER_CTX *ctx;
     uint8_t *encr_msg;
-    size_t enc_len, bsize; // Encypted message length and block size of the cipher
+    size_t enc_len; // Encypted message length and block size of the cipher
+    const size_t bsize = EVP_CIPHER_block_size(EVP_aes_256_cbc());
 
+    if (iv == NULL || msg == NULL || key == NULL || *msg_len < 0)
+    {
+        fprintf(stderr, "Error: invalid argument passed");
+        encr_msg = NULL;
+        *msg_len = 0;
+        goto exit_do_aes256_crypt;
+    }
+
+    // Finally do the encryption
+    encr_msg = malloc(*msg_len + bsize);
+    ctx = malloc(sizeof(EVP_CIPHER_CTX));
     EVP_CIPHER_CTX_Init(ctx);
+    if (EVP_EncryptInit(ctx, EVP_aes_256_cbc(), key, iv) == 0)
+    {
+        fprintf(stderr, "Error initializing the encryption\n");
+        free(encr_msg);
+        *msg_len = 0;
+        goto exit_do_aes256_crypt;
+    }
+    enc_len = 0;
+    if (EVP_EncryptUpdate(ctx, encr_msg, &enc_len, msg, *msg_len) == 0)
+    {
+        fprintf(stderr, "Error during the encryption\n");
+        free(encr_msg);
+        *msg_len = 0;
+        goto exit_do_aes256_crypt;
+    }
+    if (EVP_EncryptFinal(ctx, encr_msg + enc_len, msg_len) == 0)
+    {
+        fprintf(stderr, "Error finalizing the encryption\n");
+        free(encr_msg);
+        *msg_len = 0;
+        goto exit_do_aes256_crypt;
+    }
+    *msg_len += enc_len;
+exit_do_aes256_crypt:
+    EVP_CIPHER_CTX_cleanup(ctx);
+    free(ctx);
+    return encr_msg;
 }
 
 uint8_t*
-do_aes256_decrypt (uint8_t* msg, uint8_t* key, uint64_t* msg_len)
+do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
 {
+    EVP_CIPHER_CTX *ctx;
+    uint8_t *dec_msg;
+    size_t enc_len; // Encypted message length and block size of the cipher
+    const size_t bsize = EVP_CIPHER_block_size(EVP_aes_256_cbc());
 
+    if (iv == NULL || msg == NULL || key == NULL || *msg_len < 0)
+    {
+        fprintf(stderr, "Error: invalid argument passed");
+        encr_msg = NULL;
+        *msg_len = 0;
+        goto exit_do_aes256_decrypt;
+    }
+
+    // Finally do the encryption
+    dec_msg = malloc(*msg_len + bsize);
+    ctx = malloc(sizeof(EVP_CIPHER_CTX));
+    EVP_CIPHER_CTX_Init(ctx);
+    if (EVP_DecryptInit(ctx, EVP_aes_256_cbc(), key, iv) == 0)
+    {
+        fprintf(stderr, "Error initializing the encryption\n");
+        free(dec_msg);
+        *msg_len = 0;
+        goto exit_do_aes256_decrypt;
+    }
+    dec_len = 0;
+    if (EVP_DecryptUpdate(ctx, enc_msg, &dec_len, msg, *msg_len) == 0)
+    {
+        fprintf(stderr, "Error during the encryption\n");
+        free(enc_msg);
+        *msg_len = 0;
+        goto exit_do_aes256_decrypt;
+    }
+    if (EVP_DecryptFinal(ctx, dec_msg + dec_len, msg_len) == 0)
+    {
+        fprintf(stderr, "Error finalizing the encryption\n");
+        free(enc_msg);
+        *msg_len = 0;
+        goto exit_do_aes256_decrypt;
+    }
+    *msg_len += dec_len;
+    exit_do_aes256_decrypt:
+    EVP_CIPHER_CTX_cleanup(ctx);
+    free(ctx);
+    return dec_msg;
 }
