@@ -18,6 +18,7 @@ typedef struct server_state
     struct sockaddr_in addr;
     uint8_t *session_key;
     uint8_t *buffer;
+    size_t buf_len, key_len;
     int acc_skt; // Socket for accepting incoming requests
     int comm_skt; // Socket for communicating
 } srv_state;
@@ -70,6 +71,8 @@ init_server_state (srv_state *ss)
     ss -> Nb = NULL;
     ss -> session_key = NULL;
     ss -> buffer = malloc(BUF_DIM * sizeof(uint8_t));
+    ss -> buf_len = BUF_DIM * sizeof(uint8_t);
+    ss -> key_len = KEY_LEN >> 3;
     ss -> acc_skt = ss -> comm_skt = 0;
 }
 
@@ -135,7 +138,7 @@ exit_receive_message:
 int
 run_protocol (srv_state *ss)
 {
-    uint64_t recv_bytes, msg_len;
+    size_t recv_bytes, msg_len;
     uint8_t ret_val = 0, *msg;
 
     // Receive and verify the first message
@@ -251,7 +254,6 @@ main (int argc, char **argv)
     int yes = 1, ret_val, i = 0;
 
     init_server_state(&sstate);
-    // Initializing struct for binding
     hints = init_hints();
 
     // Get the list of available Internet addresses
