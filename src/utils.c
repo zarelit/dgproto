@@ -79,7 +79,7 @@ do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
     // Finally do the encryption
     encr_msg = malloc(*msg_len + bsize);
     ctx = malloc(sizeof(EVP_CIPHER_CTX));
-    EVP_CIPHER_CTX_Init(ctx);
+    EVP_CIPHER_CTX_init(ctx);
     if (EVP_EncryptInit(ctx, EVP_aes_256_cbc(), key, iv) == 0)
     {
         fprintf(stderr, "Error initializing the encryption\n");
@@ -88,14 +88,14 @@ do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
         goto exit_do_aes256_crypt;
     }
     enc_len = 0;
-    if (EVP_EncryptUpdate(ctx, encr_msg, &enc_len, msg, *msg_len) == 0)
+    if (EVP_EncryptUpdate(ctx, encr_msg, (int *) &enc_len, msg, *msg_len) == 0)
     {
         fprintf(stderr, "Error during the encryption\n");
         free(encr_msg);
         *msg_len = 0;
         goto exit_do_aes256_crypt;
     }
-    if (EVP_EncryptFinal(ctx, encr_msg + enc_len, msg_len) == 0)
+    if (EVP_EncryptFinal(ctx, encr_msg + enc_len, (int *)msg_len) == 0)
     {
         fprintf(stderr, "Error finalizing the encryption\n");
         free(encr_msg);
@@ -114,13 +114,13 @@ do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
 {
     EVP_CIPHER_CTX *ctx;
     uint8_t *dec_msg;
-    size_t enc_len; // Encypted message length and block size of the cipher
+    size_t dec_len; // Encypted message length and block size of the cipher
     const size_t bsize = EVP_CIPHER_block_size(EVP_aes_256_cbc());
 
-    if (iv == NULL || msg == NULL || key == NULL || *msg_len < 0)
+    if (iv == NULL || enc_msg == NULL || key == NULL || *msg_len < 0)
     {
         fprintf(stderr, "Error: invalid argument passed");
-        encr_msg = NULL;
+        dec_msg = NULL;
         *msg_len = 0;
         goto exit_do_aes256_decrypt;
     }
@@ -128,25 +128,25 @@ do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
     // Finally do the encryption
     dec_msg = malloc(*msg_len + bsize);
     ctx = malloc(sizeof(EVP_CIPHER_CTX));
-    EVP_CIPHER_CTX_Init(ctx);
+    EVP_CIPHER_CTX_init(ctx);
     if (EVP_DecryptInit(ctx, EVP_aes_256_cbc(), key, iv) == 0)
     {
-        fprintf(stderr, "Error initializing the encryption\n");
+        fprintf(stderr, "Error initializing the decryption\n");
         free(dec_msg);
         *msg_len = 0;
         goto exit_do_aes256_decrypt;
     }
     dec_len = 0;
-    if (EVP_DecryptUpdate(ctx, enc_msg, &dec_len, msg, *msg_len) == 0)
+    if (EVP_DecryptUpdate(ctx, enc_msg, (int *)&dec_len, dec_msg, *msg_len) == 0)
     {
-        fprintf(stderr, "Error during the encryption\n");
+        fprintf(stderr, "Error during the decryption\n");
         free(enc_msg);
         *msg_len = 0;
         goto exit_do_aes256_decrypt;
     }
-    if (EVP_DecryptFinal(ctx, dec_msg + dec_len, msg_len) == 0)
+    if (EVP_DecryptFinal(ctx, dec_msg + dec_len, (int *)msg_len) == 0)
     {
-        fprintf(stderr, "Error finalizing the encryption\n");
+        fprintf(stderr, "Error finalizing the decryption\n");
         free(enc_msg);
         *msg_len = 0;
         goto exit_do_aes256_decrypt;
@@ -162,7 +162,7 @@ uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, si
 
 	FILE* ckeyfh;
 	EVP_PKEY* ckey;
-	EVP_PKEY_CTX* sigctx; 
+	EVP_PKEY_CTX* sigctx;
 	uint8_t *sig;
 	size_t siglen;
 
@@ -174,7 +174,7 @@ uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, si
 		exit(EXIT_FAILURE);
 	}
 
-	// create signing context 
+	// create signing context
 	sigctx = EVP_PKEY_CTX_new(ckey, NULL);
 	if (!sigctx){
 		fprintf(stderr,"Cannot create a signing context\n");
