@@ -8,7 +8,15 @@
 #include <string.h>
 #include <stdint.h>
 
+/**
+ * Salt being used into the key generation algorithm
+ */
 #define SALT "FzHp3CbMao"
+
+/**
+ * Length of the key in bit.
+ */
+#define KEY_LEN 256
 
 /**
  * This function permits to create in one single shot the first message of the D&G protocol.
