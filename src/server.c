@@ -53,7 +53,6 @@ init_hints (void)
     return hints;
 }
 
-
 /**
  * This function will initialize the server state to a known state: all pointers to NULL, integers
  * to 0 and it allocates a buffer of `#BUF_DIM` bytes.
@@ -226,15 +225,30 @@ wait_connection (int socket_fd)
     return comm_skt;
 }
 
+/**
+ * This function will destroy the connection on the server socket currenly being used for
+ * communicating with a client. It will free Nb, Na, the buffer and the session key and will
+ * allocate a new buffer for the server.
+ * \param ss the server state structure which contains all the needed communicating informations.
+ */
+void
+close_connection (srv_state *ss)
+{
+    close(sstate.acc_skt);
+    if (sstate.session_key != NULL) free(sstate.session_key);
+    if (sstate.Na != NULL) BN_clear_free(sstate.Na);
+    if (sstate.Nb != NULL) BN_clear_free(sstate.Nb);
+    free(sstate.buffer);
+    // New buffer for the server
+    sstate.buffer = malloc(BUF_DIM * sizeof(uint8_t));
+}
+
 int
 main (int argc, char **argv)
 {
     srv_state sstate;
-    int sock_fd, con_fd; // listen on sock_fd, new connection on con_fd
     struct addrinfo hints, *servinfo, *it;
-    struct sockaddr_storage client_addr; // connector's address information
     int yes = 1, ret_val, i = 0;
-    char str_addr[INET_ADDRSTRLEN]; // for printing human readable IP
 
     init_server_state(&sstate);
     // Initializing struct for binding
@@ -286,6 +300,12 @@ main (int argc, char **argv)
         printf("Server: client connected");
         printf("Server: starting D&G protocol");
         ret_val = run_protocol(&sstate);
+        if (ret_val != 0)
+        {
+            fprintf(stderr, "Error during the protocol execution. Abort this connection.");
+            close_connection();
+            continue;
+        }
 
         // TODO: now we wait here until the client doesn't send something creepy
     }
