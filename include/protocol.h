@@ -31,7 +31,7 @@
  * bit described in the protocol report.
  * \returns a byte string that contains the message ready to be sent.
  */
-uint8_t* create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na);
+uint8_t* create_m1 (size_t *msg_len, uint8_t id, BIGNUM* Na);
 
 /**
  * This function permits to create in one single shot the second message of the D&G protocol.
@@ -46,7 +46,7 @@ uint8_t* create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na);
  * bit described in the protocol report.
  * \returns a byte string that contains the message ready to be sent.
  */
-uint8_t* create_m2 (uint64_t *msg_len, uint8_t id, BIGNUM* Nb);
+uint8_t* create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb);
 
 /**
  * This function permits to create in one single shot the third message of the D&G protocol.
@@ -57,7 +57,7 @@ uint8_t* create_m2 (uint64_t *msg_len, uint8_t id, BIGNUM* Nb);
  * \param Nb the nonce to be hashed and crypted.
  * \returns a byte string that contains the message ready to be sent.
  */
-uint8_t* create_m3 (uint64_t *msg_len, BIGNUM* key, BIGNUM* Nb);
+uint8_t* create_m3 (size_t *msg_len, BIGNUM* key, BIGNUM* Nb);
 
 /**
  * This function permits to create in one single shot the fourth message of the D&G protocol.
@@ -68,7 +68,7 @@ uint8_t* create_m3 (uint64_t *msg_len, BIGNUM* key, BIGNUM* Nb);
  * \param Na the nonce to be hashed and crypted.
  * \returns a byte string that contains the message ready to be sent.
  */
-uint8_t* create_m4 (uint64_t *msg_len, uint8_t* key, BIGNUM* Na);
+uint8_t* create_m4 (size_t *msg_len, uint8_t* key, BIGNUM* Na);
 
 /**
  * This function contains the key generation algorithm.
@@ -93,7 +93,7 @@ BIGNUM *generate_random_nonce (void);
  * \returns 1 otherwise.
  * \returns -1 on error with errno being set consequently.
  */
-int verifymessage_m1 (uint8_t *msg);
+int verifymessage_m1 (uint8_t *msg, size_t *msg_len);
 
 /**
  * This function checks the correctness of the second message of the protocol.
@@ -106,7 +106,7 @@ int verifymessage_m1 (uint8_t *msg);
  * \returns 1 otherwise.
  * \returns -1 on error with errno being set consequently.
  */
-int verifymessage_m2 (uint8_t *msg, BIGNUM *Na);
+int verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na);
 
 /**
  * This function checks the correctness of the third message of the protocol. It verify if the hash
@@ -118,7 +118,7 @@ int verifymessage_m2 (uint8_t *msg, BIGNUM *Na);
  * \returns 1 otherwise.
  * \returns -1 on error with errno being set consequently.
  */
-int verifymessage_m3 (uint8_t *msg, BIGNUM *Nb, uint8_t *key);
+int verifymessage_m3 (uint8_t *msg, size_t *msg_len, BIGNUM *Nb, uint8_t *key);
 
 /**
  * This function checks the correctness of the fourth message of the protocol. It verify if the hash
@@ -130,4 +130,4 @@ int verifymessage_m3 (uint8_t *msg, BIGNUM *Nb, uint8_t *key);
  * \returns 1 otherwise.
  * \returns -1 on error with errno being set consequently.
  */
-int verifymessage_m4 (uint8_t *msg, BIGNUM *Na, uint8_t *key);
+int verifymessage_m4 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, uint8_t *key);

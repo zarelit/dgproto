@@ -12,7 +12,7 @@
 #include "../include/utils.h"
 
 uint8_t*
-create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
+create_m1 (size_t *msg_len, uint8_t id, BIGNUM* Na)
 {
 	// The whole message M1
     uint8_t* msg;
@@ -58,13 +58,13 @@ create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 	 * Step 0: Convert Na in a signable buffer
 	 */
 	Na_size = BN_num_bytes(Na);
-	Na_value = malloc(Na_size);	
-	BN_bn2bin(Na, Na_value); 
+	Na_value = malloc(Na_size);
+	BN_bn2bin(Na, Na_value);
 
 	/*
 	 * Step 1: Sign Na
 	 */
-	// create signing context 
+	// create signing context
 	sigctx = EVP_PKEY_CTX_new(ckey, NULL);
 	if (!sigctx){
 		fprintf(stderr,"Cannot create a signing context\n");
@@ -140,7 +140,7 @@ create_m1 (uint64_t *msg_len, uint8_t id, BIGNUM* Na)
 }
 
 uint8_t*
-create_m2 (uint64_t *msg_len, uint8_t id, BIGNUM* Nb)
+create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb)
 {
     uint8_t* msg;
 
@@ -148,7 +148,7 @@ create_m2 (uint64_t *msg_len, uint8_t id, BIGNUM* Nb)
 }
 
 uint8_t*
-create_m3 (uint64_t *msg_len, BIGNUM* key, BIGNUM* Nb)
+create_m3 (size_t *msg_len, BIGNUM* key, BIGNUM* Nb)
 {
     uint8_t* msg;
 
@@ -156,7 +156,7 @@ create_m3 (uint64_t *msg_len, BIGNUM* key, BIGNUM* Nb)
 }
 
 uint8_t*
-create_m4 (uint64_t *msg_len, uint8_t* key, BIGNUM* Nb)
+create_m4 (size_t *msg_len, uint8_t* key, BIGNUM* Nb)
 {
     uint8_t* msg;
 
@@ -189,25 +189,25 @@ uint8_t
 }
 
 int
-verifymessage_m1 (uint8_t *msg)
+verifymessage_m1 (uint8_t *msg, size_t *msg_len)
 {
     return 0;
 }
 
 int
-verifymessage_m2 (uint8_t *msg, BIGNUM *Na)
+verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na)
 {
     return 0;
 }
 
 int
-verifymessage_m3 (uint8_t *msg, BIGNUM *Nb, uint8_t *key)
+verifymessage_m3 (uint8_t *msg, size_t *msg_len, BIGNUM *Nb, uint8_t *key)
 {
     return 0;
 }
 
 int
-verifymessage_m4 (uint8_t *msg, BIGNUM *Na, uint8_t *key)
+verifymessage_m4 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, uint8_t *key)
 {
     return 0;
 }
