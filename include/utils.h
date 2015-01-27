@@ -28,7 +28,7 @@ void hexdump(FILE* fh, unsigned char* buf, size_t buflen);
  * \param msg the message to be encrypted.
  * \param key the key you need for encryption.
  * \param msg_len the length of the resulting message.
- * \returns a string of bytes which contains the encrypted message.
+ * \returns a string of bytes which contains the encrypted message or NULL in case of error.
  */
 uint8_t* do_aes256_crypt (uint8_t* msg, uint8_t* key, uint64_t* msg_len);
 
@@ -38,6 +38,6 @@ uint8_t* do_aes256_crypt (uint8_t* msg, uint8_t* key, uint64_t* msg_len);
  * \param msg the message to be decrypted.
  * \param key the key you need for decryption.
  * \param msg_len the length of the resulting message.
- * \returns a string of bytes which contains the decrypted message.
+ * \returns a string of bytes which contains the decrypted message or NULL in case of error.
  */
 uint8_t* do_aes256_decrypt (uint8_t* msg, uint8_t* key, uint64_t* msg_len);
