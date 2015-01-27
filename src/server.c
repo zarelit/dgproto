@@ -105,19 +105,19 @@ receive_message (msg_name msg, srv_state *ss)
     switch(msg)
     {
         case M1:
-            ret_val = verifymessage_m1(ss -> buffer);
+            ret_val = verifymessage_m1(ss -> buffer, &(ss -> buf_len));
             break;
 
         case M2:
-            ret_val = verifymessage_m2(ss -> buffer, ss -> Na);
+            ret_val = verifymessage_m2(ss -> buffer, &(ss -> buf_len), ss -> Na);
             break;
 
         case M3:
-            ret_val = verifymessage_m3(ss -> buffer, ss -> Nb, ss -> session_key);
+            ret_val = verifymessage_m3(ss -> buffer, &(ss -> buf_len), ss -> Nb, ss -> session_key);
             break;
 
         case M4:
-            ret_val = verifymessage_m4(ss -> buffer, ss -> Na, ss -> session_key);
+            ret_val = verifymessage_m4(ss -> buffer, &(ss -> buf_len), ss -> Na, ss -> session_key);
             break;
 
         default:
@@ -237,13 +237,13 @@ wait_connection (int socket_fd)
 void
 close_connection (srv_state *ss)
 {
-    close(sstate.acc_skt);
-    if (sstate.session_key != NULL) free(sstate.session_key);
-    if (sstate.Na != NULL) BN_clear_free(sstate.Na);
-    if (sstate.Nb != NULL) BN_clear_free(sstate.Nb);
-    free(sstate.buffer);
+    close(ss -> acc_skt);
+    if (ss -> session_key != NULL) free(ss -> session_key);
+    if (ss -> Na != NULL) BN_clear_free(ss -> Na);
+    if (ss -> Nb != NULL) BN_clear_free(ss -> Nb);
+    free(ss -> buffer);
     // New buffer for the server
-    sstate.buffer = malloc(BUF_DIM * sizeof(uint8_t));
+    ss -> buffer = malloc(BUF_DIM * sizeof(uint8_t));
 }
 
 int
@@ -305,7 +305,7 @@ main (int argc, char **argv)
         if (ret_val != 0)
         {
             fprintf(stderr, "Error during the protocol execution. Abort this connection.");
-            close_connection();
+            close_connection(&sstate);
             continue;
         }
 
