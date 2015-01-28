@@ -44,9 +44,10 @@ uint8_t* create_m1 (size_t *msg_len, uint8_t id, BIGNUM* Na);
  * because we don't need more space to verify the protocol is working.
  * \param Nb a pointer to a Big Num this function will modify. This is the random nonce of 128
  * bit described in the protocol report.
+ * \param Na a pointer to the client generated nonce.
  * \returns a byte string that contains the message ready to be sent.
  */
-uint8_t* create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb);
+uint8_t* create_m2 (size_t *msg_len, uint8_t id, BIGNUM** Nb, BIGNUM* Na);
 
 /**
  * This function permits to create in one single shot the third message of the D&G protocol.
