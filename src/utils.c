@@ -204,3 +204,11 @@ uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, si
 
 	return sig;
 }
+
+uint8_t*
+generate_random_iv (uint8_t *iv_len)
+{
+    uint8_t *buffer = malloc(EVP_CIPHER_CTX_iv_length(EVP_aes_256_cbc()));
+
+    srand(time(NULL))
+}

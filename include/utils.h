@@ -4,6 +4,7 @@
 
 #include <sys/socket.h>
 #include <stdio.h>
+#include <time.h>
 #include <stdint.h>
 
 /**
@@ -55,3 +56,10 @@ uint8_t* do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t*
  */
 uint8_t*
 sign(const char* keypath, const uint8_t* payload, const size_t plen, size_t* slen);
+
+/**
+ * This function is in charge of creating a random Initialization Vector for an AES cipher.
+ * \param iv_len a pointer where the function will store the length of the iv.
+ * \returns a pointer to a buffero of *iv_len bytes.
+ */
+uint8_t* generate_random_iv (uint8_t *iv_len);
