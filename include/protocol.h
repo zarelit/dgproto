@@ -42,12 +42,11 @@ uint8_t* create_m1 (size_t *msg_len, uint8_t id, BIGNUM* Na);
  * \param id identifier of whom wants to  the communication with the client or another client.
  * This parameter is implementation dependent, in the sense we use only a byte for each actor
  * because we don't need more space to verify the protocol is working.
- * \param Nb a pointer to a Big Num this function will modify. This is the random nonce of 128
- * bit described in the protocol report.
+ * \param Nb a pointer to the server-side generated nonce.
  * \param Na a pointer to the client generated nonce.
- * \returns a byte string that contains the message ready to be sent.
+ * \returns a byte string that contains the message ready to be sent or NULL if an error occours.
  */
-uint8_t* create_m2 (size_t *msg_len, uint8_t id, BIGNUM** Nb, BIGNUM* Na);
+uint8_t* create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na);
 
 /**
  * This function permits to create in one single shot the third message of the D&G protocol.
