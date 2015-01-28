@@ -119,7 +119,7 @@ do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
 
     if (iv == NULL || enc_msg == NULL || key == NULL || *msg_len < 0)
     {
-        fprintf(stderr, "Error: invalid argument passed");
+        fprintf(stderr, "Error: invalid argument passed\n");
         dec_msg = NULL;
         *msg_len = 0;
         goto exit_do_aes256_decrypt;
@@ -214,7 +214,7 @@ generate_random_aes_iv (uint8_t *iv_len)
     buffer = malloc(buf_len);
     if (buffer == NULL)
     {
-        fprintf(stderr, "Error: out of memory");
+        fprintf(stderr, "Error: out of memory\n");
         buffer = NULL;
         *iv_len = 0;
         goto exit_generate_random_aes_iv;
@@ -229,7 +229,7 @@ generate_random_aes_iv (uint8_t *iv_len)
     // Generate the criptographically strong IV (according to OPENSSL)
     if (RAND_bytes(buffer, buf_len) < 1)
     {
-        fprintf(stderr, "Error generating criptographically strong random number");
+        fprintf(stderr, "Error generating criptographically strong random number\n");
         free(buffer);
         *iv_len = 0;
     }
