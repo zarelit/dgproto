@@ -206,9 +206,34 @@ uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, si
 }
 
 uint8_t*
-generate_random_iv (uint8_t *iv_len)
+generate_random_aes_iv (uint8_t *iv_len)
 {
-    uint8_t *buffer = malloc(EVP_CIPHER_CTX_iv_length(EVP_aes_256_cbc()));
+    uint8_t *buffer, buf_len, i;
 
-    srand(time(NULL))
+    buf_len = EVP_CIPHER_CTX_iv_length(EVP_aes_256_cbc());
+    buffer = malloc(buf_len);
+    if (buffer == NULL)
+    {
+        fprintf(stderr, "Error: out of memory");
+        buffer = NULL;
+        *iv_len = 0;
+        goto exit_generate_random_aes_iv;
+    }
+    // Fill the buffer with random content
+    srand(time(NULL));
+    for (i = 0; i < buf_len; i ++)
+    {
+        buffer[i] = (uint8_t) random();
+    }
+
+    // Generate the criptographically strong IV (according to OPENSSL)
+    if (RAND_bytes(buffer, buf_len) < 1)
+    {
+        fprintf(stderr, "Error generating criptographically strong random number");
+        free(buffer);
+        *iv_len = 0;
+    }
+    *iv_len = buf_len;
+exit_generate_random_aes_iv:
+    return buffer;
 }
