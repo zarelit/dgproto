@@ -202,5 +202,6 @@ uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, si
 		exit(EXIT_FAILURE);
 	}
 
+	EVP_PKEY_CTX_free(sigctx);
 	return sig;
 }
