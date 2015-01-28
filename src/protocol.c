@@ -102,10 +102,114 @@ create_m1 (size_t *msg_len, uint8_t id, BIGNUM* Na)
 }
 
 uint8_t*
-create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb)
+create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na)
 {
-    uint8_t* msg;
+    uint8_t *msg; // The message this function is able to build
+    uint8_t *enc_part, *tmp; // The encrypted part of the message
+    uint8_t *signature, *Na_bin_val, *Nb_bin_val;
+    uint8_t *aes_iv; // Initialization vector for the aes cipher
+    size_t sig_len, enc_part_len, Nb_len, Na_len, iv_len;
+    EVP_PKEY *cpub_key = NULL;
+    EVP_PKEY_CTX *ctx = NULL;
+    FILE* cpub_key_file;
 
+    // Get the public key of the client in order to encrypt some part of the message
+    cpub_key_file = fopen("keys/client.pub.pem", "r");
+    if (cpub_key_file == NULL)
+    {
+        perror("fopen");
+        msg = NULL;
+        *msg_len = 0;
+        goto exit_create_m2;
+    }
+    cpub_key = (cpub_key_file, &cpub_key, NULL, NULL);
+    if (cpub_key == NULL)
+    {
+        fprintf(stderr, "Error: can't read client public key\n");
+        msg = NULL;
+        *msg_len = 0;
+        goto exit_create_m2;
+    }
+    // Translate nonces to a binary format
+    Nb_bin_val = malloc(BN_num_bytes(Nb));
+    Nb_len = BN_bn2bin(Nb, Nb_bin_val);
+    Na_bin_val = malloc(BN_num_bytes(Na));
+    Na_len = BN_bn2bin(Na, Na_bin_val);
+
+    // Sign the binary value of Nb with the private key of the server
+    signature = sign("keys/server.pem", Nb_bin_val, Nb_len, &sig_len);
+
+    // Create the encrypted part of the message by concatenating Na, Nb and the signature
+    enc_part_len = Na_len + Nb_len + sig_len;
+    enc_part = malloc(enc_part_len);
+    if (enc_part == NULL)
+    {
+        fprintf(stderr, "Out of Memory");
+        msg = NULL;
+        *msg_len = 0;
+        goto cleanup_create_m2;
+    }
+    tmp = enc_part;
+    memcpy(enc_part, Na_bin_val, Na_len);
+    tmp += Na_len;
+    memcpy(tmp, Nb_bin_val, Nb_len);
+    tmp += Nb_len;
+    memcpy(tmp, signature, sig_len);
+
+    // Start encryption of the enc_part of m2
+    ctx = EVP_PKEY_CTX_new(cpub_key, NULL);
+    if (ctx == NULL)
+    {
+        fprintf(stderr, "Error allocating context for encrypting the message\n");
+        msg = NULL;
+        *msg_len = 0;
+        goto cleanup_create_m2;
+    }
+    if (EVP_PKEY_encrypt(ctx, tmp, msg_len, enc_part, enc_part_len) <= 0)
+    {
+        fprintf(stderr, "Error during encryption\n");
+        msg = NULL;
+        *msg_len = 0;
+        goto cleanup_create_m2;
+    }
+    // Create the random Initialization Vector
+    aes_iv = generate_random_aes_iv(&iv_len);
+    if (aes_iv == NULL)
+    {
+        fprintf(stderr, "Error generating the IV\n");
+        msg = NULL;
+        *msg_len = 0;
+        goto cleanup_create_m2;
+    }
+
+    // Create the whole message by concatenating the clear text part and the encrypted one
+    msg = malloc(sizeof(id) + iv_len + enc_part_len);
+    if (msg == NULL)
+    {
+        fprintf(stderr, "Error allocating message\n");
+        msg = NULL;
+        *msg_len = 0;
+        goto cleanup_create_m2;
+    }
+    tmp = msg;
+    memcpy(msg, id, sizeof(id));
+    tmp += sizeof(id);
+    memcpy(tmp, aes_iv, iv_len);
+    tmp += iv_len;
+    memcpy(tmp, enc_part, enc_part_len);
+
+    // Clean up
+    free(aes_iv);
+    EVP_PKEY_CTX_free(ctx);
+
+cleanup_create_m2:
+    // The ctx was cleaned up before
+    fclose(cpub_key_file);
+    free(enc_part);
+    free(Nb_bin_val);
+    free(Na_bin_val);
+    free(signature);
+exit_create_m2:
     return msg;
 }
 
