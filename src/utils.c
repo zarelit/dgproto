@@ -161,13 +161,14 @@ do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
 uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, size_t* slen){
 
 	FILE* ckeyfh;
-	EVP_PKEY* ckey;
+	EVP_PKEY* ckey=NULL;
 	EVP_PKEY_CTX* sigctx;
 	uint8_t *sig;
 	size_t siglen;
 
 	// Load signing key
 	ckeyfh = fopen(keypath,"r");
+	if(!ckeyfh) exit(EXIT_FAILURE);
 	ckey = PEM_read_PrivateKey(ckeyfh, &ckey, NULL, NULL);
 	if(!ckey){
 		fprintf(stderr,"Cannot read signing key from file %s\n", keypath);
