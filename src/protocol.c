@@ -192,7 +192,7 @@ create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na)
         goto cleanup_create_m2;
     }
     tmp = msg;
-    memcpy(msg, id, sizeof(id));
+    memcpy(msg, (void *)&id, sizeof(id));
     tmp += sizeof(id);
     memcpy(tmp, aes_iv, iv_len);
     tmp += iv_len;

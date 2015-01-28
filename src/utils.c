@@ -206,7 +206,7 @@ uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, si
 }
 
 uint8_t*
-generate_random_aes_iv (uint8_t *iv_len)
+generate_random_aes_iv (size_t *iv_len)
 {
     uint8_t *buffer, buf_len, i;
 
