@@ -60,6 +60,6 @@ sign(const char* keypath, const uint8_t* payload, const size_t plen, size_t* sle
 /**
  * This function is in charge of creating a random Initialization Vector for an AES cipher.
  * \param iv_len a pointer where the function will store the length of the iv.
- * \returns a pointer to a buffero of *iv_len bytes.
+ * \returns a pointer to a buffero of *iv_len bytes or NULL in case of error.
  */
 uint8_t* generate_random_aes_iv (uint8_t *iv_len);
