@@ -310,6 +310,7 @@ main (int argc, char **argv)
         }
 
         // TODO: now we wait here until the client doesn't send something creepy
+        
     }
     close(sstate.acc_skt);
     close(sstate.comm_skt);
