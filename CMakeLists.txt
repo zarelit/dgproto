@@ -4,6 +4,7 @@
 cmake_minimum_required (VERSION 2.6)
 project (checure)
 find_package(OpenSSL REQUIRED)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
 add_executable (client src/client.c src/protocol.c src/utils.c)
 add_executable (server src/server.c src/protocol.c src/utils.c)
