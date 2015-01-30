@@ -14,6 +14,7 @@
 #include <netdb.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
+#include <openssl/bn.h>
 #include <unistd.h>
 
 #define SRV_PORT "1096"

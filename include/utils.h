@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <openssl/bn.h>
 
 /**
  * Wrapper around send() that manages partial transmissions
@@ -55,3 +56,12 @@ uint8_t* do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t*
  */
 uint8_t*
 sign(const char* keypath, const uint8_t* payload, const size_t plen, size_t* slen);
+
+/**
+ * Verify the signature of a nonce
+ * \param keypath is a string with the path to a PEM public key
+ * \param nonce is the nonce to be verified
+ * \param slen is the actual length of the signature
+ * \returns whether the signature is valid or not - 0 is not valid
+ */
+int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen);
