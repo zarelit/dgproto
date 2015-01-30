@@ -28,6 +28,7 @@ void hexdump(FILE* fh, unsigned char* buf, size_t buflen);
  * bit encryption algorithm.
  * \param msg the message to be encrypted.
  * \param key the key you need for encryption.
+ * \param iv the initialization vector for the cipher to crypt.
  * \param msg_len the length of msg, if the function succeed this variable will store the length
  * of the encrypted message.
  * \returns a string of bytes which contains the encrypted message or NULL in case of error.
@@ -41,6 +42,7 @@ uint8_t* do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_l
  * \param key the key you need for decryption.
  * \param msg_len the length of msg, if the function succeed this variable will store the length
  * of the decrypted message.
+ * \param iv the initialization vector for the cipher to crypt.
  * \returns a string of bytes which contains the decrypted message or NULL in case of error.
  */
 uint8_t* do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len);
@@ -62,4 +64,4 @@ sign(const char* keypath, const uint8_t* payload, const size_t plen, size_t* sle
  * \param iv_len a pointer where the function will store the length of the iv.
  * \returns a pointer to a buffero of *iv_len bytes or NULL in case of error.
  */
-uint8_t* generate_random_aes_iv (size_t *iv_len);
+uint8_t* generate_random_aes_iv (size_t* iv_len);
