@@ -16,7 +16,7 @@
 /**
  * The salt size, defined at compile time (GCC extension)
  */
-#define SALT_SIZE strlen(SALT);
+#define SALT_SIZE strlen(SALT)
 
 /**
  * Length of the key in bit.
@@ -86,16 +86,17 @@ uint8_t* create_m4 (size_t *msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv);
  *      SHA256(Na || Nb || SALT)
  * \param Nb the nounce of the server.
  * \param Na the nounce of the client.
- * \returns the shared session key for secure communication thorugh unsecure channel.
+ * \returns the shared session key for secure communication thorugh unsecure channel or NULL if
+ * errors occourred.
  */
-uint8_t *generate_key (BIGNUM *Na, BIGNUM *Nb);
+uint8_t* generate_key (BIGNUM *Na, BIGNUM *Nb);
 
 /**
  * This function creates a totally new random nonce. It is a BIGNUM because we need 128 bit of this
  * number and there aren't primitive types that are as long as needed so far.
  * \returns a pointer to a big num structure, initialized to a random value.
  */
-BIGNUM *generate_random_nonce (void);
+BIGNUM* generate_random_nonce (void);
 
 /**
  * This function checks the correctness of the first message of the message. It verify the
