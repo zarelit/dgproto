@@ -65,8 +65,7 @@ sign(const char* keypath, const uint8_t* payload, const size_t plen, size_t* sle
  * \param iv_len a pointer where the function will store the length of the iv.
  * \returns a pointer to a buffero of *iv_len bytes or NULL in case of error.
  */
-uint8_t*
-generate_random_aes_iv (size_t* iv_len);
+uint8_t* generate_random_aes_iv (size_t* iv_len);
 
 /*
  * Verify the signature of a nonce
