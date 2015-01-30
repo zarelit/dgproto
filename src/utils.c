@@ -102,7 +102,7 @@ do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
         *msg_len = 0;
         goto exit_do_aes256_crypt;
     }
-    *msg_len = enc_len;
+    *msg_len += enc_len;
 exit_do_aes256_crypt:
     EVP_CIPHER_CTX_cleanup(ctx);
     free(ctx);
