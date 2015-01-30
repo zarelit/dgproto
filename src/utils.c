@@ -215,7 +215,10 @@ int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
 	EVP_PKEY_CTX *verctx;
 	FILE* vkeyfh;
 	EVP_PKEY *vkey=NULL;
+
+	// Return codes and errors
 	int ret;
+	unsigned long vererr;
 
 	/*
 	 * Open the public key of the client for verification
@@ -248,10 +251,12 @@ int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
 	/* Perform actual verify operation */
 	ret = EVP_PKEY_verify(verctx, sig, slen, N, Nlen);
 	if( ret != 1 ){
-		fprintf(stderr,"The verify operation on the nonce has failed.\n");
+		vererr = ERR_get_error();
+		fprintf(stderr,"The verify operation on the nonce has failed with code %lu. RET=%d\n",vererr,ret);
 	}
 
 	free(N);
+	EVP_PKEY_CTX_free(verctx);
 	return (ret==1)?1:0;
 }
 
