@@ -264,9 +264,8 @@ generate_key (BIGNUM *Na, BIGNUM *Nb)
 {
     uint8_t *key, *tmp;
     uint8_t *Na_bin_val = NULL, *Nb_bin_val = NULL;
-    uint8_t key_len;
     EVP_MD_CTX *ctx;
-    size_t Na_len, Nb_len;
+    size_t Na_len, Nb_len, key_len;
 
     // Create the "message" to be hashed by SHA256 algorithm
     Na_len = BN_num_bytes(Na);
@@ -300,7 +299,7 @@ generate_key (BIGNUM *Na, BIGNUM *Nb)
         free(key);
         goto cleanup_generate_key;
     }
-    if (EVP_DigestFinal(ctx, key, &key_len) != 1)
+    if (EVP_DigestFinal(ctx, key, (unsigned int*) &key_len) != 1)
     {
         fprintf(stderr, "Error finalizing the hashing\n");
         free(key);
@@ -308,7 +307,7 @@ generate_key (BIGNUM *Na, BIGNUM *Nb)
     }
 
     // Check if the size of the key is correct
-    if (key_len != (KEY_SIZE >> 3))
+    if (key_len != (KEY_LEN >> 3))
     {
         fprintf(stderr, "Error, the key's length is less than expected\n");
         free(key);
