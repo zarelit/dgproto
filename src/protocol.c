@@ -12,7 +12,7 @@
 #include "../include/utils.h"
 
 uint8_t*
-create_m1 (size_t *msg_len, uint8_t id, BIGNUM* Na)
+create_m1 (size_t* msg_len, uint8_t id, BIGNUM* Na)
 {
 	// The whole message M1
     uint8_t* msg;
@@ -102,7 +102,7 @@ create_m1 (size_t *msg_len, uint8_t id, BIGNUM* Na)
 }
 
 uint8_t*
-create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na)
+create_m2 (size_t* msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t* iv)
 {
     uint8_t *msg; // The message this function is able to build
     uint8_t *enc_part, *tmp; // The encrypted part of the message
@@ -214,19 +214,29 @@ exit_create_m2:
 }
 
 uint8_t*
-create_m3 (size_t *msg_len, BIGNUM* key, BIGNUM* Nb)
+create_m3 (size_t* msg_len, BIGNUM* key, BIGNUM* Nb, uint8_t* iv)
 {
     uint8_t* msg = NULL;
-
     return msg;
 }
 
 uint8_t*
-create_m4 (size_t *msg_len, uint8_t* key, BIGNUM* Nb)
+create_m4 (size_t* msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv)
 {
-    uint8_t* msg = NULL;
+    uint8_t *encr_msg = NULL;
+    uint8_t *Na_bin_val, Na_len;
 
-    return msg;
+    Na_bin_val = malloc(BN_num_bytes(Na));
+    Na_len = BN_bn2bin(Na, Na_bin_val);
+    encr_msg = do_aes256_crypt(Na_bin_val, key, iv, msg_len);
+    if (encr_msg == NULL)
+    {
+        fprintf(stderr, "Error crypting the message m3\n");
+    }
+
+exit_create_m4:
+    free(Na_bin_val);
+    return encr_msg;
 }
 
 BIGNUM*
