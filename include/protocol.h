@@ -50,7 +50,7 @@ uint8_t* create_m1 (size_t *msg_len, uint8_t id, BIGNUM* Na);
  * \param iv a pointer where the initialization vector will be stored by this function
  * \returns a byte string that contains the message ready to be sent or NULL if an error occours.
  */
-uint8_t* create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t* iv);
+uint8_t* create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv);
 
 /**
  * This function permits to create in one single shot the third message of the D&G protocol.
