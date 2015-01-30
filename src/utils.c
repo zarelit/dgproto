@@ -222,7 +222,7 @@ int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
 	 */
 	vkeyfh = fopen(keypath,"r");
 	if(!vkeyfh) exit(EXIT_FAILURE);
-	vkey = PEM_read_PrivateKey(vkeyfh, &vkey, NULL, NULL);
+	vkey = PEM_read_PUBKEY(vkeyfh, &vkey, NULL, NULL);
 	if(!vkey){
 		fprintf(stderr,"Cannot read verification key from file %s\n", keypath);
 		exit(EXIT_FAILURE);
