@@ -246,7 +246,8 @@ int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
 	Nlen = BN_bn2bin(nonce, N);
 
 	/* Perform actual verify operation */
-	if( (ret = EVP_PKEY_verify(verctx, sig, slen, N, Nlen)) <=0 ){
+	ret = EVP_PKEY_verify(verctx, sig, slen, N, Nlen);
+	if( ret != 1 ){
 		fprintf(stderr,"The verify operation on the nonce has failed.\n");
 	}
 
