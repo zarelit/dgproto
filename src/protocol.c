@@ -122,7 +122,7 @@ create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na)
         *msg_len = 0;
         goto exit_create_m2;
     }
-    cpub_key = (cpub_key_file, &cpub_key, NULL, NULL);
+    cpub_key = PEM_read_PUBKEY(cpub_key_file, &cpub_key, NULL, NULL);
     if (cpub_key == NULL)
     {
         fprintf(stderr, "Error: can't read client public key\n");
@@ -216,7 +216,7 @@ exit_create_m2:
 uint8_t*
 create_m3 (size_t *msg_len, BIGNUM* key, BIGNUM* Nb)
 {
-    uint8_t* msg;
+    uint8_t* msg = NULL;
 
     return msg;
 }
@@ -224,7 +224,7 @@ create_m3 (size_t *msg_len, BIGNUM* key, BIGNUM* Nb)
 uint8_t*
 create_m4 (size_t *msg_len, uint8_t* key, BIGNUM* Nb)
 {
-    uint8_t* msg;
+    uint8_t* msg = NULL;
 
     return msg;
 }

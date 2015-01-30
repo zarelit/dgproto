@@ -138,7 +138,7 @@ exit_receive_message:
 int
 run_protocol (srv_state *ss)
 {
-    size_t recv_bytes, msg_len;
+    size_t msg_len;
     uint8_t ret_val = 0, *msg;
 
     // Receive and verify the first message
@@ -256,7 +256,7 @@ main (int argc, char **argv)
 {
     srv_state sstate;
     struct addrinfo hints, *servinfo, *it;
-    int yes = 1, ret_val, i = 0;
+    int yes = 1, ret_val;
 
     init_server_state(&sstate);
     hints = init_hints();
@@ -298,7 +298,7 @@ main (int argc, char **argv)
     }
     while(1) {
         printf("Server: waiting for connections...\n");
-        if (sstate.comm_skt = wait_connection(sstate.acc_skt) == -1)
+        if ((sstate.comm_skt = wait_connection(sstate.acc_skt)) == -1)
         {
             perror("wait_connection");
             continue;

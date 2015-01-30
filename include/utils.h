@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdint.h>
+#include <openssl/rand.h>
 
 /**
  * Wrapper around send() that manages partial transmissions
@@ -21,7 +22,6 @@ void sendbuf(int sock, unsigned char* buf, ssize_t len);
  * \param fh the file used for output. can be stderr, for example
  */
 void hexdump(FILE* fh, unsigned char* buf, size_t buflen);
-
 
 /**
  * It permits to encrypt the message <b>msg</b> with the key <b>key</b> using AES 256
