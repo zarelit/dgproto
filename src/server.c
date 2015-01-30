@@ -16,9 +16,9 @@ typedef struct server_state
     BIGNUM *Nb; // Server random nonce
     BIGNUM *Na; // Client-created random nonce
     struct sockaddr_in addr;
-    uint8_t *session_key;
+    uint8_t *session_key, *iv;
     uint8_t *buffer;
-    size_t buf_len, key_len;
+    size_t buf_len, key_len, iv_len;
     int acc_skt; // Socket for accepting incoming requests
     int comm_skt; // Socket for communicating
 } srv_state;
@@ -130,7 +130,7 @@ exit_receive_message:
 }
 
 /**
- * This function makes the protocol to begin for establishing a session key between server and the
+ * This function makes the protocol to start for establishing a session key between server and the
  * client in order to make them to communicate in a secure way thorugh a unsecure channel.
  * \param ss the server state that contains all the needed field for the communication to be started
  * \returns 0 if the protocol has success, -1 otherwise.
@@ -157,7 +157,7 @@ run_protocol (srv_state *ss)
 
     // Create and send message m2 and the key
     ss -> Nb = generate_random_nonce();
-    msg = create_m2(&msg_len, 1, ss -> Nb, ss -> Na);
+    msg = create_m2(&msg_len, 1, ss -> Nb, ss -> Na, &(ss -> iv));
     if (msg == NULL)
     {
         ret_val = -1;
@@ -182,7 +182,7 @@ run_protocol (srv_state *ss)
     }
 
     // The last message of the protocol
-    msg = create_m4(&msg_len, ss -> session_key, ss -> Na);
+    msg = create_m4(&msg_len, ss -> session_key, ss -> Na, ss -> iv);
     sendbuf(ss -> comm_skt, msg, msg_len); // It exits the program on error
     ret_val = 0;
 
