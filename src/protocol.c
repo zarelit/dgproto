@@ -201,7 +201,6 @@ create_m2 (size_t* msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     EVP_PKEY_CTX_free(ctx);
 
 cleanup_create_m2:
-    // The ctx was cleaned up before
     fclose(cpub_key_file);
     free(enc_part);
     free(Nb_bin_val);
@@ -233,9 +232,11 @@ create_m4 (size_t* msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv)
         fprintf(stderr, "Error crypting the message m3\n");
         *msg_len = 0;
     }
-
-    // Na_len is now storing the real size of the encrypted message
-    *msg_len = Na_len;
+    else
+    {
+        // Na_len is now storing the real size of the encrypted message
+        *msg_len = Na_len;
+    }
     free(Na_bin_val);
     return encr_msg;
 }
@@ -264,65 +265,48 @@ generate_key (BIGNUM *Na, BIGNUM *Nb)
 {
     uint8_t *key, *tmp;
     uint8_t *Na_bin_val = NULL, *Nb_bin_val = NULL;
-    EVP_MD_CTX *ctx;
-    size_t Na_len, Nb_len, key_len;
+    size_t Na_len, Nb_len, tmp_len;
 
     // Create the "message" to be hashed by SHA256 algorithm
-    Na_len = BN_num_bytes(Na);
-    Nb_len = BN_num_bytes(Nb);
-    key = malloc(Na_len + Nb_len + SALT_SIZE);
-    if (key == NULL)
-    {
-        fprintf(stderr, "Error allocating memory for the key\n");
-        goto exit_generate_key;
-    }
-    tmp = key;
     Na_len = BN_bn2bin(Na, Na_bin_val);
     Nb_len = BN_bn2bin(Nb, Nb_bin_val);
+    tmp_len = Na_len + Nb_len + SALT_SIZE;
+    tmp = malloc(tmp_len);
+    if (tmp == NULL)
+    {
+        fprintf(stderr, "Error allocating memory for the key\n");
+        key = NULL;
+        goto exit_generate_key;
+    }
+    key = tmp;
     memcpy((void*) key, (void *) Na_bin_val, Na_len);
     tmp += Na_len;
     memcpy((void*) tmp, (void *) Nb_bin_val, Nb_len);
     tmp += Nb_len;
     memcpy((void*) tmp, (void *) SALT, SALT_SIZE);
+    tmp = key;
 
-    // Do the hashing of {Na || Nb || SALT}
-    ctx = EVP_MD_CTX_create();
-    if (EVP_DigestInit(ctx, EVP_sha256()) != 1)
+    // Get the hash of the temporary "message"
+    key = do_sha256_digest(tmp, tmp_len);
+    free(tmp);
+    if (key == NULL)
     {
-        fprintf(stderr, "Error initializing digest algorithm\n");
-        free(key);
-        goto cleanup_generate_key;
-    }
-    if (EVP_DigestUpdate(ctx, key, (Na_len + Nb_len + SALT_SIZE)) != 1)
-    {
-        fprintf(stderr, "Error during the hashing of the key\n");
-        free(key);
-        goto cleanup_generate_key;
-    }
-    if (EVP_DigestFinal(ctx, key, (unsigned int*) &key_len) != 1)
-    {
-        fprintf(stderr, "Error finalizing the hashing\n");
-        free(key);
-        goto cleanup_generate_key;
+        fprintf(stderr, "Error creating the key\n");
     }
 
-    // Check if the size of the key is correct
-    if (key_len != (KEY_LEN >> 3))
-    {
-        fprintf(stderr, "Error, the key's length is less than expected\n");
-        free(key);
-    }
-cleanup_generate_key:
-    EVP_MD_CTX_cleanup(ctx);
-    free(ctx);
 exit_generate_key:
+    free(tmp);
     return key;
 }
 
 int
 verifymessage_m1 (uint8_t *msg, size_t *msg_len)
 {
-    return 0;
+    int ret_val = 0;
+    BIGNUM* Na;
+    /* A,{Na, sign(Na)} */
+
+    return ret_val;
 }
 
 int

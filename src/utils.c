@@ -286,3 +286,52 @@ generate_random_aes_iv (size_t *iv_len)
 exit_generate_random_aes_iv:
     return buffer;
 }
+
+uint8_t*
+do_sha256_digest (uint8_t* msg, size_t msg_len)
+{
+    uint8_t *dig;
+    size_t dig_len;
+    EVP_MD_CTX *ctx;
+
+    dig = malloc(EVP_MD_size(EVP_sha256()));
+    if (dig == NULL)
+    {
+        fprintf(stderr, "Error allocating memory for the digest\n");
+        goto exit_do_sha256_digest;
+    }
+
+    // Do the hashing of the msg
+    ctx = EVP_MD_CTX_create();
+    if (EVP_DigestInit(ctx, EVP_sha256()) != 1)
+    {
+        fprintf(stderr, "Error initializing digest algorithm\n");
+        free(dig);
+        goto cleanup_do_sha256_digest;
+    }
+    if (EVP_DigestUpdate(ctx, msg, msg_len) != 1)
+    {
+        fprintf(stderr, "Error during the hashing of the message\n");
+        free(dig);
+        goto cleanup_do_sha256_digest;
+    }
+    if (EVP_DigestFinal(ctx, dig, (unsigned int*) &dig_len) != 1)
+    {
+        fprintf(stderr, "Error finalizing the digest\n");
+        free(dig);
+        goto cleanup_do_sha256_digest;
+    }
+
+    // Check if the size is correct
+    if (dig_len != EVP_MD_size(EVP_sha256()))
+    {
+        fprintf(stderr, "Error, the digest's length is less than expected\n");
+        free(dig);
+    }
+
+cleanup_do_sha256_digest:
+    EVP_MD_CTX_cleanup(ctx);
+    free(ctx);
+exit_do_sha256_digest:
+    return dig;
+}
