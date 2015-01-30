@@ -26,7 +26,7 @@ int main(){
 	No = generate_random_nonce();
 	Noval = malloc(BN_num_bytes(No));
     Nolen = BN_bn2bin(No, Noval);
-	dump("Generated nonce",Noval,Nolen);
+	dump("Nonce",Noval,Nolen);
 
 	doing("Sign nonce");
 	sig = sign("keys/client.pem",Noval,Nolen,&siglen);
