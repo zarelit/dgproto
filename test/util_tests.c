@@ -34,7 +34,7 @@ int main(){
 
 	doing("Verify a correct signature");
 	ret = verify("keys/client.pub.pem", No, sig, siglen);
-	if(ret){
+	if(!ret){
 		say("Verification failed.");
 	}else{
 		say("Verification successful");
