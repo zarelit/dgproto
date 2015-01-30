@@ -14,6 +14,11 @@
 #define SALT "FzHp3CbMao"
 
 /**
+ * The salt size, defined at compile time (GCC extension)
+ */
+#define SALT_SIZE strlen(SALT);
+
+/**
  * Length of the key in bit.
  */
 #define KEY_LEN 256
@@ -77,7 +82,8 @@ uint8_t* create_m3 (size_t *msg_len, BIGNUM* key, BIGNUM* Nb, uint8_t* iv);
 uint8_t* create_m4 (size_t *msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv);
 
 /**
- * This function contains the key generation algorithm.
+ * This function contains the key generation algorithm. The key is computed as follow:
+ *      SHA256(Na || Nb || SALT)
  * \param Nb the nounce of the server.
  * \param Na the nounce of the client.
  * \returns the shared session key for secure communication thorugh unsecure channel.
