@@ -193,12 +193,11 @@ create_m2 (size_t* msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     tmp = msg;
     memcpy(msg, (void *)&id, sizeof(id));
     tmp += sizeof(id);
-    memcpy(tmp, aes_iv, iv_len);
+    memcpy(tmp, *iv, iv_len);
     tmp += iv_len;
     memcpy(tmp, enc_part, enc_part_len);
 
     // Clean up
-    free(aes_iv);
     EVP_PKEY_CTX_free(ctx);
 
 cleanup_create_m2:
@@ -223,15 +222,19 @@ uint8_t*
 create_m4 (size_t* msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv)
 {
     uint8_t *encr_msg = NULL;
-    uint8_t *Na_bin_val, Na_len;
+    uint8_t *Na_bin_val;
+    size_t Na_len;
 
     Na_bin_val = malloc(BN_num_bytes(Na));
     Na_len = BN_bn2bin(Na, Na_bin_val);
-    encr_msg = do_aes256_crypt(Na_bin_val, key, iv, msg_len);
+    encr_msg = do_aes256_crypt(Na_bin_val, key, iv, &Na_len);
     if (encr_msg == NULL)
     {
         fprintf(stderr, "Error crypting the message m3\n");
+        *msg_len = 0;
     }
+    // Na_len is now storing the real size of the encrypted message
+    *msg_len = Na_len;
     free(Na_bin_val);
     return encr_msg;
 }
