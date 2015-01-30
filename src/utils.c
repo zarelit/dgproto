@@ -68,7 +68,7 @@ do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
     size_t enc_len; // Encypted message length and block size of the cipher
     const size_t bsize = EVP_CIPHER_block_size(EVP_aes_256_cbc());
 
-    if (iv == NULL || msg == NULL || key == NULL || *msg_len < 0)
+    if (iv == NULL || msg == NULL || key == NULL || *msg_len <= 0)
     {
         fprintf(stderr, "Error: invalid argument passed");
         encr_msg = NULL;

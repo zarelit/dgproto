@@ -164,8 +164,8 @@ run_protocol (srv_state *ss)
         goto exit_run_protocol;
     }
     sendbuf(ss -> comm_skt, msg, msg_len); // It exits the program on error
-    ss -> session_key = generate_key(ss -> Na, ss -> Nb);
     free(msg);
+    ss -> session_key = generate_key(ss -> Na, ss -> Nb);
 
     // Receive and verify the message m3
     ret_val = receive_message(M3, ss);
