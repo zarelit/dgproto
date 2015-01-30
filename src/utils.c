@@ -210,7 +210,7 @@ generate_random_aes_iv (size_t *iv_len)
 {
     uint8_t *buffer, buf_len, i;
 
-    buf_len = EVP_CIPHER_CTX_iv_length(EVP_aes_256_cbc());
+    buf_len = EVP_CIPHER_iv_length(EVP_aes_256_cbc());
     buffer = malloc(buf_len);
     if (buffer == NULL)
     {

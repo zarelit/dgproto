@@ -157,7 +157,12 @@ run_protocol (srv_state *ss)
 
     // Create and send message m2 and the key
     ss -> Nb = generate_random_nonce();
-    msg = create_m2(&msg_len, 1, ss -> Nb);
+    msg = create_m2(&msg_len, 1, ss -> Nb, ss -> Na);
+    if (msg == NULL)
+    {
+        ret_val = -1;
+        goto exit_run_protocol;
+    }
     sendbuf(ss -> comm_skt, msg, msg_len); // It exits the program on error
     ss -> session_key = generate_key(ss -> Na, ss -> Nb);
     free(msg);
@@ -310,7 +315,7 @@ main (int argc, char **argv)
         }
 
         // TODO: now we wait here until the client doesn't send something creepy
-        
+
     }
     close(sstate.acc_skt);
     close(sstate.comm_skt);
