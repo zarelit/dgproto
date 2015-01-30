@@ -102,12 +102,11 @@ create_m1 (size_t* msg_len, uint8_t id, BIGNUM* Na)
 }
 
 uint8_t*
-create_m2 (size_t* msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t* iv)
+create_m2 (size_t* msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
 {
     uint8_t *msg; // The message this function is able to build
     uint8_t *enc_part, *tmp; // The encrypted part of the message
     uint8_t *signature, *Na_bin_val, *Nb_bin_val;
-    uint8_t *aes_iv; // Initialization vector for the aes cipher
     size_t sig_len, enc_part_len, Nb_len, Na_len, iv_len;
     EVP_PKEY *cpub_key = NULL;
     EVP_PKEY_CTX *ctx = NULL;
@@ -173,8 +172,8 @@ create_m2 (size_t* msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t* iv)
         goto cleanup_create_m2;
     }
     // Create the random Initialization Vector
-    aes_iv = generate_random_aes_iv(&iv_len);
-    if (aes_iv == NULL)
+    *iv = generate_random_aes_iv(&iv_len);
+    if (*iv == NULL)
     {
         fprintf(stderr, "Error generating the IV\n");
         msg = NULL;
@@ -233,8 +232,6 @@ create_m4 (size_t* msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv)
     {
         fprintf(stderr, "Error crypting the message m3\n");
     }
-
-exit_create_m4:
     free(Na_bin_val);
     return encr_msg;
 }
