@@ -151,7 +151,7 @@ do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
         *msg_len = 0;
         goto exit_do_aes256_decrypt;
     }
-    *msg_len += dec_len;
+    *msg_len = dec_len;
     exit_do_aes256_decrypt:
     EVP_CIPHER_CTX_cleanup(ctx);
     free(ctx);
