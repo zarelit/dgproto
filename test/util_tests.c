@@ -1,6 +1,10 @@
 #include "../include/common.h"
 #include "../include/utils.h"
 
+#define say(yeah) printf("%s\n",yeah)
+#define dump(name, quantity, length) printf("%s length: %d\n", name, length);\
+									 printf("%s dump:\n", name);\
+									 hexdump(stdout,quantity, length);
 int main(){
 	char tbs[]="Stringa da firmare";
 	int tbslen=strlen(tbs);
