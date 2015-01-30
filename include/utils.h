@@ -57,8 +57,7 @@ uint8_t* do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t*
  * \returns a buffer with the signed content.
  * \warning the result is dynamically allocated. Memory must be freed manually.
  */
-uint8_t*
-sign(const char* keypath, const uint8_t* payload, const size_t plen, size_t* slen);
+uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, size_t* slen);
 
 /**
  * This function is in charge of creating a random Initialization Vector for an AES cipher.
