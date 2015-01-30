@@ -59,6 +59,7 @@ uint8_t* create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t
  * \param key the session key for encrypting the message.
  * \param msg_len the length of the message this function has built.
  * \param Nb the nonce to be hashed and crypted.
+ * \param iv the initialization vector for the cipher to encrypt.
  * \returns a byte string that contains the message ready to be sent.
  */
 uint8_t* create_m3 (size_t *msg_len, BIGNUM* key, BIGNUM* Nb, uint8_t* iv);
@@ -70,6 +71,7 @@ uint8_t* create_m3 (size_t *msg_len, BIGNUM* key, BIGNUM* Nb, uint8_t* iv);
  * \param key the session key for encrypting the message.
  * \param msg_len the length of the message this function has built.
  * \param Na the nonce to be hashed and crypted.
+ * \param iv the initialization vector for the cipher to encrypt.
  * \returns a byte string that contains the message ready to be sent.
  */
 uint8_t* create_m4 (size_t *msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv);
