@@ -62,11 +62,11 @@ uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, si
 /**
  * This function is in charge of creating a random Initialization Vector for an AES cipher.
  * \param iv_len a pointer where the function will store the length of the iv.
- * \returns a pointer to a buffero of *iv_len bytes or NULL in case of error.
+ * \returns a pointer to a buffer of iv_len bytes or NULL in case of error.
  */
 uint8_t* generate_random_aes_iv (size_t* iv_len);
 
-/*
+/**
  * Verify the signature of a nonce
  * \param keypath is a string with the path to a PEM public key
  * \param nonce is the nonce to be verified
@@ -74,3 +74,12 @@ uint8_t* generate_random_aes_iv (size_t* iv_len);
  * \returns whether the signature is valid or not - 0 is not valid
 */
 int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen);
+
+/**
+ * The function computes the SHA256 of the message passed by parameter.
+ * \param msg the message the hash has to be computed.
+ * \param msg_len the length in bytes of the message.
+ * \returns a pointer to a byte string containing the SHA256 of the message, or NULL if errors
+ * occourred.
+ */
+uint8_t* do_sha256_digest (uint8_t* msg, size_t msg_len);
