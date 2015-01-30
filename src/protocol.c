@@ -193,12 +193,11 @@ create_m2 (size_t* msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     tmp = msg;
     memcpy(msg, (void *)&id, sizeof(id));
     tmp += sizeof(id);
-    memcpy(tmp, aes_iv, iv_len);
+    memcpy(tmp, *iv, iv_len);
     tmp += iv_len;
     memcpy(tmp, enc_part, enc_part_len);
 
     // Clean up
-    free(aes_iv);
     EVP_PKEY_CTX_free(ctx);
 
 cleanup_create_m2:
