@@ -8,7 +8,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
 add_executable (client src/client.c src/protocol.c src/utils.c)
 add_executable (server src/server.c src/protocol.c src/utils.c)
-add_executable (testz test/util_tests.c src/utils.c)
+add_executable (testz test/util_tests.c src/utils.c src/protocol.c)
 
 target_link_libraries(client ${OPENSSL_LIBRARIES})
 target_link_libraries(server ${OPENSSL_LIBRARIES})

@@ -202,7 +202,56 @@ uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, si
 		exit(EXIT_FAILURE);
 	}
 
+	EVP_PKEY_CTX_free(sigctx);
 	return sig;
+}
+
+int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
+	// Nonce
+	uint8_t* N;
+	size_t Nlen;
+
+	// Context and key
+	EVP_PKEY_CTX *verctx;
+	FILE* vkeyfh;
+	EVP_PKEY *vkey=NULL;
+	int ret;
+
+	/*
+	 * Open the public key of the client for verification
+	 */
+	vkeyfh = fopen(keypath,"r");
+	if(!vkeyfh) exit(EXIT_FAILURE);
+	vkey = PEM_read_PrivateKey(vkeyfh, &vkey, NULL, NULL);
+	if(!vkey){
+		fprintf(stderr,"Cannot read verification key from file %s\n", keypath);
+		exit(EXIT_FAILURE);
+	}
+
+	verctx = EVP_PKEY_CTX_new(vkey, NULL);
+	if (!verctx){
+		fprintf(stderr,"Cannot create a verify context\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (EVP_PKEY_verify_init(verctx) <= 0){
+		fprintf(stderr,"Cannot create a verify context\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/*
+	 * Convert the nonce in a string so that it can be verified
+	 */
+	N = malloc(BN_num_bytes(nonce));
+	Nlen = BN_bn2bin(nonce, N);
+
+	/* Perform actual verify operation */
+	if( ret =  EVP_PKEY_verify(verctx, sig, slen, N, Nlen) <=0 ){
+		fprintf(stderr,"The verify operation on the nonce has failed.\n");
+	}
+
+	free(N);
+	return (ret==1)?1:0;
 }
 
 uint8_t*
