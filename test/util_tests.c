@@ -10,12 +10,17 @@
 #define doing(something) printf("** "); say(something);
 
 int main(){
+	// The test nonce
+	BIGNUM* No;
+	uint8_t* Noval;
+	int Nolen;
+
+	// The test signature
 	uint8_t* sig;
 	size_t siglen;
 
-	BIGNUM* No; // A Nonce
-	uint8_t* Noval;
-	int Nolen;
+	// Auxiliary variables
+	int ret;
 
 	doing("Generate a nonce");
 	No = generate_random_nonce();
@@ -27,6 +32,13 @@ int main(){
 	sig = sign("keys/client.pem",Noval,Nolen,&siglen);
 	dump("Nonce signature", sig, siglen);
 
+	doing("Verify a correct signature");
+	ret = verify("keys/client.pub.pem", No, sig, siglen);
+	if(ret){
+		say("Verification failed.");
+	}else{
+		say("Verification successful");
+	}
 
 	return 0;
 }
