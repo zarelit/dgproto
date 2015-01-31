@@ -24,6 +24,11 @@
 #define KEY_LEN 256
 
 /**
+ * Actor IDentifier Type.
+ */
+typedef uint8_t aid_t;
+
+/**
  * This function permits to create in one single shot the first message of the D&G protocol.
  * The first message simply contains a cleartext identifier of who wants to start the protocol and
  * a signed and crypted nounce called N_a.
@@ -36,7 +41,7 @@
  * bit described in the protocol report.
  * \returns a byte string that contains the message ready to be sent.
  */
-uint8_t* create_m1 (size_t *msg_len, uint8_t id, BIGNUM* Na);
+uint8_t* create_m1 (size_t *msg_len, aid_t id, BIGNUM* Na);
 
 /**
  * This function permits to create in one single shot the second message of the D&G protocol.
@@ -55,7 +60,7 @@ uint8_t* create_m1 (size_t *msg_len, uint8_t id, BIGNUM* Na);
  * \param iv a pointer where the initialization vector will be stored by this function
  * \returns a byte string that contains the message ready to be sent or NULL if an error occours.
  */
-uint8_t* create_m2 (size_t *msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv);
+uint8_t* create_m2 (size_t *msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv);
 
 /**
  * This function permits to create in one single shot the third message of the D&G protocol.

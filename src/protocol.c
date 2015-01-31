@@ -12,7 +12,7 @@
 #include "../include/utils.h"
 
 uint8_t*
-create_m1 (size_t* msg_len, uint8_t id, BIGNUM* Na)
+create_m1 (size_t* msg_len, aid_t id, BIGNUM* Na)
 {
 	// The whole message M1
     uint8_t* msg;
@@ -102,7 +102,7 @@ create_m1 (size_t* msg_len, uint8_t id, BIGNUM* Na)
 }
 
 uint8_t*
-create_m2 (size_t* msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
+create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
 {
     uint8_t *msg; // The message this function is able to build
     uint8_t *enc_part, *tmp; // The encrypted part of the message
@@ -303,6 +303,7 @@ int
 verifymessage_m1 (uint8_t *msg, size_t *msg_len)
 {
     int ret_val = 0;
+
     BIGNUM* Na;
     /* A,{Na, sign(Na)} */
 
