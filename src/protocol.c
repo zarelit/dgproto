@@ -201,7 +201,6 @@ create_m2 (size_t* msg_len, uint8_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     EVP_PKEY_CTX_free(ctx);
 
 cleanup_create_m2:
-    // The ctx was cleaned up before
     fclose(cpub_key_file);
     free(enc_part);
     free(Nb_bin_val);
@@ -233,8 +232,11 @@ create_m4 (size_t* msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv)
         fprintf(stderr, "Error crypting the message m3\n");
         *msg_len = 0;
     }
-    // Na_len is now storing the real size of the encrypted message
-    *msg_len = Na_len;
+    else
+    {
+        // Na_len is now storing the real size of the encrypted message
+        *msg_len = Na_len;
+    }
     free(Na_bin_val);
     return encr_msg;
 }
@@ -258,16 +260,53 @@ generate_random_nonce (void){
 	return nonce;
 }
 
-uint8_t
-*generate_key (BIGNUM *Na, BIGNUM *Nb)
+uint8_t*
+generate_key (BIGNUM *Na, BIGNUM *Nb)
 {
-    return NULL;
+    uint8_t *key, *tmp;
+    uint8_t *Na_bin_val = NULL, *Nb_bin_val = NULL;
+    size_t Na_len, Nb_len, tmp_len;
+
+    // Create the "message" to be hashed by SHA256 algorithm
+    Na_len = BN_bn2bin(Na, Na_bin_val);
+    Nb_len = BN_bn2bin(Nb, Nb_bin_val);
+    tmp_len = Na_len + Nb_len + SALT_SIZE;
+    tmp = malloc(tmp_len);
+    if (tmp == NULL)
+    {
+        fprintf(stderr, "Error allocating memory for the key\n");
+        key = NULL;
+        goto exit_generate_key;
+    }
+    key = tmp;
+    memcpy((void*) key, (void *) Na_bin_val, Na_len);
+    tmp += Na_len;
+    memcpy((void*) tmp, (void *) Nb_bin_val, Nb_len);
+    tmp += Nb_len;
+    memcpy((void*) tmp, (void *) SALT, SALT_SIZE);
+    tmp = key;
+
+    // Get the hash of the temporary "message"
+    key = do_sha256_digest(tmp, tmp_len);
+    free(tmp);
+    if (key == NULL)
+    {
+        fprintf(stderr, "Error creating the key\n");
+    }
+
+exit_generate_key:
+    free(tmp);
+    return key;
 }
 
 int
 verifymessage_m1 (uint8_t *msg, size_t *msg_len)
 {
-    return 0;
+    int ret_val = 0;
+    BIGNUM* Na;
+    /* A,{Na, sign(Na)} */
+
+    return ret_val;
 }
 
 int
