@@ -14,12 +14,27 @@ conc_msgs (size_t* buf_len, size_t argc, ...)
     uint8_t *buffer, *tmp;
     size_t el_cnt; // ELement CouNTer
 
+    // Input error checking
+    if (buf_len == NULL || argc == 0)
+    {
+        buffer = NULL;
+        fprintf(stderr, "Invalid argument\n");
+        goto exit_conc_msgs;
+    }
+
     // Compute the total number of bytes the buffer has to have
     *buf_len = 0;
     va_start(msgs, argc);
     for (el_cnt = 0; el_cnt < argc; el_cnt ++)
     {
         msg = va_arg(msgs, msg_data);
+        if (msg.data == NULL || msg.data_len == 0)
+        {
+            buffer = NULL;
+            *buf_len = 0;
+            fprintf(stderr, "Element number %d of the list is not correct\n",(int) el_cnt);
+            goto exit_conc_msgs;
+        }
         *buf_len += msg.data_len;
     }
     va_end(msgs);
@@ -40,11 +55,53 @@ conc_msgs (size_t* buf_len, size_t argc, ...)
         tmp += msg.data_len;
     }
     va_end(msgs);
+
 exit_conc_msgs:
     return buffer;
 
 }
 
+uint8_t
+extr_msgs (uint8_t* buffer, size_t argc, ...)
+{
+    va_list msgs;
+    uint8_t ret_val = 0;
+    uint8_t *data_p; // Data pointer
+    size_t el_cnt;   // ELement CouNTer
+    msg_data *msg;
+
+    // Input error checking
+    if (argc == 0)
+    {
+        fprintf(stderr, "Parameter argc is 0\n");
+        goto exit_extr_msgs;
+    }
+
+    // Extract the messages of the buffer
+    va_start(msgs, argc);
+    data_p = buffer;
+    for (el_cnt = 0; el_cnt < argc; el_cnt ++)
+    {
+        msg = va_arg(msgs, msg_data*);
+        if (msg == NULL)
+        {
+            fprintf(stderr, "Pointer number %d of the list is NULL\n", (int) el_cnt);
+            break;
+        }
+        if (msg -> data_len == 0)
+        {
+            fprintf(stderr, "Data len of the element number %d of the list is 0\n", (int) el_cnt);
+            break;
+        }
+        msg -> data = data_p;
+        data_p += msg -> data_len;
+    }
+    va_end(msgs);
+
+    ret_val = 1;
+exit_extr_msgs:
+    return ret_val;
+}
 
 void sendbuf(int sock, unsigned char* buf, ssize_t len){
 	ssize_t sent=0;

@@ -14,15 +14,13 @@
  * \struct msg_data
  * \brief Structure for the data part of any possible message.
  * \details The structure contains a pointer to the data of the message and the length in bytes
- * of the data itself. This structure is very useful for concatenating parts of a message.
- * \var msg_data::data
- * \details Binary data of the message.
- * \var msg_data::data_len
- * \details Length in bytes of the '#data' field of this struct.
+ * of the data itself. This structure is very useful for concatenating parts of a message
  */
 typedef struct message_data
 {
+    /*! Binary data of the message.*/
     uint8_t* data;
+    /*! Length in bytes of the '#data' field of this struct.*/
     size_t data_len;
 } msg_data;
 
@@ -30,13 +28,45 @@ typedef struct message_data
  * This function concatenates the msg_data structures passed by parameter in one single data
  * structure. This function accepts a variable number of arguments in order to add all the messages
  * that has to be concatenated.
- * \param buf_len A pointer used for storing the length of the resulting concatenated message.
- * \param argc How many msg_data have been passed to this function
- * \param ... A variable ordered list of msg_data structures which will be concatenated.
+ * \param[out] buf_len A pointer used for storing the length of the resulting concatenated message.
+ * \param[in] argc How many msg_data have been passed to this function
+ * \param[in] ... A variable ordered list of msg_data structures which will be concatenated.
  * \returns A pointer to a buffer where is stored the entire message composed by the msg_data
  * structures passed by parameters or NULL if errors occourred.
  */
 uint8_t* conc_msgs (size_t* buf_len, size_t argc, ...);
+
+
+/**
+ * This function makes possible to extract all the fields inside a byte buffer given by parameter.
+ * It uses a variable argument list of type \ref msg_data where each \ref msg_data struct has its
+ * \ref msg_data::data "data" field equals to NULL. For example:
+ * \code{.c}
+ * // This code explains how to use this function for extracting 3 msg_data structure from the
+ * // buffer buf
+ * void foo (uint8_t* buf, size_t buf_len)
+ * {
+ *      msg_data msgs[3];
+ *      msgs[0].data = msgs[1].data = msgs[2].data = NULL;
+ *      // First message is 10 byte long
+ *      msgs[0].data_len = 10;
+ *      msgs[1].data_len = 8;
+ *      msgs[2].data_len = 4;
+ *      if (extr_msgs(buf, buf_len, 3, &msgs[0], &msgs[1], &msgs[2]) == 0)
+ *      {
+ *              // Error management
+ *      }
+ *      // Do something with the message list
+ * }
+ * \endcode
+ * \param[in] buffer The buffer that contains the concatenated datas.
+ * \param[in] buf_len Length of the buffer in bytes.
+ * \param[in] argc Number of the element of the list of \ref msg_data structure pointers.
+ * \param[out] ... List of \ref msg_data structure pointers with all data field set to NULL and
+ * data_len field set to a number different from 0, of course.
+ * \return 1 if all operations succeed, 0 otherwise.
+ */
+uint8_t extr_msgs (uint8_t* buffer, size_t argc, ...);
 
 /**
  * Wrapper around send() that manages partial transmissions
@@ -56,10 +86,10 @@ void hexdump(FILE* fh, unsigned char* buf, size_t buflen);
 /**
  * It permits to encrypt the message <b>msg</b> with the key <b>key</b> using AES 256
  * bit encryption algorithm.
- * \param msg the message to be encrypted.
- * \param key the key you need for encryption.
- * \param iv the initialization vector for the cipher to crypt.
- * \param msg_len the length of msg, if the function succeed this variable will store the length
+ * \param[in] msg the message to be encrypted.
+ * \param[in] key the key you need for encryption.
+ * \param[in] iv the initialization vector for the cipher to crypt.
+ * \param[out] msg_len the length of msg, if the function succeed this variable will store the length
  * of the encrypted message, otherwise it will be equal to 0.
  * \returns a string of bytes which contains the encrypted message or NULL in case of error.
  */
