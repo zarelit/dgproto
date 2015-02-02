@@ -226,14 +226,17 @@ int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
 	EVP_PKEY_CTX *verctx;
 	FILE* vkeyfh;
 	EVP_PKEY *vkey=NULL;
+
+	// Return codes and errors
 	int ret;
+	unsigned long vererr;
 
 	/*
 	 * Open the public key of the client for verification
 	 */
 	vkeyfh = fopen(keypath,"r");
 	if(!vkeyfh) exit(EXIT_FAILURE);
-	vkey = PEM_read_PrivateKey(vkeyfh, &vkey, NULL, NULL);
+	vkey = PEM_read_PUBKEY(vkeyfh, &vkey, NULL, NULL);
 	if(!vkey){
 		fprintf(stderr,"Cannot read verification key from file %s\n", keypath);
 		exit(EXIT_FAILURE);
@@ -257,11 +260,14 @@ int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
 	Nlen = BN_bn2bin(nonce, N);
 
 	/* Perform actual verify operation */
-	if( ret =  EVP_PKEY_verify(verctx, sig, slen, N, Nlen) <=0 ){
-		fprintf(stderr,"The verify operation on the nonce has failed.\n");
+	ret = EVP_PKEY_verify(verctx, sig, slen, N, Nlen);
+	if( ret != 1 ){
+		vererr = ERR_get_error();
+		fprintf(stderr,"The verify operation on the nonce has failed with code %lu. RET=%d\n",vererr,ret);
 	}
 
 	free(N);
+	EVP_PKEY_CTX_free(verctx);
 	return (ret==1)?1:0;
 }
 

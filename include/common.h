@@ -15,6 +15,7 @@
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/bn.h>
+#include <openssl/err.h>
 #include <unistd.h>
 
 #define SRV_PORT "1096"
