@@ -152,3 +152,13 @@ uint8_t* do_sha256_digest (uint8_t* msg, size_t msg_len);
  * \returns a pointer to the ciphertext
  */
 uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen);
+
+/**
+ * Decrypts a buffer with a private key
+ * \param keypath is a string with the path to a PEM private key
+ * \param p is the buffer containing the ciphertext
+ * \param plen is the length of the ciphertext
+ * \param clen is the length of the returned plaintext
+ * \returns a pointer to the plaintext
+ */
+uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen);
