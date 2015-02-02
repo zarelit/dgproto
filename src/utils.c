@@ -5,7 +5,6 @@
 #include "../include/utils.h"
 #include "../include/common.h"
 
-
 uint8_t*
 conc_msgs (size_t* buf_len, size_t argc, ...)
 {
@@ -296,6 +295,7 @@ uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, si
 
 	// Do the real signature
 	if (EVP_PKEY_sign(sigctx, sig, &siglen, payload, plen) <= 0){
+		ERR_load_crypto_strings();
 		fprintf(stderr,"Signing operation failed\n");
 		printf("%s\n", ERR_error_string(ERR_get_error(), NULL));
 		exit(EXIT_FAILURE);
