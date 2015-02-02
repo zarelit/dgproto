@@ -105,12 +105,13 @@ uint8_t*
 create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
 {
     uint8_t *msg; // The message this function is able to build
-    uint8_t *enc_part, *tmp; // The encrypted part of the message
+    uint8_t *enc_part, *plain; // The encrypted part of the message
     uint8_t *signature, *Na_bin_val, *Nb_bin_val;
-    size_t sig_len, enc_part_len, Nb_len, Na_len, iv_len;
+    size_t sig_len, enc_part_len, Nb_len, Na_len, iv_len, plain_len;
     EVP_PKEY *cpub_key = NULL;
     EVP_PKEY_CTX *ctx = NULL;
     FILE* cpub_key_file;
+    msg_data msg_parts[3];
 
     // Get the public key of the client in order to encrypt some part of the message
     cpub_key_file = fopen("keys/client.pub.pem", "r");
@@ -139,23 +140,22 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     signature = sign("keys/server.pem", Nb_bin_val, Nb_len, &sig_len);
 
     // Create the encrypted part of the message by concatenating Na, Nb and the signature
-    enc_part_len = Na_len + Nb_len + sig_len;
-    enc_part = malloc(enc_part_len);
-    if (enc_part == NULL)
+    msg_parts[0].data = Na_bin_val;
+    msg_parts[0].data_len = Na_len;
+    msg_parts[1].data = Nb_bin_val;
+    msg_parts[1].data_len = Nb_len;
+    msg_parts[2].data = signature;
+    msg_parts[2].data_len = sig_len;
+    plain = conc_msgs(&plain_len, 3, msg_parts[0], msg_parts[1], msg_parts[2]);
+    if (plain == NULL)
     {
-        fprintf(stderr, "Out of Memory");
+        fprintf(stderr, "Error concatenating encrypted part\n");
         msg = NULL;
         *msg_len = 0;
         goto cleanup_create_m2;
     }
-    tmp = enc_part;
-    memcpy(enc_part, Na_bin_val, Na_len);
-    tmp += Na_len;
-    memcpy(tmp, Nb_bin_val, Nb_len);
-    tmp += Nb_len;
-    memcpy(tmp, signature, sig_len);
 
-    // Start encryption of the enc_part of m2
+    // Start encryption of plain
     ctx = EVP_PKEY_CTX_new(cpub_key, NULL);
     if (ctx == NULL)
     {
@@ -164,7 +164,8 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
         *msg_len = 0;
         goto cleanup_create_m2;
     }
-    if (EVP_PKEY_encrypt(ctx, tmp, msg_len, enc_part, enc_part_len) <= 0)
+    enc_part = NULL;
+    if (EVP_PKEY_encrypt(ctx, enc_part, &enc_part_len, plain, plain_len) <= 0)
     {
         fprintf(stderr, "Error during encryption\n");
         msg = NULL;
@@ -182,26 +183,26 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     }
 
     // Create the whole message by concatenating the clear text part and the encrypted one
-    msg = malloc(sizeof(id) + iv_len + enc_part_len);
+    msg_parts[0].data = &id;
+    msg_parts[0].data_len = sizeof(id);
+    msg_parts[1].data = *iv;
+    msg_parts[1].data_len = iv_len;
+    msg_parts[2].data = enc_part;
+    msg_parts[2].data_len = enc_part_len;
+    msg = conc_msgs(msg_len, 3, msg_parts[0], msg_parts[1], msg_parts[2]);
     if (msg == NULL)
     {
-        fprintf(stderr, "Error allocating message\n");
+        fprintf(stderr, "Error concatenating message's parts\n");
         msg = NULL;
         *msg_len = 0;
-        goto cleanup_create_m2;
     }
-    tmp = msg;
-    memcpy(msg, (void *)&id, sizeof(id));
-    tmp += sizeof(id);
-    memcpy(tmp, *iv, iv_len);
-    tmp += iv_len;
-    memcpy(tmp, enc_part, enc_part_len);
 
     // Clean up
     EVP_PKEY_CTX_free(ctx);
 
 cleanup_create_m2:
     fclose(cpub_key_file);
+    free(plain);
     free(enc_part);
     free(Nb_bin_val);
     free(Na_bin_val);

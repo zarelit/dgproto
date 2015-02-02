@@ -6,13 +6,43 @@
 #include "../include/common.h"
 
 
-void* conc_msgs (size_t* buf_len, size_t argc, ...)
+uint8_t*
+conc_msgs (size_t* buf_len, size_t argc, ...)
 {
     va_list msgs;
     msg_data msg;
-    
+    uint8_t *buffer, *tmp;
+    size_t el_cnt; // ELement CouNTer
 
-    va_start(msgs);
+    // Compute the total number of bytes the buffer has to have
+    *buf_len = 0;
+    va_start(msgs, argc);
+    for (el_cnt = 0; el_cnt < argc; el_cnt ++)
+    {
+        msg = va_arg(msgs, msg_data);
+        *buf_len += msg.data_len;
+    }
+    va_end(msgs);
+
+    // Copy the data into the buffer
+    buffer = malloc(sizeof(uint8_t) * (*buf_len));
+    if (buffer == NULL)
+    {
+        fprintf(stderr, "Out of memory\n");
+        goto exit_conc_msgs;
+    }
+    tmp = buffer;
+    va_start(msgs, argc);
+    for (el_cnt = 0; el_cnt < argc; el_cnt ++)
+    {
+        msg = va_arg(msgs, msg_data);
+        memcpy(tmp, msg.data, msg.data_len);
+        tmp += msg.data_len;
+    }
+    va_end(msgs);
+exit_conc_msgs:
+    return buffer;
+
 }
 
 

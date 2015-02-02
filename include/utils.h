@@ -22,20 +22,21 @@
  */
 typedef struct message_data
 {
-    void* data;
+    uint8_t* data;
     size_t data_len;
 } msg_data;
 
 /**
  * This function concatenates the msg_data structures passed by parameter in one single data
- * structure. This function accepts a variable number of arguments in order to satisfy each
+ * structure. This function accepts a variable number of arguments in order to add all the messages
+ * that has to be concatenated.
  * \param buf_len A pointer used for storing the length of the resulting concatenated message.
  * \param argc How many msg_data have been passed to this function
  * \param ... A variable ordered list of msg_data structures which will be concatenated.
  * \returns A pointer to a buffer where is stored the entire message composed by the msg_data
  * structures passed by parameters or NULL if errors occourred.
  */
-void* conc_msgs (size_t* buf_len, size_t argc, ...);
+uint8_t* conc_msgs (size_t* buf_len, size_t argc, ...);
 
 /**
  * Wrapper around send() that manages partial transmissions
