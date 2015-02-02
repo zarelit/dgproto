@@ -108,7 +108,7 @@ uint8_t* do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_l
 uint8_t* do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len);
 
 /**
- * Sign something
+ * Signs a buffer using a private key
  * \param keypath is a string with the path to a PEM private key
  * \param payload is the string to be signed
  * \param plen is the length of payload in bytes
