@@ -17,10 +17,11 @@ int main(){
 
 	// The test signature
 	uint8_t* sig;
+	uint8_t* noise;
 	size_t siglen;
 
 	// Auxiliary variables
-	int ret;
+	int ret, i;
 
 	doing("Generate a nonce");
 	No = generate_random_nonce();
@@ -40,6 +41,23 @@ int main(){
 		say("Verification successful");
 	}
 
+	doing("Verify the signature with some random bits flipped");
+	noise = malloc(siglen);
+	if(RAND_bytes(noise,siglen)==1){
+		for(i=0; i<siglen; i++){
+			sig[i] ^= noise[i];
+		}
+	}
+
+	ret = verify("keys/client.pub.pem", No, sig, siglen);
+	if(!ret){
+		say("2. Test ok. Verification failed.");
+	}else{
+		say("2. Test fail. Verification successful.");
+	}
+
+	free(sig);
+	free(noise);
 	return 0;
 }
 
