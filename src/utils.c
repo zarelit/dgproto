@@ -5,6 +5,17 @@
 #include "../include/utils.h"
 #include "../include/common.h"
 
+
+void* conc_msgs (size_t* buf_len, size_t argc, ...)
+{
+    va_list msgs;
+    msg_data msg;
+    
+
+    va_start(msgs);
+}
+
+
 void sendbuf(int sock, unsigned char* buf, ssize_t len){
 	ssize_t sent=0;
 	ssize_t n=0;
