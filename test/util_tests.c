@@ -27,18 +27,20 @@ int main(){
 	No = generate_random_nonce();
 	Noval = malloc(BN_num_bytes(No));
     Nolen = BN_bn2bin(No, Noval);
-	dump("Nonce",Noval,Nolen);
+	// dump("Nonce",Noval,Nolen);
+	printf("Nonce is %d bytes long\n",Nolen);
 
 	doing("Sign nonce");
 	sig = sign("keys/client.pem",Noval,Nolen,&siglen);
-	dump("Nonce signature", sig, siglen);
+	// dump("Nonce signature", sig, siglen);
+	printf("Nonce signature is %ld bytes long\n",siglen);
 
 	doing("Verify a correct signature");
 	ret = verify("keys/client.pub.pem", No, sig, siglen);
 	if(!ret){
-		say("Verification failed.");
+		say("1. Test fail. Verification failed.");
 	}else{
-		say("Verification successful");
+		say("1. Test ok. Verification successful.");
 	}
 
 	doing("Verify the signature with some random bits flipped");
