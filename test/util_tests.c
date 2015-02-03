@@ -90,6 +90,11 @@ test_extr_msgs (void)
         hexdump(stdout, msgs[i].data, el_num + i);
         printf("\n");
     }
+    free(buffer);
+    for (i = 0; i < el_num; i ++)
+    {
+        free(msgs[i].data);
+    }
     return ret_val;
 }
 
@@ -141,8 +146,7 @@ int main(){
 	}else{
 		say("2. Test fail. Verification successful.");
 	}
-        ret = test_conc_msgs();
-        if (ret == 0)
+        if (test_conc_msgs() == 0)
         {
             say("3. test_conc_msgs(): test failed.");
         }
@@ -150,8 +154,7 @@ int main(){
         {
             say("3. test_conc_msgs(): test succeded.");
         }
-        ret = test_extr_msgs();
-        if (ret == 0)
+        if (test_extr_msgs() == 0)
         {
             say("4. test_extr_msgs(): test failed.");
         }
