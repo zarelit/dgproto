@@ -305,8 +305,75 @@ verifymessage_m1 (uint8_t *msg, size_t *msg_len)
 {
     int ret_val = 0;
     BIGNUM* Na;
-    /* A,{Na, sign(Na)} */
-    
+    msg_data msg1_parts[2]; // Plaintext and ciphertext of M1
+    msg_data dec_parts[2];  // The nonce and the signature of the nonce
+    aid_t client_id;
+    uint8_t *dec_msg_part; // Decrypted part of the message
+    size_t enc_len;
+
+    // Extract the plaintext and the ciphertext parts of M1
+    msg1_parts[0].data = NULL;                  // Will contain the id label of the client
+    msg1_parts[0].data_len = sizeof(aid_t);
+    msg1_parts[1].data = NULL;                  // Will contain the encrypted part of M1
+    msg1_parts[1].data_len = *msg_len - sizeof(aid_t);
+    if (extr_msgs(msg, 2, &msg1_parts[0], &msg1_parts[1]) == 0)
+    {
+        fprintf(stderr, "%s: Error during the extraction of m1 parts\n", __func__);
+        ret_val = 0;
+        goto exit_verifymessage_m1;
+    }
+
+    // Verify the id of the client is correct
+    if (*(msg1_parts[0].data) != 'A')
+    {
+        ret_val = 0;
+        fprintf(stderr, "%s: Client is unknown\n");
+        goto exit_verifymessage_m1;
+    }
+
+    // Decrypt the ciphertext part of the message
+    // TODO: Insert here the calls to the decryot/encrypt w/ PKEY functions
+    if (1)
+    {
+        ret_val = 0;
+        fprintf(stderr, "%s: not implemented yet, asd\n", __func__);
+        goto exit_verifymessage_m1;
+    }
+
+    // Get the nonce Na and its signature
+    dec_parts[0].data = NULL;                   // Will contain Na
+    dec_parts[0].data_len = NONCE_LEN;
+    dec_parts[1].data = NULL;                   // Will contain Na signature by the client
+    dec_parts[1].data_len = msg1_parts[1].data_len - dec_parts[0].data_len;
+    ret_val = extr_msgs(msg1_parts[1].data, 2, &dec_parts[0], &dec_parts[1]);
+    if (ret_val == 0)
+    {
+        fprintf(stderr, "%s: Error during the extraction of decrypted parts\n", __func__);
+        goto exit_verifymessage_m1;
+    }
+
+    // Verify the correcteness of the signature of Na
+    Na = BN_bin2bn(dec_parts[0].data, dec_parts[0].data_len, NULL);
+    if (Na == NULL)
+    {
+        fprintf(stderr, "%s: Error extracting Na from raw bits\n", __func__);
+        ret_val = 0;
+        goto exit_verifymessage_m1;
+    }
+    if (verify("keys/client.pub.pem", Na, dec_parts[1].data, dec_parts[1].data_len) == 0)
+    {
+        fprintf(stderr, "%s: Error during Na signature verifing", __func__);
+        ret_val = 0;
+        goto exit_verifymessage_m1;
+    }
+
+exit_verifymessage_m1:
+    // Cleanup if needed
+    if (Na != NULL) BN_clear_free(Na);
+    if (msg1_parts[0].data != NULL) free(msg1_parts[0].data);
+    if (msg1_parts[1].data != NULL) free(msg1_parts[1].data);
+    if (dec_parts[0].data != NULL) free(dec_parts[0].data);
+    if (dec_parts[1].data != NULL) free(dec_parts[1].data);
     return ret_val;
 }
 
