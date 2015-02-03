@@ -57,7 +57,6 @@ conc_msgs (size_t* buf_len, size_t argc, ...)
 
 exit_conc_msgs:
     return buffer;
-
 }
 
 uint8_t
@@ -92,12 +91,13 @@ extr_msgs (uint8_t* buffer, size_t argc, ...)
             fprintf(stderr, "Data len of the element number %d of the list is 0\n", (int) el_cnt);
             break;
         }
-        msg -> data = data_p;
+        msg -> data = malloc(sizeof(uint8_t) * msg -> data_len);
+        memcpy(msg -> data, data_p, msg -> data_len);
         data_p += msg -> data_len;
     }
     va_end(msgs);
-
     ret_val = 1;
+
 exit_extr_msgs:
     return ret_val;
 }
@@ -200,6 +200,7 @@ do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
         goto exit_do_aes256_crypt;
     }
     *msg_len = enc_len;
+
 exit_do_aes256_crypt:
     EVP_CIPHER_CTX_cleanup(ctx);
     free(ctx);
@@ -249,7 +250,8 @@ do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
         goto exit_do_aes256_decrypt;
     }
     *msg_len = dec_len;
-    exit_do_aes256_decrypt:
+
+exit_do_aes256_decrypt:
     EVP_CIPHER_CTX_cleanup(ctx);
     free(ctx);
     return dec_msg;
