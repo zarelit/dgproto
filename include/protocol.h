@@ -24,6 +24,11 @@
 #define KEY_LEN 256
 
 /**
+ * Length in bit of nonces
+ */
+#define NONCE_LEN 128
+
+/**
  * Actor IDentifier Type.
  */
 typedef uint8_t aid_t;
