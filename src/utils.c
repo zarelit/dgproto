@@ -457,3 +457,116 @@ cleanup_do_sha256_digest:
 exit_do_sha256_digest:
     return dig;
 }
+
+uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen){
+	// Context and key
+	EVP_PKEY_CTX *encctx;
+	FILE* ckeyfh;
+	EVP_PKEY *ckey=NULL;
+
+	// Return codes and errors
+	int ret;
+	unsigned long encerr;
+
+	/* The buffer with the ciphertext */
+	uint8_t* c;
+
+	/*
+	 * Open a public key for encryption
+	 */
+	ckeyfh = fopen(keypath,"r");
+	if(!ckeyfh) exit(EXIT_FAILURE);
+	ckey = PEM_read_PUBKEY(ckeyfh, &ckey, NULL, NULL);
+	if(!ckey){
+		fprintf(stderr,"Cannot read encryption key from file %s\n", keypath);
+		exit(EXIT_FAILURE);
+	}
+
+	encctx = EVP_PKEY_CTX_new(ckey, NULL);
+	if (!encctx){
+		fprintf(stderr,"Cannot create an encryption context\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (EVP_PKEY_encrypt_init(encctx) <= 0){
+		fprintf(stderr,"Cannot create an encryption context\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Determine how long is the ciphertext buffer */
+	if (EVP_PKEY_encrypt(encctx, NULL, clen, p, plen) <= 0)
+		exit(EXIT_FAILURE);
+
+	c = malloc(*clen);
+	if(!c){
+		fprintf(stderr,"Out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Perform actual encryption */
+	ret = EVP_PKEY_encrypt(encctx, c, clen, p, plen);
+	if( ret != 1 ){
+		encerr = ERR_get_error();
+		fprintf(stderr,"The encryption has failed with code %lu. RET=%d\n",encerr,ret);
+	}
+
+	EVP_PKEY_CTX_free(encctx);
+	return c;
+}
+
+
+uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen){
+	// Context and key
+	EVP_PKEY_CTX *decctx;
+	FILE* dkeyfh;
+	EVP_PKEY *dkey=NULL;
+
+	// Return codes and errors
+	int ret;
+	unsigned long decerr;
+
+	/* The buffer with the plaintext */
+	uint8_t* p;
+
+	/*
+	 * Open a public key for decryption
+	 */
+	dkeyfh = fopen(keypath,"r");
+	if(!dkeyfh) exit(EXIT_FAILURE);
+	dkey = PEM_read_PrivateKey(dkeyfh, &dkey, NULL, NULL);
+	if(!dkey){
+		fprintf(stderr,"Cannot read decryption key from file %s\n", keypath);
+		exit(EXIT_FAILURE);
+	}
+
+	decctx = EVP_PKEY_CTX_new(dkey, NULL);
+	if (!decctx){
+		fprintf(stderr,"Cannot create an decryption context\n");
+		exit(EXIT_FAILURE);
+	}
+
+	if (EVP_PKEY_decrypt_init(decctx) <= 0){
+		fprintf(stderr,"Cannot create an decryption context\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Determine how long is the ciphertext buffer */
+	if (EVP_PKEY_decrypt(decctx, NULL, plen, c, clen) <= 0)
+		exit(EXIT_FAILURE);
+
+	p = malloc(*plen);
+	if(!p){
+		fprintf(stderr,"Out of memory\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Perform actual decryption */
+	ret = EVP_PKEY_decrypt(decctx, p, plen, c, clen);
+	if( ret != 1 ){
+		decerr = ERR_get_error();
+		fprintf(stderr,"The decryption has failed with code %lu. RET=%d\n",decerr,ret);
+	}
+
+	EVP_PKEY_CTX_free(decctx);
+	return p;
+}
