@@ -9,6 +9,40 @@
 									 printf("\n");
 #define doing(something) printf("** "); say(something);
 
+int
+test_conc_msgs (void)
+{
+    const uint8_t el_num = 3, num = 0xFF;
+    msg_data msgs[el_num];
+    uint8_t *buffer, ret_val, i, j;
+    size_t buf_len, test_len;
+
+    test_len = 0;
+    for (i = 0; i < el_num; i ++)
+    {
+        msgs[i].data = calloc(el_num + i, sizeof(uint8_t) * (el_num + i));
+        msgs[i].data_len = el_num + i;
+        test_len += el_num + i;
+        for (j = 0; j < (el_num + i); j ++)
+        {
+            msgs[i].data[j] = num - j;
+        }
+        printf("msg_data[%d].data\n", i);
+        hexdump(stdout, msgs[i].data, el_num + i);
+        printf("\n");
+    }
+
+    buffer = conc_msgs(&buf_len, el_num, msgs[0], msgs[1], msgs[2]);
+    printf("test_len = %d\n", (int)test_len);
+    dump("Buffer", buffer, (int) buf_len);
+    ret_val = 0;
+    if (buffer != NULL && buf_len == test_len)
+    {
+        ret_val = 1;
+    }
+    return ret_val;
+}
+
 int main(){
 	// The test nonce
 	BIGNUM* No;
@@ -57,6 +91,15 @@ int main(){
 	}else{
 		say("2. Test fail. Verification successful.");
 	}
+        ret = test_conc_msgs();
+        if (ret == 0)
+        {
+            say("3. test_conc_msgs(): test failed.");
+        }
+        else
+        {
+            say("3. test_conc_msgs(): test succeded.");
+        }
 
 	free(sig);
 	free(noise);
