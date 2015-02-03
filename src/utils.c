@@ -162,7 +162,7 @@ do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
 {
     EVP_CIPHER_CTX *ctx;
     uint8_t *encr_msg;
-    size_t enc_len; // Encypted message length and block size of the cipher
+    size_t enc_len; // Encrypted message length and block size of the cipher
     const size_t bsize = EVP_CIPHER_block_size(EVP_aes_256_cbc());
 
     if (iv == NULL || msg == NULL || key == NULL || *msg_len <= 0)
@@ -365,6 +365,15 @@ generate_random_aes_iv (size_t *iv_len)
 {
     uint8_t *buffer, buf_len, i;
 
+    // Input error checking
+    if (iv_len == NULL)
+    {
+        fprintf(stderr, "%s: invalid parameter value\n", __func__);
+        buffer = NULL;
+        goto exit_generate_random_aes_iv;
+    }
+
+    // Allocate the buffer
     buf_len = EVP_CIPHER_iv_length(EVP_aes_256_cbc());
     buffer = malloc(buf_len);
     if (buffer == NULL)
@@ -374,7 +383,8 @@ generate_random_aes_iv (size_t *iv_len)
         *iv_len = 0;
         goto exit_generate_random_aes_iv;
     }
-    // Fill the buffer with random content
+
+    // Fill the buffer with random content, this increases the entropy for generating the IV
     srand(time(NULL));
     for (i = 0; i < buf_len; i ++)
     {
@@ -400,6 +410,12 @@ do_sha256_digest (uint8_t* msg, size_t msg_len)
     size_t dig_len;
     EVP_MD_CTX *ctx;
 
+    if (msg == NULL || msg_len == 0)
+    {
+        fprintf(stderr, "%s: invalid parameter value\n", __func__);
+        dig = NULL;
+        goto exit_do_sha256_digest;
+    }
     dig = malloc(EVP_MD_size(EVP_sha256()));
     if (dig == NULL)
     {
