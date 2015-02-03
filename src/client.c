@@ -10,9 +10,8 @@
  * through the unsecure channel.
  */
 
-#include "../include/common.h"
-#include <string.h>
 #include <sys/stat.h>
+#include "../include/common.h"
 #include "../include/protocol.h"
 
 //! How much of the file we work with at a time
