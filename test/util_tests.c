@@ -12,11 +12,12 @@
 int
 test_conc_msgs (void)
 {
-    const uint8_t el_num = 3, num = 0xFF;
+    const uint8_t el_num = 3, num = 0x00;
     msg_data msgs[el_num];
     uint8_t *buffer, ret_val, i, j;
     size_t buf_len, test_len;
 
+    // Create the messages that will be concatenated
     test_len = 0;
     for (i = 0; i < el_num; i ++)
     {
@@ -32,13 +33,62 @@ test_conc_msgs (void)
         printf("\n");
     }
 
+    // Concatenate and verify if all goes as expected
     buffer = conc_msgs(&buf_len, el_num, msgs[0], msgs[1], msgs[2]);
-    printf("test_len = %d\n", (int)test_len);
-    dump("Buffer", buffer, (int) buf_len);
+    dump("conc_msgs buffer", buffer, (int) buf_len);
     ret_val = 0;
     if (buffer != NULL && buf_len == test_len)
     {
         ret_val = 1;
+    }
+    for (i = 0; i < el_num; i ++)
+    {
+        free(msgs[i].data);
+    }
+    free(buffer);
+    return ret_val;
+}
+
+int
+test_extr_msgs (void)
+{
+    const uint8_t el_num = 3, num = 0x00;
+    msg_data msgs[el_num];
+    uint8_t *buffer, ret_val, i, j;
+    size_t buf_len, test_len;
+
+    // Create the buffer which contains concatenated messages
+    test_len = 0;
+    for (i = 0; i < el_num; i ++)
+    {
+        msgs[i].data = calloc(el_num + i, sizeof(uint8_t) * (el_num + i));
+        msgs[i].data_len = el_num + i;
+        test_len += el_num + i;
+        for (j = 0; j < (el_num + i); j ++)
+        {
+            msgs[i].data[j] = num - j;
+        }
+        printf("msg_data[%d].data\n", i);
+        hexdump(stdout, msgs[i].data, el_num + i);
+        printf("\n");
+    }
+    buffer = conc_msgs(&buf_len, el_num, msgs[0], msgs[1], msgs[2]);
+
+    // Create the messages which have to be extracted from buffer
+    for (i = 0; i < el_num; i ++)
+    {
+        msgs[i].data = NULL;
+        msgs[i].data_len = el_num + i;
+    }
+    dump("extr_msgs buffer", buffer,(int) buf_len);
+
+    // Extract the messages
+    ret_val = extr_msgs(buffer, el_num, &msgs[0], &msgs[1], &msgs[2]);
+    for (i = 0; i < el_num; i ++)
+    {
+        printf("msg_data[%d].data\n", i);
+        hexdump(stdout, msgs[i].data, el_num + i);
+        printf("\n");
     }
     return ret_val;
 }
@@ -100,7 +150,15 @@ int main(){
         {
             say("3. test_conc_msgs(): test succeded.");
         }
-
+        ret = test_extr_msgs();
+        if (ret == 0)
+        {
+            say("4. test_extr_msgs(): test failed.");
+        }
+        else
+        {
+            say("4. test_extr_msgs(): test succeded.");
+        }
 	free(sig);
 	free(noise);
 	return 0;

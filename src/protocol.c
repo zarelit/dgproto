@@ -304,10 +304,9 @@ int
 verifymessage_m1 (uint8_t *msg, size_t *msg_len)
 {
     int ret_val = 0;
-
     BIGNUM* Na;
     /* A,{Na, sign(Na)} */
-
+    
     return ret_val;
 }
 
@@ -320,6 +319,7 @@ verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na)
 int
 verifymessage_m3 (uint8_t *msg, size_t *msg_len, BIGNUM *Nb, uint8_t *key)
 {
+    /* {H(Nb)} */
     return 0;
 }
 
