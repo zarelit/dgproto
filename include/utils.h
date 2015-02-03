@@ -20,7 +20,7 @@ typedef struct message_data
 {
     /*! Binary data of the message.*/
     uint8_t* data;
-    /*! Length in bytes of the '#data' field of this struct.*/
+    /*! Length in bytes of the \ref msg_data::data "data" field of this struct.*/
     size_t data_len;
 } msg_data;
 
@@ -59,12 +59,16 @@ uint8_t* conc_msgs (size_t* buf_len, size_t argc, ...);
  *      // Do something with the message list
  * }
  * \endcode
+ * The function allocates the memory for each \ref msg_data::data "data" field of each message
+ * being passed by parameter.
  * \param[in] buffer The buffer that contains the concatenated datas.
  * \param[in] buf_len Length of the buffer in bytes.
  * \param[in] argc Number of the element of the list of \ref msg_data structure pointers.
  * \param[out] ... List of \ref msg_data structure pointers with all data field set to NULL and
  * data_len field set to a number different from 0, of course.
  * \return 1 if all operations succeed, 0 otherwise.
+ * \warning All the \ref msg_data pointers have the \ref msg_data::data "data" field allocated
+ * in memory, so freeing that memory is user's business.
  */
 uint8_t extr_msgs (uint8_t* buffer, size_t argc, ...);
 
