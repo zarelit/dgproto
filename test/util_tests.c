@@ -109,6 +109,12 @@ int main(){
 	uint8_t* noise;
 	size_t siglen;
 
+	// Test buffers for encrypt/decrypt
+	uint8_t* plain;
+	size_t plen;
+	uint8_t* cipher;
+	size_t clen;
+
 	// Auxiliary variables
 	int ret, i;
 
@@ -146,6 +152,9 @@ int main(){
 	}else{
 		say("2. Test fail. Verification successful.");
 	}
+	free(sig);
+	free(noise);
+	
         if (test_conc_msgs() == 0)
         {
             say("3. test_conc_msgs(): test failed.");
@@ -162,8 +171,10 @@ int main(){
         {
             say("4. test_extr_msgs(): test succeded.");
         }
-	free(sig);
-	free(noise);
+
+	doing("Encrypt the nonce");
+	cipher = encrypt("keys/client.pub.pem",Noval,Nolen,&clen);
+	//dump("Ciphertext",cipher,clen);
 	return 0;
 }
 

@@ -112,7 +112,7 @@ uint8_t* do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_l
 uint8_t* do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len);
 
 /**
- * Sign something
+ * Signs a buffer using a private key
  * \param keypath is a string with the path to a PEM private key
  * \param payload is the string to be signed
  * \param plen is the length of payload in bytes
@@ -146,3 +146,23 @@ int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen);
  * occourred.
  */
 uint8_t* do_sha256_digest (uint8_t* msg, size_t msg_len);
+
+/**
+ * Encrypts a buffer with a public key
+ * \param keypath is a string with the path to a PEM public key
+ * \param p is the buffer containing the plaintext
+ * \param plen is the length of the plaintext
+ * \param clen is the length of the returned ciphertext
+ * \returns a pointer to the ciphertext
+ */
+uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen);
+
+/**
+ * Decrypts a buffer with a private key
+ * \param keypath is a string with the path to a PEM private key
+ * \param p is the buffer containing the ciphertext
+ * \param plen is the length of the ciphertext
+ * \param clen is the length of the returned plaintext
+ * \returns a pointer to the plaintext
+ */
+uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen);
