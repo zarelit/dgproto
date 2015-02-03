@@ -106,8 +106,7 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
 {
     uint8_t *msg; // The message this function is able to build
     uint8_t *enc_part, *plain; // The encrypted part of the message
-    uint8_t *signature, *Na_bin_val, *Nb_bin_val;
-    size_t sig_len, enc_part_len, Nb_len, Na_len, iv_len, plain_len;
+    size_t sig_len, enc_part_len, iv_len, plain_len;
     EVP_PKEY *cpub_key = NULL;
     EVP_PKEY_CTX *ctx = NULL;
     FILE* cpub_key_file;
@@ -130,26 +129,16 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
         *msg_len = 0;
         goto exit_create_m2;
     }
-    // Translate nonces to a binary format
-    Nb_bin_val = malloc(BN_num_bytes(Nb));
-    Nb_len = BN_bn2bin(Nb, Nb_bin_val);
-    Na_bin_val = malloc(BN_num_bytes(Na));
-    Na_len = BN_bn2bin(Na, Na_bin_val);
-
-    // Sign the binary value of Nb with the private key of the server
-    signature = sign("keys/server.pem", Nb_bin_val, Nb_len, &sig_len);
 
     // Create the encrypted part of the message by concatenating Na, Nb and the signature
-    msg_parts[0].data = Na_bin_val;
-    msg_parts[0].data_len = Na_len;
-    msg_parts[1].data = Nb_bin_val;
-    msg_parts[1].data_len = Nb_len;
-    msg_parts[2].data = signature;
+    msg_parts[0].data_len = BN_bn2bin(Na, msg_parts[0].data);
+    msg_parts[1].data_len = BN_bn2bin(Nb, msg_parts[1].data);
+    msg_parts[2].data = sign("keys/server.pem", msg_parts[1].data, msg_parts[1].data_len, &sig_len);
     msg_parts[2].data_len = sig_len;
     plain = conc_msgs(&plain_len, 3, msg_parts[0], msg_parts[1], msg_parts[2]);
     if (plain == NULL)
     {
-        fprintf(stderr, "Error concatenating encrypted part\n");
+        fprintf(stderr, "Error concatenating parts to be encrypted\n");
         msg = NULL;
         *msg_len = 0;
         goto cleanup_create_m2;
@@ -204,9 +193,6 @@ cleanup_create_m2:
     fclose(cpub_key_file);
     free(plain);
     free(enc_part);
-    free(Nb_bin_val);
-    free(Na_bin_val);
-    free(signature);
 exit_create_m2:
     return msg;
 }
@@ -265,29 +251,23 @@ uint8_t*
 generate_key (BIGNUM *Na, BIGNUM *Nb)
 {
     uint8_t *key, *tmp;
-    uint8_t *Na_bin_val = NULL, *Nb_bin_val = NULL;
-    size_t Na_len, Nb_len, tmp_len;
+    size_t tmp_len;
+    msg_data key_parts[3];      // Will store Na, Nb and the SALT
 
     // Create the "message" to be hashed by SHA256 algorithm
-    Na_len = BN_bn2bin(Na, Na_bin_val);
-    Nb_len = BN_bn2bin(Nb, Nb_bin_val);
-    tmp_len = Na_len + Nb_len + SALT_SIZE;
-    tmp = malloc(tmp_len);
+    key_parts[0].data_len = BN_bn2bin(Na, key_parts[0].data);
+    key_parts[1].data_len = BN_bn2bin(Nb, key_parts[1].data);
+    key_parts[2].data = (uint8_t*) &SALT;
+    key_parts[2].data_len = SALT_SIZE;
+    tmp = conc_msgs(&tmp_len, 3, key_parts[0], key_parts[1], key_parts[2]);
     if (tmp == NULL)
     {
-        fprintf(stderr, "Error allocating memory for the key\n");
+        fprintf(stderr, "Error concatenating parts of the key\n");
         key = NULL;
         goto exit_generate_key;
     }
-    key = tmp;
-    memcpy((void*) key, (void *) Na_bin_val, Na_len);
-    tmp += Na_len;
-    memcpy((void*) tmp, (void *) Nb_bin_val, Nb_len);
-    tmp += Nb_len;
-    memcpy((void*) tmp, (void *) SALT, SALT_SIZE);
-    tmp = key;
 
-    // Get the hash of the temporary "message"
+    // Get the key component hash and make the key from it
     key = do_sha256_digest(tmp, tmp_len);
     free(tmp);
     if (key == NULL)
@@ -296,7 +276,6 @@ generate_key (BIGNUM *Na, BIGNUM *Nb)
     }
 
 exit_generate_key:
-    free(tmp);
     return key;
 }
 
@@ -307,9 +286,8 @@ verifymessage_m1 (uint8_t *msg, size_t *msg_len)
     BIGNUM* Na;
     msg_data msg1_parts[2]; // Plaintext and ciphertext of M1
     msg_data dec_parts[2];  // The nonce and the signature of the nonce
-    aid_t client_id;
     uint8_t *dec_msg_part; // Decrypted part of the message
-    size_t enc_len;
+    size_t dec_len;        // Length of dec_msg_part
 
     // Extract the plaintext and the ciphertext parts of M1
     msg1_parts[0].data = NULL;                  // Will contain the id label of the client
@@ -327,25 +305,19 @@ verifymessage_m1 (uint8_t *msg, size_t *msg_len)
     if (*(msg1_parts[0].data) != 'A')
     {
         ret_val = 0;
-        fprintf(stderr, "%s: Client is unknown\n");
+        fprintf(stderr, "%s: Client is unknown\n", __func__);
         goto exit_verifymessage_m1;
     }
 
-    // Decrypt the ciphertext part of the message
-    // TODO: Insert here the calls to the decryot/encrypt w/ PKEY functions
-    if (1)
-    {
-        ret_val = 0;
-        fprintf(stderr, "%s: not implemented yet, asd\n", __func__);
-        goto exit_verifymessage_m1;
-    }
+    // Decrypt the crypted part of the message
+    dec_msg_part = decrypt("keys/server.pem", msg1_parts[1].data, msg1_parts[1].data_len, &dec_len);
 
     // Get the nonce Na and its signature
     dec_parts[0].data = NULL;                   // Will contain Na
     dec_parts[0].data_len = NONCE_LEN;
     dec_parts[1].data = NULL;                   // Will contain Na signature by the client
-    dec_parts[1].data_len = msg1_parts[1].data_len - dec_parts[0].data_len;
-    ret_val = extr_msgs(msg1_parts[1].data, 2, &dec_parts[0], &dec_parts[1]);
+    dec_parts[1].data_len = dec_len - dec_parts[0].data_len;
+    ret_val = extr_msgs(dec_msg_part, 2, &dec_parts[0], &dec_parts[1]);
     if (ret_val == 0)
     {
         fprintf(stderr, "%s: Error during the extraction of decrypted parts\n", __func__);
@@ -366,6 +338,7 @@ verifymessage_m1 (uint8_t *msg, size_t *msg_len)
         ret_val = 0;
         goto exit_verifymessage_m1;
     }
+    ret_val = 1;
 
 exit_verifymessage_m1:
     // Cleanup if needed
