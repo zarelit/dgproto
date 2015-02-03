@@ -172,7 +172,19 @@ int main(){
 
 	doing("Encrypt the nonce");
 	cipher = encrypt("keys/client.pub.pem",Noval,Nolen,&clen);
-	//dump("Ciphertext",cipher,clen);
+	// dump("Ciphertext",cipher,clen);
+	doing("Decrypting the nonce");
+	plain = decrypt("keys/client.pem",cipher,clen,&plen);
+	// dump("Plaintext",plain,plen);
+
+	doing("Verify that we have the same plaintext after decryption");
+	ret = 1;
+	if(plen != Nolen) ret=0;
+	else if(memcmp(plain,Noval,Nolen)) ret=0;
+
+	if(ret) say("5. Decryption test ok.");
+	else say("5. Decryption test fail.");
+
 	return 0;
 }
 
