@@ -200,7 +200,7 @@ generate_random_nonce (void){
 		exit(EXIT_FAILURE);
 	}
 
-	x=BN_rand(nonce, 128, 0, 0);
+	x=BN_rand(nonce, NONCE_LEN, 0, 0);
 	if(!x){
 		fprintf(stderr,"Cannot generate a random nonce\n");
 		exit(EXIT_FAILURE);
