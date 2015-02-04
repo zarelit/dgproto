@@ -44,7 +44,7 @@ create_m1 (size_t* msg_len, aid_t id, BIGNUM* Na_bn)
 	sig.data = sign(CLIENT_KEY, Na.data, Na.data_len, &(sig.data_len));
 
 	// Build Na || sig(Na), then cipher it
-	signedNa.data = conc_msgs(&(signedNa.data_len), 2, Na, sig); 
+	signedNa.data = conc_msgs(&(signedNa.data_len), 2, Na, sig);
 	encryptedNa.data = encrypt(SERVER_PUBKEY, signedNa.data, signedNa.data_len, &(encryptedNa.data_len));
 
 	// Add the id
@@ -75,7 +75,7 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     msg_data msg_parts[3];
 
     // Get the public key of the client in order to encrypt some part of the message
-    cpub_key_file = fopen("keys/client.pub.pem", "r");
+    cpub_key_file = fopen(CLIENT_PUBKEY, "r");
     if (cpub_key_file == NULL)
     {
         perror("fopen");
@@ -95,7 +95,7 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     // Create the encrypted part of the message by concatenating Na, Nb and the signature
     msg_parts[0].data_len = BN_bn2bin(Na, msg_parts[0].data);
     msg_parts[1].data_len = BN_bn2bin(Nb, msg_parts[1].data);
-    msg_parts[2].data = sign("keys/server.pem", msg_parts[1].data, msg_parts[1].data_len, &sig_len);
+    msg_parts[2].data = sign(SERVER_KEY, msg_parts[1].data, msg_parts[1].data_len, &sig_len);
     msg_parts[2].data_len = sig_len;
     plain = conc_msgs(&plain_len, 3, msg_parts[0], msg_parts[1], msg_parts[2]);
     if (plain == NULL)
@@ -272,7 +272,7 @@ verifymessage_m1 (uint8_t *msg, size_t *msg_len)
     }
 
     // Decrypt the crypted part of the message
-    dec_msg_part = decrypt("keys/server.pem", msg1_parts[1].data, msg1_parts[1].data_len, &dec_len);
+    dec_msg_part = decrypt(SERVER_KEY, msg1_parts[1].data, msg1_parts[1].data_len, &dec_len);
 
     // Get the nonce Na and its signature
     dec_parts[0].data = NULL;                   // Will contain Na
