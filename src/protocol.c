@@ -75,11 +75,12 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     msg_data msg_parts[3];
 
     // Input error checking
-    if (msg_len == NULL || key == NULL || Na == NUll || iv == NULL)
+    if (msg_len == NULL || Nb == NULL || Na == NULL || iv == NULL)
     {
         fprintf(stderr, "%s: Invalid parameter passed\n", __func__);
-        encr_msg = NULL;
-        goto exit_generate_key;
+        msg = NULL;
+        *msg_len = 0;
+        goto exit_create_m2;
     }
 
     // Get the public key of the client in order to encrypt some part of the message
@@ -279,7 +280,7 @@ exit_generate_key:
 }
 
 int
-verifymessage_m1 (uint8_t *msg, size_t *msg_len, BIGNUM** Na)
+verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
 {
     int ret_val = 0;
     BIGNUM *client_nonce;
@@ -289,7 +290,7 @@ verifymessage_m1 (uint8_t *msg, size_t *msg_len, BIGNUM** Na)
     size_t dec_len;        // Length of dec_msg_part
 
     // Input error checking
-    if (msg == NULL || *msg_len == 0 || Na == NULL)
+    if (msg == NULL || msg_len == 0 || Na == NULL)
     {
         ret_val = 0;
         fprintf(stderr, "%s: Invalid parameter passed\n", __func__);
@@ -300,7 +301,7 @@ verifymessage_m1 (uint8_t *msg, size_t *msg_len, BIGNUM** Na)
     msg1_parts[0].data = NULL;                  // Will contain the id label of the client
     msg1_parts[0].data_len = sizeof(aid_t);
     msg1_parts[1].data = NULL;                  // Will contain the encrypted part of M1
-    msg1_parts[1].data_len = *msg_len - sizeof(aid_t);
+    msg1_parts[1].data_len = msg_len - sizeof(aid_t);
     if (extr_msgs(msg, 2, &msg1_parts[0], &msg1_parts[1]) == 0)
     {
         fprintf(stderr, "%s: Error during the extraction of m1 parts\n", __func__);
@@ -374,10 +375,49 @@ verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na)
 }
 
 int
-verifymessage_m3 (uint8_t *msg, size_t *msg_len, BIGNUM *Nb, uint8_t *key)
+verifymessage_m3 (uint8_t* msg, size_t msg_len, BIGNUM* Nb, uint8_t* key, uint8_t* iv)
 {
-    /* {H(Nb)} */
-    return 0;
+    uint8_t *srv_dig; // Server digest, the hash of Nb computed locally
+    uint8_t *cli_dig; // The SHA256(Nb) sent by the client
+    uint8_t *Nb_bin_val;
+    uint8_t ret_val;
+    size_t cli_dig_len, Nb_len;
+
+    // Input error checking
+    if (msg == NULL || msg_len == 0 || Nb == NULL || key == NULL)
+    {
+        ret_val = 0;
+        fprintf(stderr, "%s: Invalid parameter passed\n", __func__);
+        goto exit_verifymessage_m3;
+    }
+
+    // Decrypt the message by means of the key
+    cli_dig = do_aes256_decrypt(msg, key, iv, &cli_dig_len);
+    if (cli_dig == NULL)
+    {
+        fprintf(stderr, "Error decrypting message m3\n");
+        ret_val = 0;
+        goto exit_verifymessage_m3;
+    }
+
+    // Compute the digest of server-generated Nb
+    Nb_len = BN_num_bytes(Nb);
+    Nb_bin_val = malloc(Nb_len);
+    BN_bn2bin(Nb, Nb_bin_val);
+    srv_dig = do_sha256_digest(Nb_bin_val, Nb_len);
+    if (srv_dig == NULL)
+    {
+        fprintf(stderr, "Error during the hashing of the message m3\n");
+        ret_val = 0;
+        free(Nb_bin_val);
+        goto exit_verifymessage_m3;
+    }
+
+    // Check if the digests are the same
+    ret_val = (memcmp(srv_dig, cli_dig, 256) != 0)? 0 : 1;
+
+exit_verifymessage_m3:
+    return ret_val;
 }
 
 int
