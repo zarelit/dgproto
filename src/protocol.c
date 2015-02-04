@@ -387,7 +387,7 @@ verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb)
 
 	// Split ID from encrypted part
 	id.data_len=sizeof(aid_t);
-	encryptedPart.size = *msg_len - id.data_len;
+	encryptedPart.data_len = *msg_len - id.data_len;
     ret = extr_msgs(msg, 2, &id, &encryptedPart);
 	if(!ret) s=0;
 
@@ -398,10 +398,10 @@ verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb)
 	temp.data = decrypt(CLIENT_KEY,encryptedPart.data, encryptedPart.data_len, &(temp.data_len));
 
 	// Split Na, Nb, sig of Nb
-	receivedNa.data_len = NONCE_SIZE/8;
-	receivedNb.data_len = NONCE_SIZE/8;
-	signedNb = temp.data_len - (receivedNa.data_len + receivedNb.data_len);
-	ret = extr_msgs(temp, 3, receivedNa, receivedNb, signedNb);
+	receivedNa.data_len = NONCE_LEN/8;
+	receivedNb.data_len = NONCE_LEN/8;
+	signedNb.data_len = temp.data_len - (receivedNa.data_len + receivedNb.data_len);
+	ret = extr_msgs(temp.data, 3, receivedNa, receivedNb, signedNb);
 	if(!ret) s=0;
 
 	// Verify that received nonce is actually our generate Nonce
@@ -409,8 +409,8 @@ verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb)
 	if(BN_cmp(Na,receivedNaBN)!= 0) s=0;
 
 	// Pack received Nb in a bignum and then verify the signature
-	*Bn = BN_bin2bn(receivedNb.data, receivedNb.data_len, *Bn);
-	ret = verify(SERVER_PUBKEY, *Bn, signedNb.data, signedNd.data_len);
+	*Nb = BN_bin2bn(receivedNb.data, receivedNb.data_len, *Nb);
+	ret = verify(SERVER_PUBKEY, *Nb, signedNb.data, signedNb.data_len);
 	if(!ret) s=0;
 
 	// Cleanup
