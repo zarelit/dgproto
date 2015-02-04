@@ -89,7 +89,7 @@ uint8_t* create_m3 (size_t *msg_len, BIGNUM* key, BIGNUM* Nb, uint8_t* iv);
  * \param[in] iv the initialization vector for the cipher to encrypt.
  * \returns a byte string that contains the message ready to be sent or NULL if errors occour.
  */
-uint8_t* create_m4 (size_t *msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv);
+uint8_t* create_m4 (size_t* msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv);
 
 /**
  * This function contains the key generation algorithm. The key is computed as follow:
@@ -99,7 +99,7 @@ uint8_t* create_m4 (size_t *msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv);
  * \returns the shared session key for secure communication thorugh unsecure channel or NULL if
  * errors occourred.
  */
-uint8_t* generate_key (BIGNUM *Na, BIGNUM *Nb);
+uint8_t* generate_key (BIGNUM* Na, BIGNUM* Nb);
 
 /**
  * This function creates a totally new random nonce. It is a BIGNUM because we need 128 bit of this
@@ -118,7 +118,7 @@ BIGNUM* generate_random_nonce (void);
  * \returns 0 if the verify process fails
  * \returns 1 otherwise.
  */
-int verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na);
+int verifymessage_m1 (uint8_t* msg, size_t msg_len, BIGNUM** Na);
 
 /**
  * This function checks the correctness of the second message of the protocol.
@@ -141,7 +141,7 @@ int verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na);
  * \param[in] key the shared session key in order to decrypt correctly the message.
  * \returns 1 if the verify process successed or 0 otherwise.
  */
-int verifymessage_m3 (uint8_t *msg, size_t msg_len, BIGNUM *Nb, uint8_t *key);
+int verifymessage_m3 (uint8_t* msg, size_t msg_len, BIGNUM* Nb, uint8_t* key, uint8_t* iv);
 
 /**
  * This function checks the correctness of the fourth message of the protocol. It verify if the hash
