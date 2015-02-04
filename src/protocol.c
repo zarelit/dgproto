@@ -74,6 +74,14 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     FILE* cpub_key_file;
     msg_data msg_parts[3];
 
+    // Input error checking
+    if (msg_len == NULL || key == NULL || Na == NUll || iv == NULL)
+    {
+        fprintf(stderr, "%s: Invalid parameter passed\n", __func__);
+        encr_msg = NULL;
+        goto exit_generate_key;
+    }
+
     // Get the public key of the client in order to encrypt some part of the message
     cpub_key_file = fopen(CLIENT_PUBKEY, "r");
     if (cpub_key_file == NULL)
@@ -123,6 +131,7 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
         *msg_len = 0;
         goto cleanup_create_m2;
     }
+
     // Create the random Initialization Vector
     *iv = generate_random_aes_iv(&iv_len);
     if (*iv == NULL)
@@ -169,24 +178,44 @@ create_m3 (size_t* msg_len, BIGNUM* key, BIGNUM* Nb, uint8_t* iv)
 uint8_t*
 create_m4 (size_t* msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv)
 {
-    uint8_t *encr_msg = NULL;
+    uint8_t *encr_msg, *Na_digest;
     uint8_t *Na_bin_val;
-    size_t Na_len;
+    size_t Na_len, enc_len;
 
+    // Input error checking
+    if (msg_len == NULL || key == NULL || Na == NULL || iv == NULL)
+    {
+        fprintf(stderr, "%s: Invalid parameter passed\n", __func__);
+        encr_msg = NULL;
+        *msg_len = 0;
+        goto exit_create_m4;
+    }
+
+    // Create the message by hashing the Na and encrypt it by means of key key
     Na_bin_val = malloc(BN_num_bytes(Na));
     Na_len = BN_bn2bin(Na, Na_bin_val);
-    encr_msg = do_aes256_crypt(Na_bin_val, key, iv, &Na_len);
+    Na_digest = do_sha256_digest(Na_bin_val, Na_len);
+    if (Na_digest == NULL)
+    {
+        fprintf(stderr, "Error building the digest for Na\n");
+        encr_msg = NULL;
+        *msg_len = 0;
+        free(Na_bin_val);
+        goto exit_create_m4;
+    }
+    encr_msg = do_aes256_crypt(Na_bin_val, key, iv, &enc_len);
     if (encr_msg == NULL)
     {
-        fprintf(stderr, "Error crypting the message m3\n");
+        fprintf(stderr, "Error crypting the message m4\n");
         *msg_len = 0;
     }
     else
     {
-        // Na_len is now storing the real size of the encrypted message
-        *msg_len = Na_len;
+        *msg_len = enc_len;
     }
     free(Na_bin_val);
+
+exit_create_m4:
     return encr_msg;
 }
 
@@ -216,6 +245,14 @@ generate_key (BIGNUM *Na, BIGNUM *Nb)
     size_t tmp_len;
     msg_data key_parts[3];      // Will store Na, Nb and the SALT
 
+    // Input error checking
+    if (Na == NULL || Nb == NULL)
+    {
+        key = NULL;
+        fprintf(stderr, "%s: Invalid parameter passed\n", __func__);
+        goto exit_generate_key;
+    }
+    
     // Create the "message" to be hashed by SHA256 algorithm
     key_parts[0].data_len = BN_bn2bin(Na, key_parts[0].data);
     key_parts[1].data_len = BN_bn2bin(Nb, key_parts[1].data);
@@ -242,14 +279,22 @@ exit_generate_key:
 }
 
 int
-verifymessage_m1 (uint8_t *msg, size_t *msg_len)
+verifymessage_m1 (uint8_t *msg, size_t *msg_len, BIGNUM** Na)
 {
     int ret_val = 0;
-    BIGNUM* Na;
+    BIGNUM *client_nonce;
     msg_data msg1_parts[2]; // Plaintext and ciphertext of M1
     msg_data dec_parts[2];  // The nonce and the signature of the nonce
     uint8_t *dec_msg_part; // Decrypted part of the message
     size_t dec_len;        // Length of dec_msg_part
+
+    // Input error checking
+    if (msg == NULL || *msg_len == 0 || Na == NULL)
+    {
+        ret_val = 0;
+        fprintf(stderr, "%s: Invalid parameter passed\n", __func__);
+        goto exit_verifymessage_m1;
+    }
 
     // Extract the plaintext and the ciphertext parts of M1
     msg1_parts[0].data = NULL;                  // Will contain the id label of the client
@@ -274,10 +319,10 @@ verifymessage_m1 (uint8_t *msg, size_t *msg_len)
     // Decrypt the crypted part of the message
     dec_msg_part = decrypt(SERVER_KEY, msg1_parts[1].data, msg1_parts[1].data_len, &dec_len);
 
-    // Get the nonce Na and its signature
+    // Get the nonce client_nonce and its signature
     dec_parts[0].data = NULL;                   // Will contain Na
     dec_parts[0].data_len = NONCE_LEN;
-    dec_parts[1].data = NULL;                   // Will contain Na signature by the client
+    dec_parts[1].data = NULL;                   // Will contain Na's signature by the client
     dec_parts[1].data_len = dec_len - dec_parts[0].data_len;
     ret_val = extr_msgs(dec_msg_part, 2, &dec_parts[0], &dec_parts[1]);
     if (ret_val == 0)
@@ -287,24 +332,30 @@ verifymessage_m1 (uint8_t *msg, size_t *msg_len)
     }
 
     // Verify the correcteness of the signature of Na
-    Na = BN_bin2bn(dec_parts[0].data, dec_parts[0].data_len, NULL);
-    if (Na == NULL)
+    client_nonce = BN_bin2bn(dec_parts[0].data, dec_parts[0].data_len, NULL);
+    if (client_nonce == NULL)
     {
-        fprintf(stderr, "%s: Error extracting Na from raw bits\n", __func__);
+        fprintf(stderr, "%s: Error extracting client_nonce from raw bits\n", __func__);
         ret_val = 0;
         goto exit_verifymessage_m1;
     }
-    if (verify("keys/client.pub.pem", Na, dec_parts[1].data, dec_parts[1].data_len) == 0)
+    if (verify("keys/client.pub.pem", client_nonce, dec_parts[1].data, dec_parts[1].data_len) == 0)
     {
-        fprintf(stderr, "%s: Error during Na signature verifing", __func__);
+        fprintf(stderr, "%s: Error during client_nonce signature verifing", __func__);
         ret_val = 0;
         goto exit_verifymessage_m1;
+    }
+    *Na = BN_dup(client_nonce);
+    if (*Na == NULL)
+    {
+
     }
     ret_val = 1;
 
+
 exit_verifymessage_m1:
     // Cleanup if needed
-    if (Na != NULL) BN_clear_free(Na);
+    if (client_nonce != NULL) BN_clear_free(client_nonce);
     if (msg1_parts[0].data != NULL) free(msg1_parts[0].data);
     if (msg1_parts[1].data != NULL) free(msg1_parts[1].data);
     if (dec_parts[0].data != NULL) free(dec_parts[0].data);
