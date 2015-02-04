@@ -10,6 +10,13 @@
 #include <openssl/bn.h>
 #include <stdarg.h>
 
+#define say(yeah) printf("%s\n",yeah)
+#define dump(name, quantity, length) printf("%s length: %d\n", name, length);\
+									 printf("%s dump:\n", name);\
+									 hexdump(stdout,quantity, length);\
+									 printf("\n");
+#define doing(something) printf("** "); say(something);
+
 /**
  * \struct msg_data
  * \brief Structure for the data part of any possible message.
