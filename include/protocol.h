@@ -83,11 +83,11 @@ uint8_t* create_m3 (size_t *msg_len, BIGNUM* key, BIGNUM* Nb, uint8_t* iv);
  * This function permits to create in one single shot the fourth message of the D&G protocol.
  * The third message contains the hash of the Na nonce crypted with the session key K. For more
  * information please refer to the protocol report.
- * \param key the session key for encrypting the message.
- * \param msg_len the length of the message this function has built.
- * \param Na the nonce to be hashed and crypted.
- * \param iv the initialization vector for the cipher to encrypt.
- * \returns a byte string that contains the message ready to be sent.
+ * \param[in] key the session key for encrypting the message.
+ * \param[out] msg_len the length of the message this function has built.
+ * \param[in] Na the nonce to be hashed and crypted.
+ * \param[in] iv the initialization vector for the cipher to encrypt.
+ * \returns a byte string that contains the message ready to be sent or NULL if errors occour.
  */
 uint8_t* create_m4 (size_t *msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv);
 
@@ -111,11 +111,14 @@ BIGNUM* generate_random_nonce (void);
 /**
  * This function checks the correctness of the first message of the message. It verify the
  * correctness of the sign present in the message. In this case the sign must belong to the client.
- * \param msg the message received by the server.
+ * \param[in] msg the message received by the server.
+ * \param[in] msg_len length in byte of the message.
+ * \param[out] Na If the message is valid, this parameter will contain the nonce being sent by the
+ * client.
  * \returns 0 if the verify process fails
  * \returns 1 otherwise.
  */
-int verifymessage_m1 (uint8_t *msg, size_t *msg_len);
+int verifymessage_m1 (uint8_t *msg, size_t *msg_len, BIGNUM** Na);
 
 /**
  * This function checks the correctness of the second message of the protocol.
