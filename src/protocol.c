@@ -252,7 +252,7 @@ generate_key (BIGNUM *Na, BIGNUM *Nb)
         fprintf(stderr, "%s: Invalid parameter passed\n", __func__);
         goto exit_generate_key;
     }
-    
+
     // Create the "message" to be hashed by SHA256 algorithm
     key_parts[0].data_len = BN_bn2bin(Na, key_parts[0].data);
     key_parts[1].data_len = BN_bn2bin(Nb, key_parts[1].data);
@@ -339,7 +339,7 @@ verifymessage_m1 (uint8_t *msg, size_t *msg_len, BIGNUM** Na)
         ret_val = 0;
         goto exit_verifymessage_m1;
     }
-    if (verify("keys/client.pub.pem", client_nonce, dec_parts[1].data, dec_parts[1].data_len) == 0)
+    if (verify(CLIENT_PUBKEY, client_nonce, dec_parts[1].data, dec_parts[1].data_len) == 0)
     {
         fprintf(stderr, "%s: Error during client_nonce signature verifing", __func__);
         ret_val = 0;
@@ -348,9 +348,13 @@ verifymessage_m1 (uint8_t *msg, size_t *msg_len, BIGNUM** Na)
     *Na = BN_dup(client_nonce);
     if (*Na == NULL)
     {
-
+        ret_val = 0;
+        fprintf(stderr, "Error copying client_nonce to Na\n");
     }
-    ret_val = 1;
+    else
+    {
+        ret_val = 1;
+    }
 
 
 exit_verifymessage_m1:
