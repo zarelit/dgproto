@@ -105,7 +105,7 @@ receive_message (msg_name msg, srv_state *ss)
     switch(msg)
     {
         case M1:
-            ret_val = verifymessage_m1(ss -> buffer, &(ss -> buf_len));
+            ret_val = verifymessage_m1(ss -> buffer, ss -> buf_len, &(ss -> Na));
             break;
 
         case M2:
@@ -113,7 +113,8 @@ receive_message (msg_name msg, srv_state *ss)
             break;
 
         case M3:
-            ret_val = verifymessage_m3(ss -> buffer, &(ss -> buf_len), ss -> Nb, ss -> session_key);
+            ret_val = verifymessage_m3(ss -> buffer, ss -> buf_len, ss -> Nb, ss -> session_key,
+                                       ss -> iv);
             break;
 
         case M4:
