@@ -114,7 +114,6 @@ BIGNUM* generate_random_nonce (void);
  * \param msg the message received by the server.
  * \returns 0 if the verify process fails
  * \returns 1 otherwise.
- * \returns -1 on error with errno being set consequently.
  */
 int verifymessage_m1 (uint8_t *msg, size_t *msg_len);
 
@@ -127,7 +126,6 @@ int verifymessage_m1 (uint8_t *msg, size_t *msg_len);
  * \param Na the client-side generated nonce to be verified.
  * \returns 0 if the verify process fails
  * \returns 1 otherwise.
- * \returns -1 on error with errno being set consequently.
  */
 int verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na);
 
@@ -139,7 +137,6 @@ int verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na);
  * \param key the shared session key in order to decrypt correctly the message.
  * \returns 0 if the verify process fails
  * \returns 1 otherwise.
- * \returns -1 on error with errno being set consequently.
  */
 int verifymessage_m3 (uint8_t *msg, size_t *msg_len, BIGNUM *Nb, uint8_t *key);
 
@@ -151,6 +148,5 @@ int verifymessage_m3 (uint8_t *msg, size_t *msg_len, BIGNUM *Nb, uint8_t *key);
  * \param key the shared session key in order to decrypt correctly the message.
  * \returns 0 if the verify process fails
  * \returns 1 otherwise.
- * \returns -1 on error with errno being set consequently.
  */
 int verifymessage_m4 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, uint8_t *key);

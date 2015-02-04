@@ -36,7 +36,6 @@ typedef struct message_data
  */
 uint8_t* conc_msgs (size_t* buf_len, size_t argc, ...);
 
-
 /**
  * This function makes possible to extract all the fields inside a byte buffer given by parameter.
  * It uses a variable argument list of type \ref msg_data where each \ref msg_data struct has its
