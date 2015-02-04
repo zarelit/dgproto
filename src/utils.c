@@ -506,8 +506,11 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 	/* Perform actual encryption */
 	ret = EVP_PKEY_encrypt(encctx, c, clen, p, plen);
 	if( ret != 1 ){
+		ERR_load_crypto_strings();
 		encerr = ERR_get_error();
 		fprintf(stderr,"The encryption has failed with code %lu. RET=%d\n",encerr,ret);
+		printf("%s\n", ERR_error_string(encerr, NULL));
+		ERR_free_strings();
 	}
 
 	EVP_PKEY_CTX_free(encctx);
