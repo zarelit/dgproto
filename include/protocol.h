@@ -127,10 +127,11 @@ int verifymessage_m1 (uint8_t *msg, size_t *msg_len, BIGNUM** Na);
  * It also verify if the nounce Na is the same the client sent before in the message M1.
  * \param msg the message received by the client.
  * \param Na the client-side generated nonce to be verified.
+ * \param[out] Nb the server side nonce found in the message
  * \returns 0 if the verify process fails
  * \returns 1 otherwise.
  */
-int verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na);
+int verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb);
 
 /**
  * This function checks the correctness of the third message of the protocol. It verify if the hash

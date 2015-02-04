@@ -364,7 +364,7 @@ exit_verifymessage_m1:
 }
 
 int
-verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na)
+verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb)
 {
     return 0;
 }
