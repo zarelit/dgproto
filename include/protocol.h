@@ -118,7 +118,7 @@ BIGNUM* generate_random_nonce (void);
  * \returns 0 if the verify process fails
  * \returns 1 otherwise.
  */
-int verifymessage_m1 (uint8_t *msg, size_t *msg_len, BIGNUM** Na);
+int verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na);
 
 /**
  * This function checks the correctness of the second message of the protocol.
@@ -135,13 +135,13 @@ int verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na);
 /**
  * This function checks the correctness of the third message of the protocol. It verify if the hash
  * into the message is the same of the hash of the Nb nounce of the server.
- * \param msg the message received by the server.
- * \param Nb the server-side generated nonce.
- * \param key the shared session key in order to decrypt correctly the message.
- * \returns 0 if the verify process fails
- * \returns 1 otherwise.
+ * \param[in] msg the message received by the server.
+ * \param[in] Nb the server-side generated nonce.
+ * \param[in] msg_len length of msg
+ * \param[in] key the shared session key in order to decrypt correctly the message.
+ * \returns 1 if the verify process successed or 0 otherwise.
  */
-int verifymessage_m3 (uint8_t *msg, size_t *msg_len, BIGNUM *Nb, uint8_t *key);
+int verifymessage_m3 (uint8_t *msg, size_t msg_len, BIGNUM *Nb, uint8_t *key);
 
 /**
  * This function checks the correctness of the fourth message of the protocol. It verify if the hash
