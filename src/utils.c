@@ -458,7 +458,7 @@ exit_do_sha256_digest:
     return dig;
 }
 
-uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen){
+uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t* iv, size_t* ivlen){
 	// Context and key
 	EVP_PKEY_CTX *encctx;
 	FILE* ckeyfh;
