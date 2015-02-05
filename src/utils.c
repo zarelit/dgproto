@@ -518,7 +518,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 }
 
 
-uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen){
+uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv){
 	// Context and key
 	EVP_PKEY_CTX *decctx;
 	FILE* dkeyfh;

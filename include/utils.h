@@ -173,4 +173,4 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
  * \param clen is the length of the returned plaintext
  * \returns a pointer to the plaintext
  */
-uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen);
+uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv);
