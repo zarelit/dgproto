@@ -369,9 +369,61 @@ exit_verifymessage_m1:
 }
 
 int
-verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na)
+verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb)
 {
-    return 0;
+	// Message is B|enc(Na|Nb|sign(Nb))
+	// Define its components
+	msg_data id;
+	msg_data encryptedPart;
+	msg_data receivedNa;
+	msg_data signedNb;
+	msg_data receivedNb;
+
+	// Auxiliary variables
+	int s=1;
+	int ret;
+	msg_data temp;
+	BIGNUM* receivedNaBN=NULL;
+
+	// Split ID from encrypted part
+	id.data_len=sizeof(aid_t);
+	encryptedPart.data_len = *msg_len - id.data_len;
+    ret = extr_msgs(msg, 2, &id, &encryptedPart);
+	if(!ret) s=0;
+
+	// Verify ID
+	if(id.data[0] != 'B') s=0;
+
+	// Decode the encrypted part
+	temp.data = decrypt(CLIENT_KEY,encryptedPart.data, encryptedPart.data_len, &(temp.data_len));
+
+	// Split Na, Nb, sig of Nb
+	receivedNa.data_len = NONCE_LEN/8;
+	receivedNb.data_len = NONCE_LEN/8;
+	signedNb.data_len = temp.data_len - (receivedNa.data_len + receivedNb.data_len);
+	ret = extr_msgs(temp.data, 3, receivedNa, receivedNb, signedNb);
+	if(!ret) s=0;
+
+	// Verify that received nonce is actually our generate Nonce
+	receivedNaBN = BN_bin2bn(receivedNa.data, receivedNa.data_len, receivedNaBN);
+	if(BN_cmp(Na,receivedNaBN)!= 0) s=0;
+
+	// Pack received Nb in a bignum and then verify the signature
+	*Nb = BN_bin2bn(receivedNb.data, receivedNb.data_len, *Nb);
+	ret = verify(SERVER_PUBKEY, *Nb, signedNb.data, signedNb.data_len);
+	if(!ret) s=0;
+
+	// Cleanup
+	free(id.data);
+	free(encryptedPart.data);
+	free(receivedNa.data);
+	free(signedNb.data);
+	free(receivedNb.data);
+	free(temp.data);
+	BN_free(receivedNaBN);
+
+    if(s==0) return 0;
+	else return 1;
 }
 
 int
