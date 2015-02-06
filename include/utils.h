@@ -158,10 +158,14 @@ uint8_t* do_sha256_digest (uint8_t* msg, size_t msg_len);
  * \param keypath is a string with the path to a PEM public key
  * \param p is the buffer containing the plaintext
  * \param plen is the length of the plaintext
- * \param clen is the length of the returned ciphertext
+ * \param[out] clen is the length of the returned ciphertext
+ * \param[out] iv is the buffer containing the generated IV of the seal
+ * \param[out] ivlen is the length of the iv buffer
+ * \param ek is the envelope key
+ * \param ekl is the length of the envelope key
  * \returns a pointer to the ciphertext
  */
-uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen);
+uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t* iv, size_t* ivlen, uint8_t* ek, int* ekl);
 
 /**
  * Decrypts a buffer with a private key
@@ -169,6 +173,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
  * \param p is the buffer containing the ciphertext
  * \param plen is the length of the ciphertext
  * \param clen is the length of the returned plaintext
+ * \param iv is a buffer with the IV for the envelope
  * \returns a pointer to the plaintext
  */
-uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen);
+uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv, uint8_t* ek, int ekl);
