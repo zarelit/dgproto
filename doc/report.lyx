@@ -254,7 +254,7 @@ Protocol Idea
 \begin_layout Standard
 We thought about a protocol that doesn't need to send the key over the unsecure
  channel.
- The idea is: the two main actor, the Client A and the Server B, have to
+ The idea is: the two main actors, the Client A and the Server B, have to
  create indipendentely the same session key which is the combination of
  two secret fresh random numbers (nonces 
 \begin_inset Formula $N_{a}$
@@ -1085,12 +1085,18 @@ name "part:Protocol-implementation"
 \end_layout
 
 \begin_layout Standard
-In this part we will explore the implementation details and the specification
- in order to implement correctly our protocol.
+In this part we will explore the implementation details and the specifications
+ of the project in order to implement correctly our protocol.
 \end_layout
 
 \begin_layout Section
 Protocol Specification
+\end_layout
+
+\begin_layout Standard
+The protocol will be based on the follwing specifications, some of them
+ are mandatory by the professor, some others instead have been added by
+ ourself.
 \end_layout
 
 \begin_layout Description
@@ -1100,6 +1106,15 @@ Public/private
 
 keys: we recommend Elliptic Curve Cryptography, because it is faster and
  has smaller key than RSA but with the same level of confidentiality.
+ However, due to some bugs in the openssl library, in the implementation
+ we was forced to use RSA criptographic and signing algorithms (see 
+\begin_inset CommandInset ref
+LatexCommand vref
+reference "sec:Implementation-details"
+
+\end_inset
+
+ for more information).
 \end_layout
 
 \begin_layout Description
@@ -1171,47 +1186,64 @@ K=H(N_{a}|N_{b}|"FzHp3CbMao")
 \begin_inset Formula $H(·)$
 \end_inset
 
- is an hash function with output of 256-bit.
- So the key 
-\series bold
-MUST BE 256 bit long
-\series default
-.
+ is an hash function with output of 256-bit and so is the key.
 \end_layout
 
-\begin_layout Itemize
-\begin_inset Formula $e_{a},\, e_{b}$
+\begin_layout Section
+Implementation details
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Implementation-details"
+
 \end_inset
 
-: EC 256-bit in dei files
+
 \end_layout
 
-\begin_layout Itemize
-\begin_inset Formula $N_{a},\, N_{b}$
-\end_inset
-
-: nonces 128-bit random
+\begin_layout Standard
+We decided to implement separately the client and the server parts, so one
+ of us wrote the client and the other one the server.
+ We wrote each part using the C programming language, as requested by the
+ professor, and we used the openssl library as said by the project specification
+s.
 \end_layout
 
-\begin_layout Itemize
-\begin_inset Formula $A,\, B$
-\end_inset
-
- : 1 byte ASCII
+\begin_layout Standard
+The project code is divided into these parts:
 \end_layout
 
-\begin_layout Itemize
-\begin_inset Formula $\mathrm{H}(N_{a}),\mathrm{H}(N_{b})$
-\end_inset
-
- :SHA-256 (NSA approved)
+\begin_layout Description
+server.c It is the main file which contains the main() of the server, its
+ internal data structures and the whole code the server has to run in order
+ to work properly.
+ Remember that a server can't brutally exit like a client program can do,
+ that is the server must recognize all errors and must consequently act
+ in order to close the communication if something went wrong during the
+ data exchange.
 \end_layout
 
-\begin_layout Itemize
-\begin_inset Formula $K=H(N_{a}|N_{b}|"FzHp3CbMao")$
-\end_inset
+\begin_layout Description
+client.c This file contain the main() function of the client.
+ The code permits the client to communicate with the server starting with
+ the D&G protocol, then the client will send a file and will wait the server
+ response which will consist of another file, then the client will exit.
+\end_layout
 
-: SHA-256 + salt
+\begin_layout Description
+protocol.c The code of the protocol is written here.
+ The protocol doesn't only mean the creation of the messages client and
+ server exchange, but also some functions being used for the message verifing
+ step.
+ If one single protocol message fails, then the protocol is aborted, so
+ the client program will exit and the server will close that connection.
+\end_layout
+
+\begin_layout Description
+utils.c This file contains all the utility functions each program has to
+ use.
+ Here there are encryption, decryption, signing and verifying by means of
+ public key and some other functions that permits to concatenate bit strings
+ in one single buffer and viceversa.
 \end_layout
 
 \begin_layout Standard
