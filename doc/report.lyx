@@ -1110,7 +1110,7 @@ keys: we recommend Elliptic Curve Cryptography, because it is faster and
  we was forced to use RSA criptographic and signing algorithms (see 
 \begin_inset CommandInset ref
 LatexCommand vref
-reference "sec:Implementation-details"
+reference "sub:OpenSSL-problems"
 
 \end_inset
 
@@ -1303,6 +1303,56 @@ Each header file, with the same name of the .c file, contains the definitions
 There is also a header file called common.h which contains all the needed
  include directives and some useful macros which are used by both client
  and server.
+\end_layout
+
+\begin_layout Subsection
+OpenSSL problems
+\begin_inset CommandInset label
+LatexCommand label
+name "sub:OpenSSL-problems"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+During the development of this project, we encountered some bugs and some
+ limitations of the OpenSSL library.
+ We want to develop a system which will use the Elliptic Curve Cryptography,
+ but during the project development we noticed that some of the OpenSSL
+ sign verification functionalities didn't work well because, when testing
+ the program, the return value of the signature verification function wasn't
+ what expected: sometimes the signature verification function failed, sometimes
+ it succeded but always on the same test designed for passing the verification.
+ That problem has been solved by changing the EC keys to RSA keys.
+ Only this change have made the same test to pass every time as expected
+ without source code changes.
+\end_layout
+
+\begin_layout Standard
+We saw another 
+\begin_inset Quotes eld
+\end_inset
+
+strange
+\begin_inset Quotes erd
+\end_inset
+
+ behaviour of OpenSSL library functions: when using EVP_PKEY_Encrypt* we
+ noticed that we couldn't encrypt more than public_key_size/8 - 11 bytes.
+ After some time googling in the net, we learnt that this limit is by PKCS#1
+ standard, so, in our case, we couldn't encrypt more than 501 bytes.
+ We tried using a smaller nonce size, but the RSA signature occupies 512
+ bytes, so we couldn't crypt anything without exceeding RSA limitations.
+\end_layout
+
+\begin_layout Standard
+Since we didn't want to modify the protocol by moving the encrypted sign
+ of the nonce outside the encrypted block, we moved to use the digital envelopes
+ OpenSSL provides.
+ This is useful for exchanging files or everything greater than 501 bytes
+ with slightly changes to the code.
 \end_layout
 
 \begin_layout Standard
