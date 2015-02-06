@@ -160,10 +160,12 @@ uint8_t* do_sha256_digest (uint8_t* msg, size_t msg_len);
  * \param plen is the length of the plaintext
  * \param[out] clen is the length of the returned ciphertext
  * \param[out] iv is the buffer containing the generated IV of the seal
- * \param[out] ivlen is the lenght of the iv buffer
+ * \param[out] ivlen is the length of the iv buffer
+ * \param ek is the envelope key
+ * \param ekl is the length of the envelope key
  * \returns a pointer to the ciphertext
  */
-uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t* iv, size_t* ivlen);
+uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t* iv, size_t* ivlen, uint8_t* ek, int* ekl);
 
 /**
  * Decrypts a buffer with a private key

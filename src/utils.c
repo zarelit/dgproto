@@ -458,7 +458,7 @@ exit_do_sha256_digest:
     return dig;
 }
 
-uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t* iv, size_t* ivlen){
+uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t* iv, size_t* ivlen, uint8_t* ek, int* ekl){
 	// Context and key
 	FILE* ckeyfh;
 	EVP_PKEY *ckey=NULL;
@@ -473,8 +473,6 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 	/* Variables  related to the symmetric enc of the envelope */
 	EVP_CIPHER_CTX *encctx = NULL;
 	const EVP_CIPHER* type = EVP_aes_256_cbc(); // Type of encryption
-	uint8_t* ek; // Chosen key
-	int ekl; // Length of the chosen key
 	int outl, outf;
 
 	/*
@@ -500,7 +498,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 	iv = malloc(EVP_CIPHER_iv_length(type));
 	ek = malloc(EVP_PKEY_size(ckey));
 	c = malloc(plen + EVP_CIPHER_block_size(type));
-	ret = EVP_SealInit(encctx, type, &ek, &ekl, iv, &ckey, 1);
+	ret = EVP_SealInit(encctx, type, &ek, ekl, iv, &ckey, 1);
 	if( ret != 1){
 		ERR_load_crypto_strings();
 		encerr = ERR_get_error();
@@ -550,7 +548,7 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
 	uint8_t* p;
 
 	/*
-	 * Open a public key for decryption
+	 * Open a private key for decryption
 	 */
 	dkeyfh = fopen(keypath,"r");
 	if(!dkeyfh) exit(EXIT_FAILURE);
