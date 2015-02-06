@@ -460,7 +460,6 @@ exit_do_sha256_digest:
 
 uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t* iv, size_t* ivlen){
 	// Context and key
-	EVP_PKEY_CTX *encctx;
 	FILE* ckeyfh;
 	EVP_PKEY *ckey=NULL;
 
@@ -470,6 +469,13 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 
 	/* The buffer with the ciphertext */
 	uint8_t* c;
+
+	/* Variables  related to the symmetric enc of the envelope */
+	EVP_CIPHER_CTX *encctx = NULL;
+	const EVP_CIPHER* type = EVP_aes_256_cbc(); // Type of encryption
+	uint8_t* ek; // Chosen key
+	int ekl; // Length of the chosen key
+	int outl, outf;
 
 	/*
 	 * Open a public key for encryption
@@ -482,38 +488,50 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 		exit(EXIT_FAILURE);
 	}
 
-	encctx = EVP_PKEY_CTX_new(ckey, NULL);
+	/* EVP_Seal* need a CIPHER_CTX */
+	encctx = malloc(sizeof(EVP_CIPHER_CTX));
+	EVP_CIPHER_CTX_init(encctx);
 	if (!encctx){
 		fprintf(stderr,"Cannot create an encryption context\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if (EVP_PKEY_encrypt_init(encctx) <= 0){
-		fprintf(stderr,"Cannot create an encryption context\n");
-		exit(EXIT_FAILURE);
-	}
-
-	/* Determine how long is the ciphertext buffer */
-	if (EVP_PKEY_encrypt(encctx, NULL, clen, p, plen) <= 0)
-		exit(EXIT_FAILURE);
-
-	c = malloc(*clen);
-	if(!c){
-		fprintf(stderr,"Out of memory\n");
-		exit(EXIT_FAILURE);
-	}
-
-	/* Perform actual encryption */
-	ret = EVP_PKEY_encrypt(encctx, c, clen, p, plen);
-	if( ret != 1 ){
+	/* Start the encryption process - generate IV and key */
+	iv = malloc(EVP_CIPHER_iv_length(type));
+	ek = malloc(EVP_PKEY_size(ckey));
+	c = malloc(plen + EVP_CIPHER_block_size(type));
+	ret = EVP_SealInit(encctx, type, &ek, &ekl, iv, &ckey, 1);
+	if( ret != 1){
 		ERR_load_crypto_strings();
 		encerr = ERR_get_error();
-		fprintf(stderr,"The encryption has failed with code %lu. RET=%d\n",encerr,ret);
+		fprintf(stderr,"Encrypt failed failed\n");
 		printf("%s\n", ERR_error_string(encerr, NULL));
-		ERR_free_strings();
+		exit(EXIT_FAILURE);
 	}
 
-	EVP_PKEY_CTX_free(encctx);
+	/* Encrypt data, then finalize */
+	ret = EVP_SealUpdate(encctx, c, &outl, p, plen);
+	if( ret != 1){
+		ERR_load_crypto_strings();
+		encerr = ERR_get_error();
+		fprintf(stderr,"Encrypt failed failed\n");
+		printf("%s\n", ERR_error_string(encerr, NULL));
+		exit(EXIT_FAILURE);
+	}
+	ret = EVP_SealFinal(encctx, &c[outl], &outf);
+	if( ret != 1){
+		ERR_load_crypto_strings();
+		encerr = ERR_get_error();
+		fprintf(stderr,"Encrypt failed failed\n");
+		printf("%s\n", ERR_error_string(encerr, NULL));
+		exit(EXIT_FAILURE);
+	}
+
+	*clen = outl + outf;
+
+
+	EVP_CIPHER_CTX_cleanup(encctx);
+	free(encctx);
 	return c;
 }
 
