@@ -139,10 +139,6 @@ David Costa
 Giuliano Peraz
 \end_layout
 
-\begin_layout Date
-15 January 2015
-\end_layout
-
 \begin_layout Standard
 \align center
 \begin_inset Graphics
@@ -1106,7 +1102,7 @@ Public/private
 
 keys: we recommend Elliptic Curve Cryptography, because it is faster and
  has smaller key than RSA but with the same level of confidentiality.
- However, due to some bugs in the openssl library, in the implementation
+ However, due to some bugs in the OpenSSL library, in the implementation
  we was forced to use RSA criptographic and signing algorithms (see 
 \begin_inset CommandInset ref
 LatexCommand vref
@@ -1215,9 +1211,9 @@ Structure of the project
 \begin_layout Standard
 The project is composed by two little programs: the client and the server.
  In order to maintain an ordered structure we have created some directories
- which store files be divided by extension: the header *.h files are all
- stored in ${PROJ_DIR}/include directory, source code *.c files are in the
- ${PROJ_DIR}/src directory instead.
+ which store files divided by extension: the header *.h files are all stored
+ in ${PROJ_DIR}/include directory, source code *.c files are in the ${PROJ_DIR}/s
+rc directory instead.
 \end_layout
 
 \begin_layout Standard
@@ -1225,8 +1221,8 @@ Since this is a demo project, that is we have to show our protocol works
  as expected, we saved the private and the public key, both client and server,
  into the ${PROJ_DIR}/key directory.
  We know that this is a security threat and a very big mistake, so we recommend
- to correctly putting those files into a more secure structure such as a
- key database, i.e.
+ putting correctly those files into a more secure structure such as a key
+ database, i.e.
  GnuPG database, if someone would use our client and server source files
  for his future projects.
 \end_layout
@@ -1245,7 +1241,7 @@ Source code files
 We decided to implement separately the client and the server parts, so one
  of us wrote the client and the other one the server.
  We wrote each part using the C programming language, as requested by the
- professor, and we used the openssl library as said by the project specification
+ professor, and we used the OpenSSL library as said by the project specification
 s.
 \end_layout
 
@@ -1259,7 +1255,7 @@ server.c It is the main file which contains the main() of the server, its
  to work properly.
  Remember that a server can't brutally exit like a client program can do,
  that is the server must recognize all errors and must consequently act
- in order to close the communication if something went wrong during the
+ in order to close the communication if something goes wrong during the
  data exchange.
 \end_layout
 
@@ -1283,8 +1279,14 @@ protocol.c The code of the protocol is written here.
 utils.c This file contains all the utility functions each program has to
  use.
  Here there are encryption, decryption, signing and verifying by means of
- public key and some other functions that permits to concatenate bit strings
- in one single buffer and viceversa.
+ public key, decryption and encryption by means of symmetric key, digest
+ creation using SHA256 algorithm and some other functions that permits to
+ concatenate bit strings in one single buffer and viceversa.
+\end_layout
+
+\begin_layout Standard
+We designed this project in order to simplify reading, mantaining and to
+ make easier extending features for whom will able to do that.
 \end_layout
 
 \begin_layout Subsubsection
@@ -1352,7 +1354,50 @@ Since we didn't want to modify the protocol by moving the encrypted sign
  of the nonce outside the encrypted block, we moved to use the digital envelopes
  OpenSSL provides.
  This is useful for exchanging files or everything greater than 501 bytes
- with slightly changes to the code.
+ with few changes to the code.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Reusable parts of the project
+\end_layout
+
+\begin_layout Standard
+This project wasn't been thought to be extendend in future projects, since
+ the client.c and server.c describes only an example of what a program must
+ do for using our protocol correctly.
+ In our opinion the reusable code is written inside protocol.c and utils.c.
+ The first file has been thought for 
+\begin_inset Quotes eld
+\end_inset
+
+internal use only
+\begin_inset Quotes erd
+\end_inset
+
+, that is, since both server and client use the same functions, we have
+ written them in a single file equipped with the documentation that explains
+ what each function does.
+ Of course the file protocol.h is the file someone will refer to if he will
+ use the protocol in his applications.
+ All the functions have been deeply tested and they do what they expected
+ to do.
+\end_layout
+
+\begin_layout Standard
+The latter file (utils.c) is a collection of functions with the same purpouse
+ of protocol.c but they are more general, so we can use them, and anyone
+ can do that, in any other project we will design and implement in the future.
+\end_layout
+
+\begin_layout Standard
+We deploy our code under the GPL v3.0 Licence.
 \end_layout
 
 \begin_layout Standard
