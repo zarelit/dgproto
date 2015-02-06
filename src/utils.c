@@ -495,14 +495,15 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 	}
 
 	/* Start the encryption process - generate IV and key */
-	iv = malloc(EVP_CIPHER_iv_length(type));
+	*ivlen = EVP_CIPHER_iv_length(type);
+	iv = malloc(*ivlen);
 	ek = malloc(EVP_PKEY_size(ckey));
 	c = malloc(plen + EVP_CIPHER_block_size(type));
 	ret = EVP_SealInit(encctx, type, &ek, ekl, iv, &ckey, 1);
 	if( ret != 1){
 		ERR_load_crypto_strings();
 		encerr = ERR_get_error();
-		fprintf(stderr,"Encrypt failed failed\n");
+		fprintf(stderr,"Encrypt failed\n");
 		printf("%s\n", ERR_error_string(encerr, NULL));
 		exit(EXIT_FAILURE);
 	}
@@ -512,7 +513,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 	if( ret != 1){
 		ERR_load_crypto_strings();
 		encerr = ERR_get_error();
-		fprintf(stderr,"Encrypt failed failed\n");
+		fprintf(stderr,"Encrypt failed\n");
 		printf("%s\n", ERR_error_string(encerr, NULL));
 		exit(EXIT_FAILURE);
 	}
@@ -520,7 +521,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 	if( ret != 1){
 		ERR_load_crypto_strings();
 		encerr = ERR_get_error();
-		fprintf(stderr,"Encrypt failed failed\n");
+		fprintf(stderr,"Encrypt failed\n");
 		printf("%s\n", ERR_error_string(encerr, NULL));
 		exit(EXIT_FAILURE);
 	}
@@ -534,9 +535,9 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 }
 
 
-uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv){
+uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv, uint8_t* ek, int ekl){
 	// Context and key
-	EVP_PKEY_CTX *decctx;
+	EVP_CIPHER_CTX *decctx;
 	FILE* dkeyfh;
 	EVP_PKEY *dkey=NULL;
 
@@ -546,6 +547,10 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
 
 	/* The buffer with the plaintext */
 	uint8_t* p;
+
+	/* envelope related */
+	int outl;
+	const EVP_CIPHER* type = EVP_aes_256_cbc();
 
 	/*
 	 * Open a private key for decryption
@@ -558,34 +563,43 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
 		exit(EXIT_FAILURE);
 	}
 
-	decctx = EVP_PKEY_CTX_new(dkey, NULL);
+	decctx = malloc(sizeof(EVP_CIPHER_CTX));
+	EVP_CIPHER_CTX_init(decctx);
 	if (!decctx){
 		fprintf(stderr,"Cannot create an decryption context\n");
 		exit(EXIT_FAILURE);
 	}
 
-	if (EVP_PKEY_decrypt_init(decctx) <= 0){
-		fprintf(stderr,"Cannot create an decryption context\n");
-		exit(EXIT_FAILURE);
-	}
-
-	/* Determine how long is the ciphertext buffer */
-	if (EVP_PKEY_decrypt(decctx, NULL, plen, c, clen) <= 0)
-		exit(EXIT_FAILURE);
-
-	p = malloc(*plen);
-	if(!p){
-		fprintf(stderr,"Out of memory\n");
-		exit(EXIT_FAILURE);
-	}
-
-	/* Perform actual decryption */
-	ret = EVP_PKEY_decrypt(decctx, p, plen, c, clen);
-	if( ret != 1 ){
+	p = malloc(clen + EVP_CIPHER_block_size(type));
+	ret = EVP_OpenInit(decctx, type, ek, ekl, iv, dkey);
+	if( ret != 1){
+		ERR_load_crypto_strings();
 		decerr = ERR_get_error();
-		fprintf(stderr,"The decryption has failed with code %lu. RET=%d\n",decerr,ret);
+		fprintf(stderr,"Decrypt failed\n");
+		printf("%s\n", ERR_error_string(decerr, NULL));
+		exit(EXIT_FAILURE);
 	}
 
-	EVP_PKEY_CTX_free(decctx);
+	ret =  EVP_OpenUpdate( decctx, p, (int*) plen, c, clen);
+	if( ret != 1){
+		ERR_load_crypto_strings();
+		decerr = ERR_get_error();
+		fprintf(stderr,"Decrypt failed\n");
+		printf("%s\n", ERR_error_string(decerr, NULL));
+		exit(EXIT_FAILURE);
+	}
+
+	ret = EVP_OpenFinal(decctx, p, plen);
+	if( ret != 1){
+		ERR_load_crypto_strings();
+		decerr = ERR_get_error();
+		fprintf(stderr,"Decrypt failed\n");
+		printf("%s\n", ERR_error_string(decerr, NULL));
+		exit(EXIT_FAILURE);
+	}
+
+
+	EVP_CIPHER_CTX_cleanup(decctx);
+	free(decctx);
 	return p;
 }

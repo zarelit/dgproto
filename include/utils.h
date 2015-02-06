@@ -173,6 +173,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
  * \param p is the buffer containing the ciphertext
  * \param plen is the length of the ciphertext
  * \param clen is the length of the returned plaintext
+ * \param iv is a buffer with the IV for the envelope
  * \returns a pointer to the plaintext
  */
-uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv);
+uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv, uint8_t* ek, int ekl);

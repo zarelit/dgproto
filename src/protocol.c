@@ -32,6 +32,9 @@ create_m1 (size_t* msg_len, aid_t id, BIGNUM* Na_bn)
 	msg_data signedNa;
 	msg_data encryptedNa;
 
+	// IV of the seal
+	msg_data iv;
+
 	// Convert the nonce in a bytestring
 	Na.data = malloc(BN_num_bytes(Na_bn));
 	Na.data_len = BN_bn2bin(Na_bn, Na.data);
@@ -45,7 +48,7 @@ create_m1 (size_t* msg_len, aid_t id, BIGNUM* Na_bn)
 
 	// Build Na || sig(Na), then cipher it
 	signedNa.data = conc_msgs(&(signedNa.data_len), 2, Na, sig);
-	encryptedNa.data = encrypt(SERVER_PUBKEY, signedNa.data, signedNa.data_len, &(encryptedNa.data_len));
+	encryptedNa.data = encrypt(SERVER_PUBKEY, signedNa.data, signedNa.data_len, &(encryptedNa.data_len), iv.data, &(iv.data_len));
 
 	// Add the id
 	myid.data = &id;
