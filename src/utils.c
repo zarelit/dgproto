@@ -55,7 +55,7 @@ conc_msgs (size_t* buf_len, size_t argc, ...)
     }
     va_end(msgs);
 
-exit_conc_msgs:
+    exit_conc_msgs:
     return buffer;
 }
 
@@ -69,9 +69,9 @@ extr_msgs (uint8_t* buffer, size_t argc, ...)
     msg_data *msg;
 
     // Input error checking
-    if (argc == 0)
+    if (argc == 0 || buffer == NULL)
     {
-        fprintf(stderr, "Parameter argc is 0\n");
+        fprintf(stderr, "%s: Invalid parameter passed\n", __func__);
         goto exit_extr_msgs;
     }
 
@@ -98,34 +98,39 @@ extr_msgs (uint8_t* buffer, size_t argc, ...)
     va_end(msgs);
     ret_val = 1;
 
-exit_extr_msgs:
+    exit_extr_msgs:
     return ret_val;
 }
 
-void sendbuf(int sock, unsigned char* buf, ssize_t len){
-	ssize_t sent=0;
-	ssize_t n=0;
+uint8_t sendbuf(int sock, unsigned char* buf, ssize_t len){
+    ssize_t sent=0;
+    ssize_t n=0;
+    uint8_t ret_val;
 
-	while(sent != len){
-		// Always try to send the whole buffer
-		n = send(sock, &buf[sent], len - sent, 0);
+    while(sent != len){
+        // Always try to send the whole buffer
+        n = send(sock, &buf[sent], len - sent, 0);
 
-		// Check for errors or update the index of what has already been sent
-		if(n != -1){
-			sent += n;
-		} else{
-			perror("Cannot send data to server");
-			exit(EXIT_FAILURE);
-		}
-	}
+        // Check for errors or update the index of what has already been sent
+        if(n != -1){
+            sent += n;
+        } else{
+            ret_val = 0;
+            perror("Cannot send data to server");
+            goto exit_sendbuf;
+        }
+    }
+    ret_val = 1;
+    exit_sendbuf:
+    return ret_val;
 }
 
 void hexdump(FILE *fh, unsigned char* buf, size_t buflen){
-	int i;
+    int i;
 
-	for(i=0; i<buflen; i++){
-		fprintf(fh,"%02hhX",buf[i]);
-	}
+    for(i=0; i<buflen; i++){
+        fprintf(fh,"%02hhX",buf[i]);
+    }
 }
 
 /**
@@ -201,7 +206,7 @@ do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
     }
     *msg_len = enc_len;
 
-exit_do_aes256_crypt:
+    exit_do_aes256_crypt:
     EVP_CIPHER_CTX_cleanup(ctx);
     free(ctx);
     return encr_msg;
@@ -251,7 +256,7 @@ do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
     }
     *msg_len = dec_len;
 
-exit_do_aes256_decrypt:
+    exit_do_aes256_decrypt:
     EVP_CIPHER_CTX_cleanup(ctx);
     free(ctx);
     return dec_msg;
@@ -259,105 +264,136 @@ exit_do_aes256_decrypt:
 
 uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, size_t* slen){
 
-	FILE* ckeyfh;
-	EVP_PKEY* ckey=NULL;
-	EVP_PKEY_CTX* sigctx;
-	uint8_t *sig;
+    FILE* ckeyfh;
+    EVP_PKEY* ckey=NULL;
+    EVP_PKEY_CTX* sigctx;
+    uint8_t *sig;
 
-	// Load signing key
-	ckeyfh = fopen(keypath,"r");
-	if(!ckeyfh) exit(EXIT_FAILURE);
-	ckey = PEM_read_PrivateKey(ckeyfh, &ckey, NULL, NULL);
-	if(!ckey){
-		fprintf(stderr,"Cannot read signing key from file %s\n", keypath);
-		exit(EXIT_FAILURE);
-	}
+    // Load signing key
+    ckeyfh = fopen(keypath,"r");
+    if(!ckeyfh)
+    {
+        fprintf(stderr,"Cannot open key file %s\n", keypath);
+        sig = NULL;
+        goto exit_sign;
+    }
+    ckey = PEM_read_PrivateKey(ckeyfh, &ckey, NULL, NULL);
+    if(!ckey){
+        fprintf(stderr,"Cannot read signing key from file %s\n", keypath);
+        sig = NULL;
+        goto exit_sign;
+    }
 
-	// create signing context
-	sigctx = EVP_PKEY_CTX_new(ckey, NULL);
-	if (!sigctx){
-		fprintf(stderr,"Cannot create a signing context\n");
-		exit(EXIT_FAILURE);
-	}
-	if (EVP_PKEY_sign_init(sigctx) <= 0){
-		fprintf(stderr,"Cannot create a signing context\n");
-		exit(EXIT_FAILURE);
-	}
+    // create signing context
+    sigctx = EVP_PKEY_CTX_new(ckey, NULL);
+    if (!sigctx){
+        fprintf(stderr,"Cannot create a signing context\n");
+        sig = NULL;
+        goto exit_sign;
+    }
+    if (EVP_PKEY_sign_init(sigctx) <= 0){
+        fprintf(stderr,"Cannot initialize a signing context\n");
+        EVP_PKEY_CTX_free(sigctx);
+        free(sigctx);
+        sig = NULL;
+        goto exit_sign;
+    }
 
-	// Ask the maximum signature size that will result in signing the payload
-	if (EVP_PKEY_sign(sigctx, NULL, slen, payload, plen ) <= 0)
-		exit(EXIT_FAILURE);
+    // Ask the maximum signature size that will result in signing the payload
+    if (EVP_PKEY_sign(sigctx, NULL, slen, payload, plen ) <= 0)
+    {
+        fprintf(stderr, "%s: Cannot get the sign size\n", __func__);
+        sig = NULL;
+        goto cleanup_sign;
+    }
 
-	sig = malloc(*slen);
-	if(!sig){
-		fprintf(stderr,"Out of memory\n");
-		exit(EXIT_FAILURE);
-	}
+    sig = malloc(*slen);
+    if(!sig){
+        fprintf(stderr,"Out of memory\n");
+        goto cleanup_sign;
+    }
 
-	// Do the real signature
-	if (EVP_PKEY_sign(sigctx, sig, slen, payload, plen) <= 0){
-		ERR_load_crypto_strings();
-		fprintf(stderr,"Signing operation failed\n");
-		printf("%s\n", ERR_error_string(ERR_get_error(), NULL));
-		exit(EXIT_FAILURE);
-	}
+    // Do the real signature
+    if (EVP_PKEY_sign(sigctx, sig, slen, payload, plen) <= 0){
+        ERR_load_crypto_strings();
+        fprintf(stderr,"Signing operation failed\n");
+        printf("%s\n", ERR_error_string(ERR_get_error(), NULL));
+        sig = NULL;
+    }
 
-	EVP_PKEY_CTX_free(sigctx);
-	return sig;
+    cleanup_sign:
+    EVP_PKEY_CTX_free(sigctx);
+    free(sigctx);
+    exit_sign:
+    return sig;
 }
 
 int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
-	// Nonce
-	uint8_t* N;
-	size_t Nlen;
+    // Nonce
+    uint8_t* N;
+    size_t Nlen;
 
-	// Context and key
-	EVP_PKEY_CTX *verctx;
-	FILE* vkeyfh;
-	EVP_PKEY *vkey=NULL;
+    // Context and key
+    EVP_PKEY_CTX *verctx;
+    FILE* vkeyfh;
+    EVP_PKEY *vkey=NULL;
 
-	// Return codes and errors
-	int ret;
-	unsigned long vererr;
+    // Return codes and errors
+    int ret;
+    unsigned long vererr;
 
-	/*
-	 * Open the public key of the client for verification
-	 */
-	vkeyfh = fopen(keypath,"r");
-	if(!vkeyfh) exit(EXIT_FAILURE);
-	vkey = PEM_read_PUBKEY(vkeyfh, &vkey, NULL, NULL);
-	if(!vkey){
-		fprintf(stderr,"Cannot read verification key from file %s\n", keypath);
-		exit(EXIT_FAILURE);
-	}
+    /*
+     * Open the public key of the client for verification
+     */
+    vkeyfh = fopen(keypath,"r");
+    if(!vkeyfh)
+    {
+        fprintf(stderr,"Cannot open key file %s\n", keypath);
+        ret = 0;
+        goto exit_verify;
+    }
+    vkey = PEM_read_PUBKEY(vkeyfh, &vkey, NULL, NULL);
+    if(!vkey){
+        fprintf(stderr,"Cannot read verification key from file %s\n", keypath);
+        ret = 0;
+        goto exit_verify;
+    }
 
-	verctx = EVP_PKEY_CTX_new(vkey, NULL);
-	if (!verctx){
-		fprintf(stderr,"Cannot create a verify context\n");
-		exit(EXIT_FAILURE);
-	}
+    verctx = EVP_PKEY_CTX_new(vkey, NULL);
+    if (!verctx){
+        fprintf(stderr,"Cannot create a verify context\n");
+        ret = 0;
+        goto exit_verify;
+    }
 
-	if (EVP_PKEY_verify_init(verctx) <= 0){
-		fprintf(stderr,"Cannot create a verify context\n");
-		exit(EXIT_FAILURE);
-	}
+    if (EVP_PKEY_verify_init(verctx) <= 0){
+        fprintf(stderr,"Cannot initialize verify context\n");
+        ret = 0;
+    }
 
-	/*
-	 * Convert the nonce in a string so that it can be verified
-	 */
-	N = malloc(BN_num_bytes(nonce));
-	Nlen = BN_bn2bin(nonce, N);
+    /*
+     * Convert the nonce in a string so that it can be verified
+     */
+    N = malloc(BN_num_bytes(nonce));
+    Nlen = BN_bn2bin(nonce, N);
+    ret = 1;
 
-	/* Perform actual verify operation */
-	ret = EVP_PKEY_verify(verctx, sig, slen, N, Nlen);
-	if( ret != 1 ){
-		vererr = ERR_get_error();
-		fprintf(stderr,"The verify operation on the nonce has failed with code %lu. RET=%d\n",vererr,ret);
-	}
+    /* Perform actual verify operation */
+    if(EVP_PKEY_verify(verctx, sig, slen, N, Nlen) != 1){
+        vererr = ERR_get_error();
+        ret = 0;
+        fprintf(stderr,"The verify operation on the nonce has failed with code %lu. RET=%d\n",vererr,ret);
+    }
 
-	free(N);
-	EVP_PKEY_CTX_free(verctx);
-	return (ret==1)?1:0;
+    exit_verify:
+    if (N != NULL) free(N);
+    if (verctx != NULL)
+    {
+        EVP_PKEY_CTX_free(verctx);
+        free(verctx);
+    }
+
+    return (ret==1)?1:0;
 }
 
 uint8_t*
@@ -399,7 +435,7 @@ generate_random_aes_iv (size_t *iv_len)
         *iv_len = 0;
     }
     *iv_len = buf_len;
-exit_generate_random_aes_iv:
+    exit_generate_random_aes_iv:
     return buffer;
 }
 
@@ -451,125 +487,153 @@ do_sha256_digest (uint8_t* msg, size_t msg_len)
         free(dig);
     }
 
-cleanup_do_sha256_digest:
+    cleanup_do_sha256_digest:
     EVP_MD_CTX_cleanup(ctx);
     free(ctx);
-exit_do_sha256_digest:
+    exit_do_sha256_digest:
     return dig;
 }
 
 uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen){
-	// Context and key
-	EVP_PKEY_CTX *encctx;
-	FILE* ckeyfh;
-	EVP_PKEY *ckey=NULL;
+    // Context and key
+    EVP_PKEY_CTX *encctx;
+    FILE* ckeyfh;
+    EVP_PKEY *ckey=NULL;
 
-	// Return codes and errors
-	int ret;
-	unsigned long encerr;
+    // Return codes and errors
+    int err_code;
+    unsigned long encerr;
 
-	/* The buffer with the ciphertext */
-	uint8_t* c;
+    /* The buffer with the ciphertext */
+    uint8_t* c;
 
-	/*
-	 * Open a public key for encryption
-	 */
-	ckeyfh = fopen(keypath,"r");
-	if(!ckeyfh) exit(EXIT_FAILURE);
-	ckey = PEM_read_PUBKEY(ckeyfh, &ckey, NULL, NULL);
-	if(!ckey){
-		fprintf(stderr,"Cannot read encryption key from file %s\n", keypath);
-		exit(EXIT_FAILURE);
-	}
+    /*
+     * Open a public key for encryption
+     */
+    ckeyfh = fopen(keypath,"r");
+    if(!ckeyfh)
+    {
+        fprintf(stderr, "%s: Cannot open key file\n", __func__);
+        c = NULL;
+        goto exit_encrypt;
+    }
+    ckey = PEM_read_PUBKEY(ckeyfh, &ckey, NULL, NULL);
+    if(!ckey){
+        fprintf(stderr,"Cannot read encryption key from file %s\n", keypath);
+        c = NULL;
+        goto exit_encrypt;
+    }
 
-	encctx = EVP_PKEY_CTX_new(ckey, NULL);
-	if (!encctx){
-		fprintf(stderr,"Cannot create an encryption context\n");
-		exit(EXIT_FAILURE);
-	}
+    encctx = EVP_PKEY_CTX_new(ckey, NULL);
+    if (!encctx){
+        fprintf(stderr,"Cannot create an encryption context\n");
+        c = NULL;
+        goto exit_encrypt;
+    }
 
-	if (EVP_PKEY_encrypt_init(encctx) <= 0){
-		fprintf(stderr,"Cannot create an encryption context\n");
-		exit(EXIT_FAILURE);
-	}
+    if (EVP_PKEY_encrypt_init(encctx) <= 0){
+        fprintf(stderr,"Cannot initialize an encryption context\n");
+        c = NULL;
+        goto cleanup_encrypt;
+    }
 
-	/* Determine how long is the ciphertext buffer */
-	if (EVP_PKEY_encrypt(encctx, NULL, clen, p, plen) <= 0)
-		exit(EXIT_FAILURE);
+    /* Determine how long is the ciphertext buffer */
+    if (EVP_PKEY_encrypt(encctx, NULL, clen, p, plen) <= 0)
+    {
+        fprintf(stderr,"Cannot get ciphertext length\n");
+        c = NULL;
+        goto cleanup_encrypt;
+    }
 
-	c = malloc(*clen);
-	if(!c){
-		fprintf(stderr,"Out of memory\n");
-		exit(EXIT_FAILURE);
-	}
+    c = malloc(*clen);
+    if(!c){
+        fprintf(stderr,"Out of memory\n");
+        goto cleanup_encrypt;
+    }
 
-	/* Perform actual encryption */
-	ret = EVP_PKEY_encrypt(encctx, c, clen, p, plen);
-	if( ret != 1 ){
-		ERR_load_crypto_strings();
-		encerr = ERR_get_error();
-		fprintf(stderr,"The encryption has failed with code %lu. RET=%d\n",encerr,ret);
-		printf("%s\n", ERR_error_string(encerr, NULL));
-		ERR_free_strings();
-	}
+    /* Perform actual encryption */
+    err_code = EVP_PKEY_encrypt(encctx, c, clen, p, plen);
+    if( err_code != 1 ){
+        ERR_load_crypto_strings();
+        encerr = ERR_get_error();
+        fprintf(stderr,"The encryption has failed with code %lu. RET=%d\n",encerr,err_code);
+        printf("%s\n", ERR_error_string(encerr, NULL));
+        ERR_free_strings();
+    }
 
-	EVP_PKEY_CTX_free(encctx);
-	return c;
+cleanup_encrypt:
+    EVP_PKEY_CTX_free(encctx);
+    free(encctx);
+
+exit_encrypt:
+    return c;
 }
 
-
 uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen){
-	// Context and key
-	EVP_PKEY_CTX *decctx;
-	FILE* dkeyfh;
-	EVP_PKEY *dkey=NULL;
+    // Context and key
+    EVP_PKEY_CTX *decctx;
+    FILE* dkeyfh;
+    EVP_PKEY *dkey=NULL;
 
-	// Return codes and errors
-	int ret;
-	unsigned long decerr;
+    // Return codes and errors
+    int err_code;
+    unsigned long decerr;
 
-	/* The buffer with the plaintext */
-	uint8_t* p;
+    /* The buffer with the plaintext */
+    uint8_t* p;
 
-	/*
-	 * Open a public key for decryption
-	 */
-	dkeyfh = fopen(keypath,"r");
-	if(!dkeyfh) exit(EXIT_FAILURE);
-	dkey = PEM_read_PrivateKey(dkeyfh, &dkey, NULL, NULL);
-	if(!dkey){
-		fprintf(stderr,"Cannot read decryption key from file %s\n", keypath);
-		exit(EXIT_FAILURE);
-	}
+    /*
+     * Open a public key for decryption
+     */
+    dkeyfh = fopen(keypath,"r");
+    if(!dkeyfh)
+    {
+        fprintf(stderr,"Cannot open key file %s\n", keypath);
+        p = NULL;
+        goto exit_decrypt;
+    }
+    dkey = PEM_read_PrivateKey(dkeyfh, &dkey, NULL, NULL);
+    if(!dkey){
+        fprintf(stderr,"Cannot read decryption key from file %s\n", keypath);
+    }
 
-	decctx = EVP_PKEY_CTX_new(dkey, NULL);
-	if (!decctx){
-		fprintf(stderr,"Cannot create an decryption context\n");
-		exit(EXIT_FAILURE);
-	}
+    decctx = EVP_PKEY_CTX_new(dkey, NULL);
+    if (!decctx){
+        fprintf(stderr,"Cannot create an decryption context\n");
+    }
 
-	if (EVP_PKEY_decrypt_init(decctx) <= 0){
-		fprintf(stderr,"Cannot create an decryption context\n");
-		exit(EXIT_FAILURE);
-	}
+    if (EVP_PKEY_decrypt_init(decctx) <= 0){
+        fprintf(stderr,"Cannot create an decryption context\n");
+        p = NULL;
+        goto cleanup_decrypt;
+    }
 
-	/* Determine how long is the ciphertext buffer */
-	if (EVP_PKEY_decrypt(decctx, NULL, plen, c, clen) <= 0)
-		exit(EXIT_FAILURE);
+    /* Determine how long is the ciphertext buffer */
+    if (EVP_PKEY_decrypt(decctx, NULL, plen, c, clen) <= 0)
+    {
+        fprintf(stderr, "%s: Cannot get the ciphertext size\n", __func__);
+        p = NULL;
+        goto cleanup_decrypt;
+    }
 
-	p = malloc(*plen);
-	if(!p){
-		fprintf(stderr,"Out of memory\n");
-		exit(EXIT_FAILURE);
-	}
+    p = malloc(*plen);
+    if(!p){
+        fprintf(stderr,"Out of memory\n");
+        goto cleanup_decrypt;
+    }
 
-	/* Perform actual decryption */
-	ret = EVP_PKEY_decrypt(decctx, p, plen, c, clen);
-	if( ret != 1 ){
-		decerr = ERR_get_error();
-		fprintf(stderr,"The decryption has failed with code %lu. RET=%d\n",decerr,ret);
-	}
+    /* Perform actual decryption */
+    err_code = EVP_PKEY_decrypt(decctx, p, plen, c, clen);
+    if( err_code != 1 ){
+        decerr = ERR_get_error();
+        fprintf(stderr,"The decryption has failed with code %lu. RET=%d\n",decerr,err_code);
+        p = NULL;
+    }
 
-	EVP_PKEY_CTX_free(decctx);
-	return p;
+cleanup_decrypt:
+    EVP_PKEY_CTX_free(decctx);
+    free(decctx);
+
+exit_decrypt:
+    return p;
 }

@@ -84,8 +84,9 @@ uint8_t extr_msgs (uint8_t* buffer, size_t argc, ...);
  * \param sock an already connected TCP socket
  * \param buf pointer to the data
  * \param len length of the data to be sent in bytes
+ * \returns 1 if the sending has succeded, 0 on errors.
  */
-void sendbuf(int sock, unsigned char* buf, ssize_t len);
+uint8_t sendbuf(int sock, unsigned char* buf, ssize_t len);
 
 /**
  * writes to a file descriptor the hexdump of buf
@@ -123,7 +124,7 @@ uint8_t* do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t*
  * \param payload is the string to be signed
  * \param plen is the length of payload in bytes
  * \param slen is the actual length of the signed content
- * \returns a buffer with the signed content.
+ * \returns a buffer with the signed content or NULL in case of errors.
  * \warning the result is dynamically allocated. Memory must be freed manually.
  */
 uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, size_t* slen);
@@ -159,7 +160,7 @@ uint8_t* do_sha256_digest (uint8_t* msg, size_t msg_len);
  * \param p is the buffer containing the plaintext
  * \param plen is the length of the plaintext
  * \param clen is the length of the returned ciphertext
- * \returns a pointer to the ciphertext
+ * \returns a pointer to the ciphertext or NULL if errors occourred.
  */
 uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen);
 
@@ -169,6 +170,6 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
  * \param p is the buffer containing the ciphertext
  * \param plen is the length of the ciphertext
  * \param clen is the length of the returned plaintext
- * \returns a pointer to the plaintext
+ * \returns a pointer to the plaintext or NULL if errors occourred.
  */
 uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen);
