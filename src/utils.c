@@ -593,8 +593,8 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
         c = NULL;
         goto cleanup_encrypt;
     }
-    ek = malloc(EVP_PKEY_size(ckey));
-    if (ek == NULL)
+    *ek = malloc(EVP_PKEY_size(ckey));
+    if (*ek == NULL)
     {
         fprintf(stderr, "%s: Out of memory allocating ek\n", __func__);
         free(iv);
@@ -606,18 +606,18 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
     {
         fprintf(stderr, "%s: Out of memory for \n", __func__);
         free(iv);
-        free(ek);
+        free(*ek);
         goto cleanup_encrypt;
     }
 
-    if (EVP_SealInit(encctx, type, &ek, ekl, *iv, &ckey, 1) != 1){
+    if (EVP_SealInit(encctx, type, ek, ekl, *iv, &ckey, 1) != 1){
         ERR_load_crypto_strings();
         encerr = ERR_get_error();
         fprintf(stderr,"Encrypt failed\n");
         printf("%s\n", ERR_error_string(encerr, NULL));
         ERR_free_strings();
         free(iv);
-        free(ek);
+        free(*ek);
         free(c);
         c = NULL;
         goto cleanup_encrypt;
@@ -631,7 +631,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
         printf("%s\n", ERR_error_string(encerr, NULL));
         ERR_free_strings();
         free(iv);
-        free(ek);
+        free(*ek);
         free(c);
         c = NULL;
         goto cleanup_encrypt;
@@ -649,7 +649,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 
     *clen = outl + outf;
     free(iv);
-    free(ek);
+    free(*ek);
 
     cleanup_encrypt:
     EVP_CIPHER_CTX_cleanup(encctx);
