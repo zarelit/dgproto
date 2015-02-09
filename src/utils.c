@@ -674,6 +674,7 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
 
     /* envelope related */
     int outl;
+	int plenint;
     const EVP_CIPHER* type = EVP_aes_256_cbc();
 
     /*
@@ -726,7 +727,7 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
         goto cleanup_decrypt;
     }
 
-    if (EVP_OpenUpdate( decctx, p, (int*) plen, c, clen) != 1){
+    if (EVP_OpenUpdate( decctx, p, &plenint, c, clen) != 1){
         ERR_load_crypto_strings();
         decerr = ERR_get_error();
         fprintf(stderr,"Decrypt failed\n");
@@ -744,7 +745,7 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
         ERR_free_strings();
         p = NULL;
     }
-    *plen += outl;
+    *plen = outl + plenint;
 
     cleanup_decrypt:
     EVP_CIPHER_CTX_cleanup(decctx);
