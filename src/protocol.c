@@ -105,8 +105,8 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     if (plain == NULL)
     {
         fprintf(stderr, "Error concatenating parts to be encrypted\n");
-        BN_free(enc_parts[0].data);
-        BN_free(enc_parts[1].data);
+        BN_free((BIGNUM*) enc_parts[0].data);
+        BN_free((BIGNUM*) enc_parts[1].data);
         free(enc_parts[2].data);
         msg = NULL;
         *msg_len = 0;
@@ -217,6 +217,7 @@ create_m4 (size_t* msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv)
         *msg_len = enc_len;
     }
     free(Na_bin_val);
+    free(Na_digest);
 
 exit_create_m4:
     return encr_msg;
@@ -272,6 +273,8 @@ generate_key (BIGNUM *Na, BIGNUM *Nb)
     // Get the key component hash and make the key from it
     key = do_sha256_digest(tmp, tmp_len);
     free(tmp);
+    free(key_parts[0].data);
+    free(key_parts[1].data);
     if (key == NULL)
     {
         fprintf(stderr, "Error creating the key\n");
@@ -290,7 +293,7 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     msg_data dec_parts[2];  // The nonce and the signature of the nonce
     uint8_t *dec_msg_part; // Decrypted part of the message
     size_t dec_len;        // Length of dec_msg_part
-
+    size_t env_iv_len, env_key_len;
     // Input error checking
     if (msg == NULL || msg_len == 0 || Na == NULL)
     {
@@ -300,12 +303,14 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     }
 
     // Extract the plaintext and the ciphertext parts of M1
+    env_iv_len = EVP_CIPHER_iv_length(EVP_aes_256_cbc());
+
     msg1_parts[0].data = NULL;                  // Will contain the id label of the client
     msg1_parts[0].data_len = sizeof(aid_t);
     msg1_parts[1].data = NULL;                  // Will contain the iv for the cipher
-    msg1_parts[1].data_len = sizeof(aid_t);
+    msg1_parts[1].data_len = ;
     msg1_parts[2].data = NULL;                  // Will contain the iv for the envelope
-    msg1_parts[2].data_len = sizeof(aid_t);
+    msg1_parts[2].data_len = EVP_CIPHER_iv_length(EVP_aes_256_cbc());
     msg1_parts[3].data = NULL;                  // Will contain the encrypted key of the envelope
     msg1_parts[3].data_len = sizeof(aid_t);
     msg1_parts[4].data = NULL;                  // Will contain the encrypted part of M1
@@ -470,11 +475,15 @@ verifymessage_m3 (uint8_t* msg, size_t msg_len, BIGNUM* Nb, uint8_t* key, uint8_
         fprintf(stderr, "Error during the hashing of the message m3\n");
         ret_val = 0;
         free(Nb_bin_val);
+        free(cli_dig);
         goto exit_verifymessage_m3;
     }
 
     // Check if the digests are the same
     ret_val = (memcmp(srv_dig, cli_dig, 256) != 0)? 0 : 1;
+    free(Nb_bin_val);
+    free(srv_dig);
+    free(cli_dig);
 
 exit_verifymessage_m3:
     return ret_val;
