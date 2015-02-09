@@ -110,7 +110,7 @@ int main(){
 	uint8_t* iv;
 	uint8_t* ek;
 	size_t ivlen;
-	size_t eklen;
+	int eklen;
 
 	// Auxiliary variables
 	int ret, i;
