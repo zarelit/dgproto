@@ -166,7 +166,7 @@ uint8_t* do_sha256_digest (uint8_t* msg, size_t msg_len);
  * \param ekl is the length of the envelope key
  * \returns a pointer to the ciphertext or NULL if errors occourred.
  */
-uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t** iv, size_t* ivlen, uint8_t** ek, int* ekl);
+uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t** iv, size_t* ivlen, uint8_t** ek, size_t* ekl);
 
 /**
  * Decrypts a buffer with a private key
@@ -177,4 +177,4 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
  * \param iv is a buffer with the IV for the envelope
  * \returns a pointer to the plaintext or NULL if errors occourred.
  */
-uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv, uint8_t* ek, int ekl);
+uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv, uint8_t* ek, size_t ekl);
