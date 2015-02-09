@@ -532,7 +532,7 @@ do_sha256_digest (uint8_t* msg, size_t msg_len)
     return dig;
 }
 
-uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t** iv, size_t* ivlen, uint8_t* ek, int* ekl){
+uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t** iv, size_t* ivlen, uint8_t** ek, int* ekl){
     // Context and key
     FILE* ckeyfh;
     EVP_PKEY *ckey=NULL;
@@ -593,8 +593,8 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
         c = NULL;
         goto cleanup_encrypt;
     }
-    ek = malloc(EVP_PKEY_size(ckey));
-    if (ek == NULL)
+    *ek = malloc(EVP_PKEY_size(ckey));
+    if (*ek == NULL)
     {
         fprintf(stderr, "%s: Out of memory allocating ek\n", __func__);
         free(iv);
@@ -606,18 +606,18 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
     {
         fprintf(stderr, "%s: Out of memory for \n", __func__);
         free(iv);
-        free(ek);
+        free(*ek);
         goto cleanup_encrypt;
     }
 
-    if (EVP_SealInit(encctx, type, &ek, ekl, *iv, &ckey, 1) != 1){
+    if (EVP_SealInit(encctx, type, ek, ekl, *iv, &ckey, 1) != 1){
         ERR_load_crypto_strings();
         encerr = ERR_get_error();
         fprintf(stderr,"Encrypt failed\n");
         printf("%s\n", ERR_error_string(encerr, NULL));
         ERR_free_strings();
         free(iv);
-        free(ek);
+        free(*ek);
         free(c);
         c = NULL;
         goto cleanup_encrypt;
@@ -631,7 +631,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
         printf("%s\n", ERR_error_string(encerr, NULL));
         ERR_free_strings();
         free(iv);
-        free(ek);
+        free(*ek);
         free(c);
         c = NULL;
         goto cleanup_encrypt;
@@ -648,8 +648,6 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
     }
 
     *clen = outl + outf;
-    free(iv);
-    free(ek);
 
     cleanup_encrypt:
     EVP_CIPHER_CTX_cleanup(encctx);
@@ -676,6 +674,7 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
 
     /* envelope related */
     int outl;
+	int plenint;
     const EVP_CIPHER* type = EVP_aes_256_cbc();
 
     /*
@@ -728,7 +727,7 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
         goto cleanup_decrypt;
     }
 
-    if (EVP_OpenUpdate( decctx, p, (int*) plen, c, clen) != 1){
+    if (EVP_OpenUpdate( decctx, p, &plenint, c, clen) != 1){
         ERR_load_crypto_strings();
         decerr = ERR_get_error();
         fprintf(stderr,"Decrypt failed\n");
@@ -746,7 +745,7 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
         ERR_free_strings();
         p = NULL;
     }
-    *plen += outl;
+    *plen = outl + plenint;
 
     cleanup_decrypt:
     EVP_CIPHER_CTX_cleanup(decctx);
