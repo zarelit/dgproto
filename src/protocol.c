@@ -35,7 +35,7 @@ create_m1 (size_t* msg_len, aid_t id, BIGNUM* Na_bn)
 	// IV of the seal and the key
 	msg_data iv;
 	msg_data ek;
-	int eklen;
+	size_t eklen;
 
 	// Convert the nonce in a bytestring
 	Na.data = malloc(BN_num_bytes(Na_bn));
