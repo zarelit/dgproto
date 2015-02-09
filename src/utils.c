@@ -464,6 +464,7 @@ generate_random_aes_iv (size_t *iv_len)
     {
         fprintf(stderr, "Error generating criptographically strong random number\n");
         free(buffer);
+        buffer = NULL;
         *iv_len = 0;
     }
     *iv_len = buf_len;
@@ -497,18 +498,21 @@ do_sha256_digest (uint8_t* msg, size_t msg_len)
     {
         fprintf(stderr, "Error initializing digest algorithm\n");
         free(dig);
+        dig = NULL;
         goto cleanup_do_sha256_digest;
     }
     if (EVP_DigestUpdate(ctx, msg, msg_len) != 1)
     {
         fprintf(stderr, "Error during the hashing of the message\n");
         free(dig);
+        dig = NULL;
         goto cleanup_do_sha256_digest;
     }
     if (EVP_DigestFinal(ctx, dig, (unsigned int*) &dig_len) != 1)
     {
         fprintf(stderr, "Error finalizing the digest\n");
         free(dig);
+        dig = NULL;
         goto cleanup_do_sha256_digest;
     }
 
@@ -517,11 +521,13 @@ do_sha256_digest (uint8_t* msg, size_t msg_len)
     {
         fprintf(stderr, "Error, the digest's length is less than expected\n");
         free(dig);
+        dig = NULL;
     }
 
 cleanup_do_sha256_digest:
     EVP_MD_CTX_cleanup(ctx);
     free(ctx);
+
 exit_do_sha256_digest:
     return dig;
 }
