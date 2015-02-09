@@ -5,9 +5,29 @@
 int
 test_do_aes256_crypt (void)
 {
-//     uint8_t ret_val = 0;
-//     const char *test_str = "asd lol";
-//     const char *test_enc = "a9b851f862f26a81b7ef891436994f82";
+    uint8_t ret_val = 0;
+    const uint8_t *test_str = "asd lol";
+    const uint8_t test_enc[] = {0xa9,0xb8,0x51,0xf8,0x62,0xf2,0x6a,0x81,
+                                0xb7,0xef,0x89,0x14,0x36,0x99,0x4f,0x82};
+    const uint8_t test_key[] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
+                                0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F};
+    const uint8_t test_iv[] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
+    uint8_t *enc_msg;
+
+    ret_val = 1;
+    enc_msg = do_aes256_crypt(test_str, &test_key[0], &test_iv[0], strlen(test_str));
+    if (enc_msg == NULL)
+    {
+        fprintf(stderr, "%s: enc_msg is NULL\n", __func__);
+        ret_val = 0;
+    }
+    if (memcmp(&test_enc[0], enc_msg, 16) != 0)
+    {
+        fprintf(stderr, "%s: enc_msg differs from test_enc", __func__);
+        ret_val = 0;
+    }
+
+    return ret_val;
 }
 
 int
@@ -34,7 +54,7 @@ test_do_sha256_digest (void)
         ret_val = 0;
         goto exit_test_do_sha256_digest;
     }
-    if (memcmp(dig, test_dig, (256 >> 3)) != 0)
+    if (memcmp(dig, &test_dig[0], (256 >> 3)) != 0)
     {
         fprintf(stderr, "%s: dig differs from test_dig\n", __func__);
         fprintf(stderr, "    test_dig = ");
