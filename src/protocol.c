@@ -60,6 +60,11 @@ create_m1 (size_t* msg_len, aid_t id, BIGNUM* Na_bn)
 
 	m1.data = conc_msgs(&(m1.data_len), 4, myid, iv, ek, encryptedNa);
 
+	//dump("ID",myid.data,myid.data_len);
+	//dump("IV",iv.data,iv.data_len);
+	//dump("EK",ek.data,ek.data_len);
+	//dump("whole envelope", encryptedNa.data, encryptedNa.data_len);
+
 	// cleanup
 	free(Na.data);
 	free(sigNa.data);
