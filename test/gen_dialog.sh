@@ -1,27 +1,28 @@
 #!/bin/bash
 
-# Generate a whole protocol session as a test reference
-echo "Protocol test sessions generator"
-
+echo "SNCS Project helper"
 if [ $# -ne 1 ] || [ ! -d "$1" ]
 then
 	echo "Usage: source $0 <keys directory>"
 	exit 1
 fi
 
+# Usage: f2x <file>
 function f2x {
 	hexdump -ve '1/1 "%.2x"' $1
 }
 
-# gen_nonce 16 Na.bin -> puts 16 bytes in Na.bin
+# Usage: gen_nonce <file> <size in bytes>
 function gen_nonce {
 	openssl rand -out "$2" "$1"
 }
 
+# Usage: sign <file> <private key>
 function sign {
 	openssl rsautl -sign -in "$2" -inkey "$1" -out "sign$2"
 }
 
+# Usage: envelope <message_id> <public key of recipient> <payload>
 function envelope {
 	# IV
 	gen_nonce 16 "IV_${1}.bin"
@@ -33,6 +34,7 @@ function envelope {
 	openssl enc -aes-256-cbc -in "$3" -out "${1}_aes_${3}" -K "$(f2x EphKey_${1}.bin)" -iv "$(f2x IV_${1}.bin)"
 }
 
+# No parameters - saves the whole message in M1.bin
 function createM1 {
 	echo "** Generate M1"
 	echo "Generate Na"
