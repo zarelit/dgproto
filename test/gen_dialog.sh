@@ -43,7 +43,10 @@ function createM1 {
 	cat Na.bin signNa.bin > Na+sign.bin
 	echo "Generate envelope: IV, EK, C"
 	envelope "M1" "$PUBSERVER" Na+sign.bin
+	echo "Concatenate everything"
+	cat <(echo -n "A") IV_M1.bin EK_M1.bin M1_aes_Na+sign.bin > M1.bin
 }
+
 
 
 # Transform in absolute paths
