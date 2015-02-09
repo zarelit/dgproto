@@ -574,7 +574,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 	EVP_CIPHER_CTX_init(encctx);
 	if (!encctx){
 		fprintf(stderr,"Cannot inizialize an encryption context\n");
-                c == NULL;
+                c = NULL;
                 goto cleanup_encrypt;
 	}
 
@@ -584,7 +584,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
         if (iv == NULL)
         {
             fprintf(stderr, "%s: Out of memory allocating of IV\n", __func__);
-            c == NULL;
+            c = NULL;
             goto cleanup_encrypt;
         }
 	ek = malloc(EVP_PKEY_size(ckey));
@@ -592,7 +592,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
         {
             fprintf(stderr, "%s: Out of memory allocating ek\n", __func__);
             free(iv);
-            c == NULL;
+            c = NULL;
             goto cleanup_encrypt;
         }
 	c = malloc(plen + EVP_CIPHER_block_size(type));
@@ -613,6 +613,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
                 free(iv);
                 free(ek);
                 free(c);
+                c = NULL;
                 goto cleanup_encrypt;
 	}
 
@@ -626,6 +627,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
                 free(iv);
                 free(ek);
                 free(c);
+                c = NULL;
                 goto cleanup_encrypt;
 	}
 	if (EVP_SealFinal(encctx, &c[outl], &outf) != 1){
@@ -635,6 +637,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 		printf("%s\n", ERR_error_string(encerr, NULL));
                 ERR_free_strings();
                 free(c);
+                c = NULL;
                 outl = outf = 0;
 	}
 
