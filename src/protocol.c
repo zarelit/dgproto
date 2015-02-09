@@ -81,12 +81,11 @@ uint8_t*
 create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
 {
     uint8_t *msg; // The message this function is able to build
-    uint8_t *enc_part, *plain; // The encrypted part of the message
-    size_t sig_len, enc_part_len, iv_len, plain_len;
-    EVP_PKEY *cpub_key = NULL;
-    EVP_PKEY_CTX *ctx = NULL;
-    FILE* cpub_key_file;
-    msg_data msg_parts[3];
+    uint8_t *enc_part, *plain;
+    uint8_t *env_iv, *env_key; // Envelope's key and Initialization vector
+    size_t sig_len, enc_part_len, iv_len, plain_len, env_iv_len, env_key_len;
+    msg_data enc_parts[3];
+    msg_data msg_parts[5];
 
     // Input error checking
     if (msg_len == NULL || Nb == NULL || Na == NULL || iv == NULL)
@@ -97,53 +96,31 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
         goto exit_create_m2;
     }
 
-    // Get the public key of the client in order to encrypt some part of the message
-    cpub_key_file = fopen(CLIENT_PUBKEY, "r");
-    if (cpub_key_file == NULL)
-    {
-        perror("fopen");
-        msg = NULL;
-        *msg_len = 0;
-        goto exit_create_m2;
-    }
-    cpub_key = PEM_read_PUBKEY(cpub_key_file, &cpub_key, NULL, NULL);
-    if (cpub_key == NULL)
-    {
-        fprintf(stderr, "Error: can't read client public key\n");
-        msg = NULL;
-        *msg_len = 0;
-        goto exit_create_m2;
-    }
-
     // Create the encrypted part of the message by concatenating Na, Nb and the signature
-    msg_parts[0].data_len = BN_bn2bin(Na, msg_parts[0].data);
-    msg_parts[1].data_len = BN_bn2bin(Nb, msg_parts[1].data);
-    msg_parts[2].data = sign(SERVER_KEY, msg_parts[1].data, msg_parts[1].data_len, &sig_len);
-    msg_parts[2].data_len = sig_len;
-    plain = conc_msgs(&plain_len, 3, msg_parts[0], msg_parts[1], msg_parts[2]);
+    enc_parts[0].data_len = BN_bn2bin(Na, enc_parts[0].data);
+    enc_parts[1].data_len = BN_bn2bin(Nb, enc_parts[1].data);
+    enc_parts[2].data = sign(SERVER_KEY, enc_parts[1].data, enc_parts[1].data_len, &sig_len);
+    enc_parts[2].data_len = sig_len;
+    plain = conc_msgs(&plain_len, 3, enc_parts[0], enc_parts[1], enc_parts[2]);
     if (plain == NULL)
     {
         fprintf(stderr, "Error concatenating parts to be encrypted\n");
+        BN_free(enc_parts[0].data);
+        BN_free(enc_parts[1].data);
+        free(enc_parts[2].data);
         msg = NULL;
         *msg_len = 0;
-        goto cleanup_create_m2;
+        goto exit_create_m2;
     }
 
     // Start encryption of plain
-    ctx = EVP_PKEY_CTX_new(cpub_key, NULL);
-    if (ctx == NULL)
+    enc_part = encrypt(CLIENT_PUBKEY, plain, plain_len, &enc_part_len, &env_iv, &env_iv_len,
+                                                                       &env_key, &env_key_len);
+    if (enc_part == NULL)
     {
-        fprintf(stderr, "Error allocating context for encrypting the message\n");
+        fprintf(stderr, "%s: Error during encryption of M1\n", __func__);
+        msg_len = 0;
         msg = NULL;
-        *msg_len = 0;
-        goto cleanup_create_m2;
-    }
-    enc_part = NULL;
-    if (EVP_PKEY_encrypt(ctx, enc_part, &enc_part_len, plain, plain_len) <= 0)
-    {
-        fprintf(stderr, "Error during encryption\n");
-        msg = NULL;
-        *msg_len = 0;
         goto cleanup_create_m2;
     }
 
@@ -162,23 +139,34 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     msg_parts[0].data_len = sizeof(id);
     msg_parts[1].data = *iv;
     msg_parts[1].data_len = iv_len;
-    msg_parts[2].data = enc_part;
-    msg_parts[2].data_len = enc_part_len;
-    msg = conc_msgs(msg_len, 3, msg_parts[0], msg_parts[1], msg_parts[2]);
+    msg_parts[2].data = env_iv;
+    msg_parts[2].data_len = env_iv_len;
+    msg_parts[3].data = env_key;
+    msg_parts[3].data_len = env_key_len;
+    msg_parts[4].data = enc_part;
+    msg_parts[4].data_len = enc_part_len;
+    msg = conc_msgs(msg_len, 5, msg_parts[0], msg_parts[1], msg_parts[2], msg_parts[3], msg_parts[4]);
     if (msg == NULL)
     {
-        fprintf(stderr, "Error concatenating message's parts\n");
+        fprintf(stderr, "%s: Error concatenating message's parts\n", __func__);
         msg = NULL;
         *msg_len = 0;
     }
-
-    // Clean up
-    EVP_PKEY_CTX_free(ctx);
+    free(iv);
 
 cleanup_create_m2:
-    fclose(cpub_key_file);
     free(plain);
     free(enc_part);
+
+    BN_free(enc_parts[0].data);
+    BN_free(enc_parts[1].data);
+    free(enc_parts[2].data);
+    free(msg_parts[0].data);
+    free(msg_parts[1].data);
+    free(msg_parts[2].data);
+    free(msg_parts[3].data);
+    free(msg_parts[4].data);
+
 exit_create_m2:
     return msg;
 }

@@ -53,8 +53,9 @@ uint8_t* create_m1 (size_t *msg_len, aid_t id, BIGNUM* Na);
  * The second message contains an identifier, typically the server, and a crypted part that contains
  * N_a (see create_m1) and N_b, the signed nonce be created by the server.
  * The message will be created with the following structure:
- *                      ID_SERVER || IV || encrypt(Na || Nb || sign(Nb), e_client)
- * where IV is the initialization vector for the cipher, e_client is the public key of the client.
+ *      ID_SERVER || IV || IV_envelope || E_k || encrypt(Na || Nb || sign(Nb), e_client)
+ * where IV is the initialization vector for the cipher, e_client is the public key of the client,
+ * IV_envelope and E_k are the initialization vector and the crypted key for the envelope.
  * \param msg_len the length of the resulting message after it has been produced by the function.
  * The value pointed by this pointer will be modified by the function itself.
  * \param id identifier of whom wants to  the communication with the client or another client.
