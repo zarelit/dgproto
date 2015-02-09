@@ -132,7 +132,7 @@ int verifymessage_m1 (uint8_t* msg, size_t msg_len, BIGNUM** Na);
  * \returns 0 if the verify process fails
  * \returns 1 otherwise.
  */
-int verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb);
+int verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_t** iv);
 
 /**
  * This function checks the correctness of the third message of the protocol. It verify if the hash

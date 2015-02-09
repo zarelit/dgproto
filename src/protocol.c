@@ -394,7 +394,7 @@ exit_verifymessage_m1:
 }
 
 int
-verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb)
+verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_t** iv)
 {
 	// Message is B|enc(Na|Nb|sign(Nb))
 	// Define its components
