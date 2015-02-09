@@ -9,7 +9,7 @@ then
 	exit 1
 fi
 
-function file2hex {
+function f2x {
 	hexdump -ve '1/1 "%.2x"' $1
 }
 
@@ -30,7 +30,7 @@ function envelope {
 	# Protected EK
 	openssl rsautl -encrypt -in "EphKey_${1}.bin" -pubin -inkey "$2" -out "EK_${1}.bin"
 	# Symmetrically encrypted payload
-	openssl enc -aes-256-cbc -in "$3" -out "${1}_aes_${3}" -K "$(file2hex EphKey_${1}.bin)" -iv "$(file2hex IV_${1}.bin)"
+	openssl enc -aes-256-cbc -in "$3" -out "${1}_aes_${3}" -K "$(f2x EphKey_${1}.bin)" -iv "$(f2x IV_${1}.bin)"
 }
 
 function createM1 {
