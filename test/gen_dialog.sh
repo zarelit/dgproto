@@ -3,11 +3,15 @@
 # Generate a whole protocol session as a test reference
 echo "Protocol test sessions generator"
 
-if [ $# -ne 2 ] || [ ! -d "$1" ] || [ ! -d "$2" ]
+if [ $# -ne 1 ] || [ ! -d "$1" ]
 then
-	echo "Usage $0 <keys directory> <output directory>"
+	echo "Usage: source $0 <keys directory>"
 	exit 1
 fi
+
+function file2hex {
+	hexdump -ve '1/1 "%.2x"' $1
+}
 
 # gen_nonce 16 Na.bin -> puts 16 bytes in Na.bin
 function gen_nonce {
@@ -40,9 +44,6 @@ function createM1 {
 	envelope "M1" "$PUBSERVER" Na+sign.bin
 }
 
-function file2hex {
-	hexdump -ve '1/1 "%.2x"' $1
-}
 
 # Transform in absolute paths
 pushd "$1" > /dev/null
@@ -51,7 +52,4 @@ PUBCLIENT="$PWD/client.pub.pem"
 SERVER="$PWD/server.pem"
 PUBSERVER="$PWD/server.pub.pem"
 popd
-
-# Move to the working directory
-pushd "$2" > /dev/null
 
