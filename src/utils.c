@@ -589,7 +589,7 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
 		exit(EXIT_FAILURE);
 	}
 
-	ret = EVP_OpenFinal(decctx, p, plen);
+	ret = EVP_OpenFinal(decctx, p, &outl);
 	if( ret != 1){
 		ERR_load_crypto_strings();
 		decerr = ERR_get_error();
@@ -597,6 +597,7 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
 		printf("%s\n", ERR_error_string(decerr, NULL));
 		exit(EXIT_FAILURE);
 	}
+	*plen += outl;
 
 
 	EVP_CIPHER_CTX_cleanup(decctx);
