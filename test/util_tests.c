@@ -102,11 +102,15 @@ int main(){
 	uint8_t* noise;
 	size_t siglen;
 
-	// Test buffers for encrypt/decrypt
+	// Test buffers for encrypt/decrypt and envelope
 	uint8_t* plain;
 	size_t plen;
 	uint8_t* cipher;
 	size_t clen;
+	uint8_t* iv;
+	uint8_t* ek;
+	size_t ivlen;
+	size_t eklen;
 
 	// Auxiliary variables
 	int ret, i;
@@ -166,11 +170,11 @@ int main(){
         }
 
 	doing("Encrypt the nonce");
-	cipher = encrypt("keys/client.pub.pem",Noval,Nolen,&clen);
-	// dump("Ciphertext",cipher,clen);
+	cipher = encrypt("keys/client.pub.pem",Noval,Nolen,&clen,&iv,&ivlen,&ek,&eklen);
+	dump("Ciphertext",cipher,clen);
 	doing("Decrypting the nonce");
-	plain = decrypt("keys/client.pem",cipher,clen,&plen);
-	// dump("Plaintext",plain,plen);
+	plain = decrypt("keys/client.pem",cipher,clen,&plen,iv,ek,eklen);
+	dump("Plaintext",plain,plen);
 
 	doing("Verify that we have the same plaintext after decryption");
 	ret = 1;
