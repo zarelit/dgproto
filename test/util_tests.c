@@ -3,9 +3,32 @@
 #include "../include/protocol.h"
 
 int
+test_generate_random_aes_iv (void)
+{
+    uint8_t ret_val, *test_rand_iv;
+    size_t iv_len;
+
+    ret_val = 1;
+    test_rand_iv = generate_random_aes_iv(&iv_len);
+    if (test_rand_iv == NULL)
+    {
+        fprintf(stderr, "%s: Error generating random nonce: nonce is NULL\n", __func__);
+        ret_val = 0;
+    }
+    else if (iv_len == 0)
+    {
+        fprintf(stderr, "%s: Error generating random nonce: iv_len is 0\n", __func__);
+        ret_val = 0
+    }
+    free(test_rand_iv);
+
+    return ret_val;
+}
+
+int
 test_do_aes256_crypt (void)
 {
-    uint8_t ret_val = 0;
+    uint8_t ret_val;
     const uint8_t *test_str = "asd lol";
     const uint8_t test_enc[] = {0xa9,0xb8,0x51,0xf8,0x62,0xf2,0x6a,0x81,
                                 0xb7,0xef,0x89,0x14,0x36,0x99,0x4f,0x82};
@@ -21,12 +44,13 @@ test_do_aes256_crypt (void)
         fprintf(stderr, "%s: enc_msg is NULL\n", __func__);
         ret_val = 0;
     }
-    if (memcmp(&test_enc[0], enc_msg, 16) != 0)
+    else if (memcmp(&test_enc[0], enc_msg, 16) != 0)
     {
         fprintf(stderr, "%s: enc_msg differs from test_enc", __func__);
         ret_val = 0;
     }
-
+    free(enc_msg);
+    
     return ret_val;
 }
 
@@ -241,6 +265,14 @@ int main(){
     else
     {
         say("4. test_extr_msgs(): test succeded.");
+    }
+    if (test_generate_random_aes_iv() == 0)
+    {
+        say("4. test_generate_random_aes_iv: test failed.");
+    }
+    else
+    {
+        say("4. test_generate_random_aes_iv(): test succeded.");
     }
 
 	doing("Encrypt the nonce");
