@@ -532,7 +532,7 @@ do_sha256_digest (uint8_t* msg, size_t msg_len)
     return dig;
 }
 
-uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t** iv, size_t* ivlen, uint8_t* ek, int* ekl){
+uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t** iv, size_t* ivlen, uint8_t** ek, int* ekl){
     // Context and key
     FILE* ckeyfh;
     EVP_PKEY *ckey=NULL;
