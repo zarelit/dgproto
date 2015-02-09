@@ -171,7 +171,10 @@ int main(){
 
 	doing("Encrypt the nonce");
 	cipher = encrypt("keys/client.pub.pem",Noval,Nolen,&clen,&iv,&ivlen,&ek,&eklen);
+	dump("IV",iv,ivlen);
+	dump("EK",ek,eklen);
 	dump("Ciphertext",cipher,clen);
+
 	doing("Decrypting the nonce");
 	plain = decrypt("keys/client.pem",cipher,clen,&plen,iv,ek,eklen);
 	dump("Plaintext",plain,plen);
