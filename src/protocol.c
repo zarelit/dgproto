@@ -156,7 +156,7 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
 
 cleanup_create_m2:
     free(plain);
-    free(enc_part);
+    if (enc_part != NULL) free(enc_part);
 
     BN_free(enc_parts[0].data);
     BN_free(enc_parts[1].data);
@@ -286,7 +286,7 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
 {
     int ret_val = 0;
     BIGNUM *client_nonce;
-    msg_data msg1_parts[2]; // Plaintext and ciphertext of M1
+    msg_data msg1_parts[5]; // Plaintext and ciphertext of M1
     msg_data dec_parts[2];  // The nonce and the signature of the nonce
     uint8_t *dec_msg_part; // Decrypted part of the message
     size_t dec_len;        // Length of dec_msg_part
@@ -302,8 +302,14 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     // Extract the plaintext and the ciphertext parts of M1
     msg1_parts[0].data = NULL;                  // Will contain the id label of the client
     msg1_parts[0].data_len = sizeof(aid_t);
-    msg1_parts[1].data = NULL;                  // Will contain the encrypted part of M1
-    msg1_parts[1].data_len = msg_len - sizeof(aid_t);
+    msg1_parts[1].data = NULL;                  // Will contain the iv for the cipher
+    msg1_parts[1].data_len = sizeof(aid_t);
+    msg1_parts[2].data = NULL;                  // Will contain the iv for the envelope
+    msg1_parts[2].data_len = sizeof(aid_t);
+    msg1_parts[3].data = NULL;                  // Will contain the encrypted key of the envelope
+    msg1_parts[3].data_len = sizeof(aid_t);
+    msg1_parts[4].data = NULL;                  // Will contain the encrypted part of M1
+    msg1_parts[4].data_len = msg_len - sizeof(aid_t);
     if (extr_msgs(msg, 2, &msg1_parts[0], &msg1_parts[1]) == 0)
     {
         fprintf(stderr, "%s: Error during the extraction of m1 parts\n", __func__);
