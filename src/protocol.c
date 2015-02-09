@@ -26,7 +26,7 @@ create_m1 (size_t* msg_len, aid_t id, BIGNUM* Na_bn)
 	msg_data Na;
 
 	// Signature of the nonce
-	msg_data sig;
+	msg_data sigNa;
 
 	// Encrypted part of M1: {Na,sign(Na)}
 	msg_data signedNa; // That is, the plaintext of encryptedNa
@@ -35,6 +35,7 @@ create_m1 (size_t* msg_len, aid_t id, BIGNUM* Na_bn)
 	// IV of the seal and the key
 	msg_data iv;
 	msg_data ek;
+	int eklen;
 
 	// Convert the nonce in a bytestring
 	Na.data = malloc(BN_num_bytes(Na_bn));
@@ -45,12 +46,13 @@ create_m1 (size_t* msg_len, aid_t id, BIGNUM* Na_bn)
 	}
 
 	// Sign Na with our private key
-	sig.data = sign(CLIENT_KEY, Na.data, Na.data_len, &(sig.data_len));
+	sigNa.data = sign(CLIENT_KEY, Na.data, Na.data_len, &(sigNa.data_len));
 
 	// Build Na || sig(Na), then cipher it
-	signedNa.data = conc_msgs(&(signedNa.data_len), 2, Na, sig);
+	signedNa.data = conc_msgs(&(signedNa.data_len), 2, Na, sigNa);
 	encryptedNa.data = encrypt(SERVER_PUBKEY, signedNa.data, signedNa.data_len, &(encryptedNa.data_len),
-						iv.data, &(iv.data_len), ek.data,(int*) &(ek.data_len));
+						&(iv.data), &(iv.data_len), &(ek.data), &eklen);
+	ek.data_len = eklen;
 
 	// Add the id
 	myid.data = &id;
@@ -60,7 +62,7 @@ create_m1 (size_t* msg_len, aid_t id, BIGNUM* Na_bn)
 
 	// cleanup
 	free(Na.data);
-	free(sig.data);
+	free(sigNa.data);
 	free(signedNa.data);
 	free(encryptedNa.data);
 	free(iv.data);
