@@ -158,8 +158,8 @@ cleanup_create_m2:
     free(plain);
     if (enc_part != NULL) free(enc_part);
 
-    BN_free(enc_parts[0].data);
-    BN_free(enc_parts[1].data);
+    BN_free((BIGNUM*) enc_parts[0].data);
+    BN_free((BIGNUM*) enc_parts[1].data);
     free(enc_parts[2].data);
     free(msg_parts[0].data);
     free(msg_parts[1].data);
@@ -289,11 +289,14 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
 {
     int ret_val = 0;
     BIGNUM *client_nonce;
-    msg_data msg1_parts[5]; // Plaintext and ciphertext of M1
-    msg_data dec_parts[2];  // The nonce and the signature of the nonce
+    const size_t iv_len = EVP_CIPHER_iv_length(EVP_aes_256_cbc());
+    const uint8_t msg1_parts_num = 5;
+    const uint8_t dec_parts_num = 2;
+    msg_data msg1_parts[msg1_parts_num]; // Plaintext and ciphertext of M1
+    msg_data dec_parts[dec_parts_num];  // The nonce and the signature of the nonce
     uint8_t *dec_msg_part; // Decrypted part of the message
     size_t dec_len;        // Length of dec_msg_part
-    size_t env_iv_len, env_key_len;
+
     // Input error checking
     if (msg == NULL || msg_len == 0 || Na == NULL)
     {
@@ -303,19 +306,18 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     }
 
     // Extract the plaintext and the ciphertext parts of M1
-    env_iv_len = EVP_CIPHER_iv_length(EVP_aes_256_cbc());
-
     msg1_parts[0].data = NULL;                  // Will contain the id label of the client
     msg1_parts[0].data_len = sizeof(aid_t);
     msg1_parts[1].data = NULL;                  // Will contain the iv for the cipher
-    msg1_parts[1].data_len = ;
+    msg1_parts[1].data_len = iv_len;
     msg1_parts[2].data = NULL;                  // Will contain the iv for the envelope
-    msg1_parts[2].data_len = EVP_CIPHER_iv_length(EVP_aes_256_cbc());
+    msg1_parts[2].data_len = iv_len;
     msg1_parts[3].data = NULL;                  // Will contain the encrypted key of the envelope
-    msg1_parts[3].data_len = sizeof(aid_t);
+    msg1_parts[3].data_len = KEY_LEN;
     msg1_parts[4].data = NULL;                  // Will contain the encrypted part of M1
-    msg1_parts[4].data_len = msg_len - sizeof(aid_t);
-    if (extr_msgs(msg, 2, &msg1_parts[0], &msg1_parts[1]) == 0)
+    msg1_parts[4].data_len = msg_len - KEY_LEN - iv_len - sizeof(aid_t);
+    if (extr_msgs(msg, msg1_parts_num, &msg1_parts[0], &msg1_parts[1], &msg1_parts[2], &msg1_parts[3],
+                  &msg1_parts[4]) == 0)
     {
         fprintf(stderr, "%s: Error during the extraction of m1 parts\n", __func__);
         ret_val = 0;
@@ -331,14 +333,20 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     }
 
     // Decrypt the crypted part of the message
-    dec_msg_part = decrypt(SERVER_KEY, msg1_parts[1].data, msg1_parts[1].data_len, &dec_len);
+    dec_msg_part = decrypt(SERVER_KEY, msg1_parts[4].data, msg1_parts[4].data_len, &dec_len,
+                           msg1_parts[2].data, msg1_parts[3].data, (uint8_t) *msg1_parts[4].data);
+    if (dec_msg_part == NULL)
+    {
+        fprintf(stderr, "%s: Error decrypting encrypted M1 part\n", __func__);
+        ret_val = 0;
 
+    }
     // Get the nonce client_nonce and its signature
     dec_parts[0].data = NULL;                   // Will contain Na
     dec_parts[0].data_len = NONCE_LEN;
     dec_parts[1].data = NULL;                   // Will contain Na's signature by the client
     dec_parts[1].data_len = dec_len - dec_parts[0].data_len;
-    ret_val = extr_msgs(dec_msg_part, 2, &dec_parts[0], &dec_parts[1]);
+    ret_val = extr_msgs(dec_msg_part, dec_parts_num, &dec_parts[0], &dec_parts[1]);
     if (ret_val == 0)
     {
         fprintf(stderr, "%s: Error during the extraction of decrypted parts\n", __func__);
@@ -346,6 +354,7 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     }
 
     // Verify the correcteness of the signature of Na
+
     client_nonce = BN_bin2bn(dec_parts[0].data, dec_parts[0].data_len, NULL);
     if (client_nonce == NULL)
     {
@@ -355,7 +364,7 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     }
     if (verify(CLIENT_PUBKEY, client_nonce, dec_parts[1].data, dec_parts[1].data_len) == 0)
     {
-        fprintf(stderr, "%s: Error during client_nonce signature verifing", __func__);
+        fprintf(stderr, "%s: Error during verifing nonce signature\n", __func__);
         ret_val = 0;
         goto exit_verifymessage_m1;
     }
@@ -370,14 +379,17 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
         ret_val = 1;
     }
 
-
 exit_verifymessage_m1:
     // Cleanup if needed
     if (client_nonce != NULL) BN_clear_free(client_nonce);
     if (msg1_parts[0].data != NULL) free(msg1_parts[0].data);
     if (msg1_parts[1].data != NULL) free(msg1_parts[1].data);
+    if (msg1_parts[2].data != NULL) free(msg1_parts[2].data);
+    if (msg1_parts[3].data != NULL) free(msg1_parts[3].data);
+    if (msg1_parts[4].data != NULL) free(msg1_parts[4].data);
     if (dec_parts[0].data != NULL) free(dec_parts[0].data);
     if (dec_parts[1].data != NULL) free(dec_parts[1].data);
+
     return ret_val;
 }
 
