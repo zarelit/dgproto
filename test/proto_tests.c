@@ -9,7 +9,8 @@ int main(){
 
 	Na = generate_random_nonce();
 	m1 = create_m1 (&m1_len, 'A', Na);
-
+	if( m1 == NULL) exit(EXIT_FAILURE);
 	dump("M1",m1,m1_len);	
+
 	return 0;
 }
