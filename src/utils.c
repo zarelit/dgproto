@@ -508,7 +508,7 @@ exit_do_sha256_digest:
     return dig;
 }
 
-uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t* iv, size_t* ivlen, uint8_t* ek, int* ekl){
+uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t** iv, size_t* ivlen, uint8_t* ek, int* ekl){
 	// Context and key
 	FILE* ckeyfh;
 	EVP_PKEY *ckey=NULL;
@@ -562,7 +562,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 
 	/* Start the encryption process - generate IV and key */
 	*ivlen = EVP_CIPHER_iv_length(type);
-	iv = malloc(*ivlen);
+	*iv = malloc(*ivlen);
         if (iv == NULL)
         {
             fprintf(stderr, "%s: Out of memory for allocation of IV\n", __func__);
@@ -711,7 +711,7 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
                 goto cleanup_decrypt;
 	}
 
-	if (EVP_OpenFinal(decctx, p, plen) != 1){
+	if(EVP_OpenFinal(decctx, p, &outl) != 1){
 		ERR_load_crypto_strings();
 		decerr = ERR_get_error();
 		fprintf(stderr,"Decrypt failed\n");
@@ -719,6 +719,7 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
                 ERR_free_strings();
                 p = NULL;
 	}
+	*plen += outl;
 
 cleanup_decrypt:
 	EVP_CIPHER_CTX_cleanup(decctx);
