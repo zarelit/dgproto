@@ -3,6 +3,60 @@
 #include "../include/protocol.h"
 
 int
+test_do_aes256_crypt (void)
+{
+//     uint8_t ret_val = 0;
+//     const char *test_str = "asd lol";
+//     const char *test_enc = "a9b851f862f26a81b7ef891436994f82";
+}
+
+int
+test_do_sha256_digest (void)
+{
+    uint8_t *test_str = "asd lol";
+    uint8_t test_dig[] = {0xf8,0xe5,0xa4,0x50,0xdb,0x8f,0x2c,0x0f,
+                          0xfb,0x86,0x7d,0x22,0x6b,0x76,0x9b,0xf1,
+                          0x37,0x85,0x45,0xe2,0x62,0x71,0xa9,0x50,
+                          0xa7,0xb1,0x93,0x53,0x40,0xcc,0x39,0x4a};
+    uint8_t *dig = NULL, ret_val, i;
+    BIGNUM *test_dig_bn;
+    size_t test_str_len = strlen(test_str);
+
+    test_dig_bn = BN_new();
+    test_dig_bn = BN_bin2bn(&test_dig[0], (256 >> 3), NULL);
+    BN_print_fp(stderr, test_dig_bn);
+
+    ret_val = 1;
+    dig = do_sha256_digest(test_str, test_str_len);
+    if (dig == NULL)
+    {
+        fprintf(stderr, "%s: dig is NULL\n", __func__);
+        ret_val = 0;
+        goto exit_test_do_sha256_digest;
+    }
+    if (memcmp(dig, test_dig, (256 >> 3)) != 0)
+    {
+        fprintf(stderr, "%s: dig differs from test_dig\n", __func__);
+        fprintf(stderr, "    test_dig = ");
+        for (i = 0; i < (256 >> 3); i ++)
+        {
+            fprintf(stderr,"%02hhX",test_dig[i]);
+        }
+        fprintf(stderr, "\n    dig = ");
+        for (i = 0; i < (256 >> 3); i ++)
+        {
+            fprintf(stderr,"%02hhX",dig[i]);
+        }
+        ret_val = 0;
+    }
+    free(dig);
+    BN_clear_free(test_dig_bn);
+    free(test_dig);
+exit_test_do_sha256_digest:
+    return ret_val;
+}
+
+int
 test_conc_msgs (void)
 {
     const uint8_t el_num = 3, num = 0x00;
@@ -147,23 +201,23 @@ int main(){
 	}
 	free(sig);
 	free(noise);
-	
-        if (test_conc_msgs() == 0)
-        {
-            say("3. test_conc_msgs(): test failed.");
-        }
-        else
-        {
-            say("3. test_conc_msgs(): test succeded.");
-        }
-        if (test_extr_msgs() == 0)
-        {
-            say("4. test_extr_msgs(): test failed.");
-        }
-        else
-        {
-            say("4. test_extr_msgs(): test succeded.");
-        }
+
+    if (test_conc_msgs() == 0)
+    {
+        say("3. test_conc_msgs(): test failed.");
+    }
+    else
+    {
+        say("3. test_conc_msgs(): test succeded.");
+    }
+    if (test_extr_msgs() == 0)
+    {
+        say("4. test_extr_msgs(): test failed.");
+    }
+    else
+    {
+        say("4. test_extr_msgs(): test succeded.");
+    }
 
 	doing("Encrypt the nonce");
 	cipher = encrypt("keys/client.pub.pem",Noval,Nolen,&clen);

@@ -51,7 +51,7 @@ uint8_t* create_m1 (size_t *msg_len, aid_t id, BIGNUM* Na);
 /**
  * This function permits to create in one single shot the second message of the D&G protocol.
  * The second message contains an identifier, typically the server, and a crypted part that contains
- * N_a (see create_m1) and N_b, the signed nonce being created by the server.
+ * N_a (see create_m1) and N_b, the signed nonce be created by the server.
  * The message will be created with the following structure:
  *                      ID_SERVER || IV || encrypt(Na || Nb || sign(Nb), e_client)
  * where IV is the initialization vector for the cipher, e_client is the public key of the client.

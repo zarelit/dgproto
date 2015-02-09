@@ -17,6 +17,7 @@ typedef struct server_state
     BIGNUM *Na; // Client-created random nonce
     struct sockaddr_in addr;
     uint8_t *session_key, *iv;
+    uint8_t *env_iv;
     uint8_t *buffer;
     size_t buf_len, key_len, iv_len;
     int acc_skt; // Socket for accepting incoming requests
