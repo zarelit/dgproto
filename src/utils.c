@@ -458,7 +458,7 @@ exit_do_sha256_digest:
     return dig;
 }
 
-uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t* iv, size_t* ivlen, uint8_t* ek, int* ekl){
+uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t** iv, size_t* ivlen, uint8_t* ek, int* ekl){
 	// Context and key
 	FILE* ckeyfh;
 	EVP_PKEY *ckey=NULL;
@@ -496,10 +496,10 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 
 	/* Start the encryption process - generate IV and key */
 	*ivlen = EVP_CIPHER_iv_length(type);
-	iv = malloc(*ivlen);
+	*iv = malloc(*ivlen);
 	ek = malloc(EVP_PKEY_size(ckey));
 	c = malloc(plen + EVP_CIPHER_block_size(type));
-	ret = EVP_SealInit(encctx, type, &ek, ekl, iv, &ckey, 1);
+	ret = EVP_SealInit(encctx, type, &ek, ekl, *iv, &ckey, 1);
 	if( ret != 1){
 		ERR_load_crypto_strings();
 		encerr = ERR_get_error();
