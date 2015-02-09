@@ -168,6 +168,7 @@ do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
     size_t enc_len; // Encrypted message length and block size of the cipher
     const size_t bsize = EVP_CIPHER_block_size(EVP_aes_256_cbc());
 
+    // Input error checking
     if (iv == NULL || msg == NULL || key == NULL || *msg_len <= 0)
     {
         fprintf(stderr, "Error: invalid argument passed");
@@ -176,37 +177,54 @@ do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
         goto exit_do_aes256_crypt;
     }
 
-    // Finally do the encryption
+    // Allocate all the needed data structures
     encr_msg = malloc(*msg_len + bsize);
+    if (encr_msg == NULL)
+    {
+        fprintf(stderr, "%s: Out of memory allocating of encr_msg\n", __func__);
+        goto exit_do_aes256_crypt;
+    }
     ctx = malloc(sizeof(EVP_CIPHER_CTX));
+    if (ctx == NULL)
+    {
+        fprintf(stderr, "%s: Out of memory allocating of ctx\n", __func__);
+        free(encr_msg);
+        encr_msg = NULL;
+        goto exit_do_aes256_crypt;
+    }
     EVP_CIPHER_CTX_init(ctx);
     if (EVP_EncryptInit(ctx, EVP_aes_256_cbc(), key, iv) == 0)
     {
         fprintf(stderr, "Error initializing the encryption\n");
         free(encr_msg);
+        encr_msg = NULL;
         *msg_len = 0;
-        goto exit_do_aes256_crypt;
+        goto cleanup_do_aes256_crypt;
     }
     enc_len = 0;
     if (EVP_EncryptUpdate(ctx, encr_msg, (int *) &enc_len, msg, *msg_len) == 0)
     {
         fprintf(stderr, "Error during the encryption\n");
         free(encr_msg);
+        encr_msg = NULL;
         *msg_len = 0;
-        goto exit_do_aes256_crypt;
+        goto cleanup_do_aes256_crypt;
     }
     if (EVP_EncryptFinal(ctx, encr_msg + enc_len, (int *)msg_len) == 0)
     {
         fprintf(stderr, "Error finalizing the encryption\n");
         free(encr_msg);
+        encr_msg = NULL;
         *msg_len = 0;
-        goto exit_do_aes256_crypt;
+        goto cleanup_do_aes256_crypt;
     }
     *msg_len = enc_len;
 
-exit_do_aes256_crypt:
+cleanup_do_aes256_crypt:
     EVP_CIPHER_CTX_cleanup(ctx);
     free(ctx);
+
+exit_do_aes256_crypt:
     return encr_msg;
 }
 
@@ -549,7 +567,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
             fprintf(stderr, "%s: Out of memory\n", __func__);
             fclose(ckeyfh);
             EVP_PKEY_free(ckey);
-            c == NULL;
+            c = NULL;
             goto exit_encrypt;
         }
 
@@ -565,14 +583,14 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 	iv = malloc(*ivlen);
         if (iv == NULL)
         {
-            fprintf(stderr, "%s: Out of memory for allocation of IV\n", __func__);
+            fprintf(stderr, "%s: Out of memory allocating of IV\n", __func__);
             c == NULL;
             goto cleanup_encrypt;
         }
 	ek = malloc(EVP_PKEY_size(ckey));
         if (ek == NULL)
         {
-            fprintf(stderr, "%s: Out of memory for allocation ek\n", __func__);
+            fprintf(stderr, "%s: Out of memory allocating ek\n", __func__);
             free(iv);
             c == NULL;
             goto cleanup_encrypt;
