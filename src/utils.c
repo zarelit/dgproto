@@ -648,8 +648,6 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
     }
 
     *clen = outl + outf;
-    free(iv);
-    free(*ek);
 
     cleanup_encrypt:
     EVP_CIPHER_CTX_cleanup(encctx);
