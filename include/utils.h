@@ -140,6 +140,7 @@ uint8_t* generate_random_aes_iv (size_t* iv_len);
  * Verify the signature of a nonce
  * \param keypath is a string with the path to a PEM public key
  * \param nonce is the nonce to be verified
+ * \param sig the signature of the nonce to be verified
  * \param slen is the actual length of the signature
  * \returns whether the signature is valid or not - 0 is not valid or errors occourred.
 */
