@@ -359,19 +359,15 @@ main (int argc, char **argv)
     srv_state sstate;
     struct addrinfo hints, *servinfo, *it;
     int yes = 1, ret_val;
-    FILE *file_received, *file_sent;
+    FILE *file_received;
+    uint8_t *plaintext;
+    size_t plain_len;
 
+    // Input error checking
     if (argc != 2)
     {
-        fprintf(stderr, "Usage: server <file>\n "
-                        "Server must send file to the client\n";
-        exit(EXIT_FAILURE);
-    }
-    file_sent = fopen(argv[1], "r");
-    if (file_sent == NULL)
-    {
-        perror("fopen");
-        fprintf(stderr, "Can't open the file to be sent to client. Exiting.\n");
+        fprintf(stderr, "Usage: server <file>\n"
+                        "Server must receive a file to the client. Please name it\n");
         exit(EXIT_FAILURE);
     }
 
@@ -382,7 +378,7 @@ main (int argc, char **argv)
     if ((ret_val = getaddrinfo(NULL, SRV_PORT, &hints, &servinfo)) != 0)
     {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(ret_val));
-        return 1;
+        exit(EXIT_FAILURE);
     }
     // loop through all the results of the list and bind to the first available
     for (it = servinfo; it != NULL; it = it -> ai_next)
@@ -394,7 +390,7 @@ main (int argc, char **argv)
         if (setsockopt(sstate.acc_skt, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
         {
             perror("setsockopt");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         if (bind(sstate.acc_skt, it -> ai_addr, it -> ai_addrlen) == 0)
         {
@@ -405,13 +401,13 @@ main (int argc, char **argv)
     // If all the elements in the list aren't available to be bound exits with an error
     if (it == NULL) {
         fprintf(stderr, "Server: failed to bind the socket\n");
-        return 2;
+        exit(EXIT_FAILURE);
     }
     freeaddrinfo(servinfo); // Destroy the list
     if (listen(sstate.acc_skt, SRV_MAX_CONN) == -1)
     {
         perror("listen");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     while(1) {
         printf("Server: waiting for connections...\n");
@@ -430,8 +426,50 @@ main (int argc, char **argv)
             close_connection(&sstate);
             continue;
         }
-        
-
+        // Release and reallocate the buffer
+        if (sstate.buffer != NULL)
+        {
+            free(sstate.buffer);
+        }
+        sstate.buffer = malloc(sizeof(uint8_t) * BUF_DIM);
+        if (sstate.buffer == NULL)
+        {
+            fprintf(stderr, "Out of memory");
+            break;
+        }
+        // Try to create the file which will be written
+        file_received = fopen(argv[1], "w");
+        if (file_received == NULL)
+        {
+            perror("fopen");
+            fprintf(stderr, "Can't open the file client sent. Exiting.\n");
+            close_connection(&sstate);
+        }
+        // Waiting for the client to be sent an encrypted file
+        ret_val = recv(sstate.comm_skt, sstate.buffer, BUF_DIM, 0);
+        if (ret_val == -1)
+        {
+            fprintf(stderr, "Receiving file error\n");
+            close_connection(&sstate);
+            continue;
+        }
+        plaintext = do_aes256_decrypt(sstate.buffer, ret_val, sstate.session_key, sstate.iv,
+                                      &plain_len);
+        if (plaintext == NULL)
+        {
+            fprintf(stderr, "Decrypting ciphertext failed.\n");
+            fprintf(stderr, "Abort the connection\n");
+            close_connection(&sstate);
+            fclose(file_received);
+            continue;
+        }
+        if (fwrite(plaintext, sizeof(uint8_t), plain_len, file_received) < plain_len)
+        {
+            fprintf(stderr, "Writing file failed.\n");
+            fprintf(stderr, "Abort the connection.\n");
+            close_connection(&sstate);
+        }
+        fclose(file_received);
     }
     close(sstate.acc_skt);
     close(sstate.comm_skt);
