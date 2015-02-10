@@ -310,9 +310,9 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     msg1_parts[1].data = NULL;                  // Will contain the iv for the envelope
     msg1_parts[1].data_len = iv_len;
     msg1_parts[2].data = NULL;                  // Will contain the encrypted key of the envelope
-    msg1_parts[2].data_len = KEY_LEN;
+    msg1_parts[2].data_len = EK_LEN;
     msg1_parts[3].data = NULL;                  // Will contain the encrypted part of M1
-    msg1_parts[3].data_len = msg_len - KEY_LEN - iv_len - sizeof(aid_t);
+    msg1_parts[3].data_len = msg_len - EK_LEN - iv_len - sizeof(aid_t);
     if (extr_msgs(msg, msg1_parts_num, &msg1_parts[0], &msg1_parts[1], &msg1_parts[2], &msg1_parts[3]) == 0)
     {
         fprintf(stderr, "%s: Error during the extraction of m1 parts\n", __func__);
@@ -330,7 +330,7 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
 
     // Decrypt the crypted part of the message
     dec_msg_part = decrypt(SERVER_KEY, msg1_parts[3].data, msg1_parts[3].data_len, &dec_len,
-                           msg1_parts[1].data, msg1_parts[2].data, (uint8_t) *msg1_parts[3].data);
+                           msg1_parts[1].data, msg1_parts[2].data, msg1_parts[2].data_len);
     if (dec_msg_part == NULL)
     {
         fprintf(stderr, "%s: Error decrypting encrypted M1 part\n", __func__);

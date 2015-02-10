@@ -22,6 +22,7 @@
  * Length of the key in bit.
  */
 #define KEY_LEN 256
+#define EK_LEN 512
 
 /**
  * Length in bit of nonces
