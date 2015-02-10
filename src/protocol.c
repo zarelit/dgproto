@@ -206,7 +206,7 @@ create_m4 (size_t* msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv)
         free(Na_bin_val);
         goto exit_create_m4;
     }
-    encr_msg = do_aes256_crypt(Na_bin_val, key, iv, &enc_len);
+    encr_msg = do_aes256_crypt(Na_bin_val, Na_len, key, iv, &enc_len);
     if (encr_msg == NULL)
     {
         fprintf(stderr, "Error crypting the message m4\n");
@@ -416,7 +416,7 @@ verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_
 	// Determine components length
 	id.data_len = sizeof(aid_t);
 	// TODO: hardcoded values>:(
-	IV.data_len = 16; 
+	IV.data_len = 16;
 	IVenv2.data_len = 16;
 	EK2.data_len = 512;
 	outEnv.data_len = *msg_len - (id.data_len + IV.data_len + IVenv2.data_len + EK2.data_len);
@@ -424,9 +424,9 @@ verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_
 	envNb.data_len = NONCE_LEN/8;
 
 	// Split message in its main components
-	ret = extr_msgs(msg,5, id, IV, IVenv2, EK2, outEnv);	
+	ret = extr_msgs(msg,5, id, IV, IVenv2, EK2, outEnv);
 	if (ret != 1) return 0;
-	
+
 	// Verify ID
 	if(id.data[0] != 'B') status=0;
 
@@ -473,7 +473,7 @@ verifymessage_m3 (uint8_t* msg, size_t msg_len, BIGNUM* Nb, uint8_t* key, uint8_
     }
 
     // Decrypt the message by means of the key
-    cli_dig = do_aes256_decrypt(msg, key, iv, &cli_dig_len);
+    cli_dig = do_aes256_decrypt(msg, msg_len, key, iv, &cli_dig_len);
     if (cli_dig == NULL)
     {
         fprintf(stderr, "Error decrypting message m3\n");

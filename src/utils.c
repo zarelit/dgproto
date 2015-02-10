@@ -161,27 +161,28 @@ read_iv_from_file (FILE* iv_file)
 }
 
 uint8_t*
-do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
+do_aes256_crypt (uint8_t* msg, size_t msg_len, uint8_t* key, uint8_t* iv, size_t* enc_len)
 {
     EVP_CIPHER_CTX *ctx;
     uint8_t *encr_msg;
-    size_t enc_len; // Encrypted message length and block size of the cipher
+    int temp_enc_len; // Encrypted message length and block size of the cipher
     const size_t bsize = EVP_CIPHER_block_size(EVP_aes_256_cbc());
 
     // Input error checking
-    if (iv == NULL || msg == NULL || key == NULL || *msg_len <= 0)
+    if (iv == NULL || msg == NULL || key == NULL || msg_len <= 0)
     {
         fprintf(stderr, "Error: invalid argument passed");
         encr_msg = NULL;
-        *msg_len = 0;
+        *enc_len = 0;
         goto exit_do_aes256_crypt;
     }
 
     // Allocate all the needed data structures
-    encr_msg = malloc(*msg_len + bsize);
+    encr_msg = malloc(msg_len + bsize);
     if (encr_msg == NULL)
     {
         fprintf(stderr, "%s: Out of memory allocating of encr_msg\n", __func__);
+        *enc_len = 0;
         goto exit_do_aes256_crypt;
     }
     ctx = malloc(sizeof(EVP_CIPHER_CTX));
@@ -190,6 +191,7 @@ do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
         fprintf(stderr, "%s: Out of memory allocating of ctx\n", __func__);
         free(encr_msg);
         encr_msg = NULL;
+        *enc_len = 0;
         goto exit_do_aes256_crypt;
     }
     EVP_CIPHER_CTX_init(ctx);
@@ -198,27 +200,28 @@ do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
         fprintf(stderr, "Error initializing the encryption\n");
         free(encr_msg);
         encr_msg = NULL;
-        *msg_len = 0;
+        *enc_len = 0;
         goto cleanup_do_aes256_crypt;
     }
-    enc_len = 0;
-    if (EVP_EncryptUpdate(ctx, encr_msg, (int *) &enc_len, msg, *msg_len) == 0)
+    temp_enc_len = 0;
+    if (EVP_EncryptUpdate(ctx, encr_msg, &temp_enc_len, msg, msg_len) == 0)
     {
         fprintf(stderr, "Error during the encryption\n");
         free(encr_msg);
         encr_msg = NULL;
-        *msg_len = 0;
+        *enc_len = 0;
         goto cleanup_do_aes256_crypt;
     }
-    if (EVP_EncryptFinal(ctx, encr_msg + enc_len, (int *)msg_len) == 0)
+    *enc_len = temp_enc_len;
+    if (EVP_EncryptFinal(ctx, encr_msg + temp_enc_len, &temp_enc_len) == 0)
     {
         fprintf(stderr, "Error finalizing the encryption\n");
         free(encr_msg);
         encr_msg = NULL;
-        *msg_len = 0;
+        *enc_len = 0;
         goto cleanup_do_aes256_crypt;
     }
-    *msg_len = enc_len;
+    *enc_len += temp_enc_len;
 
 cleanup_do_aes256_crypt:
     EVP_CIPHER_CTX_cleanup(ctx);
@@ -229,14 +232,14 @@ exit_do_aes256_crypt:
 }
 
 uint8_t*
-do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
+do_aes256_decrypt (uint8_t* enc_msg, size_t enc_len , uint8_t* key, uint8_t* iv, size_t* msg_len)
 {
     EVP_CIPHER_CTX *ctx;
     uint8_t *dec_msg;
-    size_t dec_len; // Encypted message length and block size of the cipher
+    int dec_len; // Encypted message length and block size of the cipher
     const size_t bsize = EVP_CIPHER_block_size(EVP_aes_256_cbc());
 
-    if (iv == NULL || enc_msg == NULL || key == NULL || *msg_len < 0)
+    if (iv == NULL || enc_msg == NULL || key == NULL || enc_len <= 0)
     {
         fprintf(stderr, "Error: invalid argument passed\n");
         dec_msg = NULL;
@@ -245,8 +248,22 @@ do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
     }
 
     // Finally do the encryption
-    dec_msg = malloc(*msg_len + bsize);
+    dec_msg = malloc(enc_len + bsize);
+    if (dec_msg == NULL)
+    {
+        fprintf(stderr, "%s: Out of memory be allocating of dec_msg\n", __func__);
+        *msg_len = 0;
+        goto exit_do_aes256_decrypt;
+    }
     ctx = malloc(sizeof(EVP_CIPHER_CTX));
+    if (ctx == NULL)
+    {
+        fprintf(stderr, "%s: Out of memory allocating of ctx\n", __func__);
+        free(dec_msg);
+        dec_msg = NULL;
+        *msg_len = 0;
+        goto exit_do_aes256_decrypt;
+    }
     EVP_CIPHER_CTX_init(ctx);
     if (EVP_DecryptInit(ctx, EVP_aes_256_cbc(), key, iv) == 0)
     {
@@ -256,21 +273,21 @@ do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
         goto exit_do_aes256_decrypt;
     }
     dec_len = 0;
-    if (EVP_DecryptUpdate(ctx, enc_msg, (int *)&dec_len, dec_msg, *msg_len) == 0)
+    if (EVP_DecryptUpdate(ctx, dec_msg, &dec_len, enc_msg, enc_len) == 0)
     {
         fprintf(stderr, "Error during the decryption\n");
-        free(enc_msg);
+        free(dec_msg);
         *msg_len = 0;
         goto exit_do_aes256_decrypt;
     }
-    if (EVP_DecryptFinal(ctx, dec_msg + dec_len, (int *)msg_len) == 0)
+    if (EVP_DecryptFinal(ctx, dec_msg + dec_len, &dec_len) == 0)
     {
         fprintf(stderr, "Error finalizing the decryption\n");
-        free(enc_msg);
+        free(dec_msg);
         *msg_len = 0;
         goto exit_do_aes256_decrypt;
     }
-    *msg_len = dec_len;
+    *msg_len += dec_len;
 
 exit_do_aes256_decrypt:
     EVP_CIPHER_CTX_cleanup(ctx);
