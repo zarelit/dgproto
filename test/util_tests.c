@@ -36,9 +36,10 @@ test_do_aes256_crypt (void)
                                 0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F};
     const uint8_t test_iv[] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
     uint8_t *enc_msg;
+    size_t test_str_len = strlen(test_str);
 
     ret_val = 1;
-    enc_msg = do_aes256_crypt(test_str, &test_key[0], &test_iv[0], strlen(test_str));
+    enc_msg = do_aes256_crypt(test_str, &test_key[0], &test_iv[0], &test_str_len);
     if (enc_msg == NULL)
     {
         fprintf(stderr, "%s: enc_msg is NULL\n", __func__);
@@ -94,8 +95,7 @@ test_do_sha256_digest (void)
         ret_val = 0;
     }
     free(dig);
-    BN_clear_free(test_dig_bn);
-    free(test_dig);
+    BN_free(test_dig_bn);
 exit_test_do_sha256_digest:
     return ret_val;
 }
@@ -268,11 +268,27 @@ int main(){
     }
     if (test_generate_random_aes_iv() == 0)
     {
-        say("4. test_generate_random_aes_iv: test failed.");
+        say("5. test_generate_random_aes_iv: test failed.");
     }
     else
     {
-        say("4. test_generate_random_aes_iv(): test succeded.");
+        say("5. test_generate_random_aes_iv(): test succeded.");
+    }
+    if (test_do_sha256_digest() == 0)
+    {
+        say("6. test_do_sha256_digest: test failed.");
+    }
+    else
+    {
+        say("6. test_do_sha256_digest(): test succeded.");
+    }
+    if (test_do_aes256_crypt() == 0)
+    {
+        say("7. test_do_aes256_crypt: test failed.");
+    }
+    else
+    {
+        say("7. test_do_aes256_crypt(): test succeded.");
     }
 
 	doing("Encrypt the nonce");
