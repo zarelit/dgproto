@@ -91,10 +91,10 @@ receive_message (msg_name msg, srv_state *ss)
 {
     int ret_val = 0;
 
-    ret_val = recv(ss -> comm_skt, ss -> buffer, BUF_DIM, 0);
-    if (ret_val == 0)
+    ss -> buffer = recvbuf(ss -> comm_skt, ss -> buffer, BUF_DIM, 0);
+    if (ss -> buffer == NULL)
     {
-        printf("Server: Client has closed the connection\n");
+        printf("Server: Receiving error\n");
         ret_val = -1;
         goto exit_receive_message;
     }
@@ -194,6 +194,61 @@ exit_run_protocol:
     return ret_val;
 }
 
+/**
+ * This function permits the user to receive a buffer or size \ref len. This function will call
+ * recv() since \ref len hasn't reached or the socket \ref s has been closed. If the recv() returns
+ * a value, this is stored into \ref recv_ret_val. In the case the socket has been closed
+ * \ref recv_ret_val contains -1.
+ * \param s The socket to receive data from.
+ * \param len A variable that stores the length of the data will theorically arrive from the sender.
+ * If \ref recv_ret_val is 0 (socket closed) then this parameter will store the length of the last
+ * call to recv, otherwise
+ * \returns a pointer to a buffer containing len bytes or NULL in case of error
+ */
+uint8_t*
+receive_buf(int s, ssize_t* len, ssize_t* recv_ret_val)
+{
+    uint8_t* buf;
+    ssize_t recvd = 0;
+    ssize_t n = 0;
+
+    if (s < 0 || len == NULL || recv_ret_val == NULL)
+    {
+        fprintf(stderr, "%s: Input parameter error\n", __func__);
+        buf = NULL;
+        goto exit_receive_buf;
+    }
+
+    buf = malloc(len);
+    if (buf == NULL)
+    {
+        fprintf(stderr, "%s: Out of memory\n", __func__);
+        goto exit_receive_message;
+    }
+
+    while (recvd != len)
+    {
+        n = recv(s, buf, len - recvd, 0);
+        *recv_ret_val = n;
+        if(n != -1)
+        {
+            recvd += n;
+        }
+        else if (n == 0)
+        {
+            // Connection closed
+            *len = n;
+        }
+        else
+        {
+            perror("recv");
+            free(buf);
+            return NULL;
+        }
+    }
+exit_receive_buf:
+    return buf;
+}
 /**
  * Useful function for retrieving the binary representation of the IP address (IPv4 or IPv6) in
  * order to print it successfully later with a call to inet_ntop().
