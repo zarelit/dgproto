@@ -34,7 +34,7 @@ int main(){
 		exit(EXIT_FAILURE);
 	}else{
 		say("1. Test ok. M1 generated succesfully");
-		//dump("M1",m1.data,m1.data_len);	
+		printf("M1 is %lu bytes long\n", m1.data_len);
 	}
 
 	say("");
@@ -58,7 +58,7 @@ int main(){
 		exit(EXIT_FAILURE);
 	}else{
 		say("2. Test ok. M2 generated succesfully");
-		//dump("M1",m1.data,m1.data_len);	
+		printf("M2 is %lu bytes long\n", m2.data_len);
 	}
 
 	doing("Client verifies M2 and extracts Nb and IV from it");
@@ -85,11 +85,11 @@ int main(){
 	say("");
 	doing("Compare IVs");
 	if(memcmp(IV, IV_ofA, 16) != 0){
-		say("4. Test failed. IVs are different.");
+		say("5. Test failed. IVs are different.");
 		exit(EXIT_FAILURE);
 	} else {
-		say("4. Test ok. IVs are the same.");
-		dump("Key", IV, 16);
+		say("5. Test ok. IVs are the same.");
+		dump("IV", IV, 16);
 	}
 
 	say("");
@@ -100,6 +100,7 @@ int main(){
 		exit(EXIT_FAILURE);
 	}else{
 		say("6. Test ok. M3 generated succesfully");
+		printf("M3 is %lu bytes long\n", m3.data_len);
 	}
 
 	test = verifymessage_m3(m3.data, m3.data_len, Nb, B_key, IV);
@@ -118,6 +119,7 @@ int main(){
 		exit(EXIT_FAILURE);
 	}else{
 		say("8. Test ok. M4 generated succesfully");
+		printf("M4 is %lu bytes long\n", m4.data_len);
 	}
 
 	test = verifymessage_m4(m4.data, m4.data_len, Na, A_key, IV_ofA);
