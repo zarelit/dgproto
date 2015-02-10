@@ -18,7 +18,7 @@ test_generate_random_aes_iv (void)
     else if (iv_len == 0)
     {
         fprintf(stderr, "%s: Error generating random nonce: iv_len is 0\n", __func__);
-        ret_val = 0
+        ret_val = 0;
     }
     free(test_rand_iv);
 
@@ -50,7 +50,7 @@ test_do_aes256_crypt (void)
         ret_val = 0;
     }
     free(enc_msg);
-    
+
     return ret_val;
 }
 
