@@ -91,7 +91,7 @@ extr_msgs (uint8_t* buffer, size_t argc, ...)
             fprintf(stderr, "Data len of the element number %d of the list is 0\n", (int) el_cnt);
             break;
         }
-        msg -> data = malloc(sizeof(uint8_t) * msg -> data_len);
+        msg -> data = malloc(sizeof(uint8_t) * (msg -> data_len));
         memcpy(msg -> data, data_p, msg -> data_len);
         data_p += msg -> data_len;
     }
