@@ -1276,34 +1276,23 @@ protocol.c The code of the protocol is written here.
 \end_layout
 
 \begin_layout Description
-utils.c This file contains all the utility functions each program has to
- use.
+utils.c This file contains all the utility functions both client and server
+ share.
  Here there are encryption, decryption, signing and verifying by means of
  public key, decryption and encryption by means of symmetric key, digest
  creation using SHA256 algorithm and some other functions that permits to
- concatenate bit strings in one single buffer and viceversa.
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-Please add the part of the concatenating messages, sending a buffer etc
- etc etc.
-\end_layout
-
-\begin_layout Plain Layout
-Add also a fucking part about which messages are sent between client and
- server and why we use some data types instead of the primitive ones present
- in the programming language
-\end_layout
-
-\end_inset
-
-
+ concatenate bit strings in one single buffer and viceversa.Please add the
+ part of the concatenating messages, sending a buffer etc etc etc.
 \end_layout
 
 \begin_layout Standard
 We designed this project in order to simplify reading, mantaining and to
  make easier extending features for whom will able to do that.
+\end_layout
+
+\begin_layout Standard
+We have developed the code using as much standards as possible, an example
+ of this is the using the std* libraries.
 \end_layout
 
 \begin_layout Subsubsection
@@ -1372,6 +1361,106 @@ Since we didn't want to modify the protocol by moving the encrypted sign
  OpenSSL provides.
  This is useful for exchanging files or everything greater than 501 bytes
  with few changes to the code.
+ Using digital envelopes 
+\end_layout
+
+\begin_layout Subsection
+Using standards
+\end_layout
+
+\begin_layout Standard
+We have developed the project thinking about portability, so we have included
+ and used only standard libraries, i.
+ e.
+ stdint.h in order to make as easier as possible a port to another UNIX-like
+ operating system, or Windows-like but with MinGW software compilation installed.
+\end_layout
+
+\begin_layout Subsection
+Extract and concatenate messages
+\end_layout
+
+\begin_layout Standard
+A problem we have encountered during the development was the recognizing
+ of which bytes belong to one field of one message and which not so.
+ We have solved this problem by means of extr_msgs() which uses a variable
+ number of struct message_data (more details in the documentation of utils.h),
+ in order to extract the field of a message, that is this function puts
+ into those structs the information about a field by knowing the field's
+ length.
+\end_layout
+
+\begin_layout Standard
+Another similar problem was to create a single message, a.
+ k.
+ a.
+ bitstream, from the separated field.
+ This is the opposite problem wrt the above one.
+ We have solved this by developing the conc_msgs() function which is the
+ exact opposite of extr_msgs(), that is conc_msgs() accept a sorted variable
+ list of message_data structs and puts them in a single bitstream.
+ For example, since M1 is composed by 5 parts in the implementation of the
+ protocol, when it received received M1, the server must extract each part
+ from a single bit stream.
+ The extraction has been made by the extr_msgs() function.
+ But the server must also create M2 which is also composed by 5 parts.
+ In order to create M2, the server creates each parts separately, then it
+ uses conc_msgs() in order to produce a bit stream to be sent to the client.
+ More details are in the documentation of the project.
+\end_layout
+
+\begin_layout Subsection
+Sending Buffers
+\end_layout
+
+\begin_layout Standard
+recv() and send() could not send all the bytes user wants them to send,
+ so it can be needed to call those system calls more times for sending all
+ the data the user wants to.
+ In order to solve this problem we have implemented sendbuf() function that
+ is in charge of continuously try to send the buffer passed by parameter
+ until all the bytes has been sent.
+\end_layout
+
+\begin_layout Subsection
+Implemented protocol
+\end_layout
+
+\begin_layout Standard
+After the development of this project, client and server will send these
+ messages:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Formula $M1\quad A\to B:\quad A,\ IV_{env},\ E_{kenv}\encryptedfor{B}{\signed{A}{N_{a}}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Formula $M2\quad B\to A:\quad B,\; IV,\ \encryptedfor{A}{N_{a},\;\signed{B}{N_{b}}}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Formula $M3\quad A\to B:\quad\encrypted{K}{\mathrm{H}(N_{b})}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Formula $M4\quad B\to A:\quad\encrypted{K}{\mathrm{H}(N_{a})}$
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -1390,27 +1479,16 @@ This project wasn't been thought to be extendend in future projects, since
  the client.c and server.c describes only an example of what a program must
  do for using our protocol correctly.
  In our opinion the reusable code is written inside protocol.c and utils.c.
- The first file has been thought for 
-\begin_inset Quotes eld
-\end_inset
-
-internal use only
-\begin_inset Quotes erd
-\end_inset
-
-, that is, since both server and client use the same functions, we have
- written them in a single file equipped with the documentation that explains
- what each function does.
- Of course the file protocol.h is the file someone will refer to if he will
- use the protocol in his applications.
- All the functions have been deeply tested and they do what they expected
- to do.
-\end_layout
-
-\begin_layout Standard
-The latter file (utils.c) is a collection of functions with the same purpouse
- of protocol.c but they are more general, so we can use them, and anyone
+ The first file has been thought for users which want our protocol to use,
+ when the latter file is a collection of functions with the same purpouse
+ of protocol.c, but they are more general, so we can use them, and anyone
  can do that, in any other project we will design and implement in the future.
+ An example of this is conc_msgs() and extr_msgs() functions which will
+ accept a struct message_data, explained in utils.h with the documentation,
+ in order to make easier both the concatenation of single parts of a message
+ in a single one and the extraction of the interesting parts from a single
+ large message received by the client or the server.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -1425,7 +1503,7 @@ We deploy our code under the GPL v3.0 Licence.
 \end_layout
 
 \begin_layout Part
-Test BAN Logic in Latex
+BAN Logic in Latex
 \end_layout
 
 \begin_layout Standard
