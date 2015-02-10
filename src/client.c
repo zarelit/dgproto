@@ -114,6 +114,7 @@ int main (int argc, char** argv)
 	 */
 	doing("Receive M2");
 	m2.data = recvbuf( servfd, M2_SIZE); 
+	m2.data_len = M2_SIZE;
 	if(m2.data == NULL){
 		fprintf(stderr, "Error receiving M2");
 		exit(EXIT_FAILURE);
@@ -159,6 +160,7 @@ int main (int argc, char** argv)
 	 **/
 	doing("Receive M4");
 	m4.data = recvbuf( servfd, M4_SIZE); 
+	m4.data_len = M4_SIZE;
 	if(m4.data == NULL){
 		fprintf(stderr, "Error receiving M4");
 		exit(EXIT_FAILURE);
