@@ -246,7 +246,7 @@ run_protocol (srv_state *ss)
     // Create and send message m2 and the key
     ss -> Nb = generate_random_nonce();
     say("Sending M2");
-    msg = create_m2(&msg_len, 'A', ss -> Nb, ss -> Na, &(ss -> iv));
+    msg = create_m2(&msg_len, 'B', ss -> Nb, ss -> Na, &(ss -> iv));
     if (msg == NULL)
     {
         ret_val = -1;
