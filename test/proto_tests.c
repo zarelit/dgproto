@@ -19,6 +19,9 @@ int main(){
 	// Key generation
 	uint8_t *A_key, *B_key; 
 
+	// M3 and M4
+	msg_data m3, m4;
+
 	int test;
 
 	doing("Client generates Na");
@@ -79,5 +82,33 @@ int main(){
 		dump("Key", A_key, KEY_LEN/8);
 	}
 
+	say("");
+	doing("Compare IVs");
+	if(memcmp(IV, IV_ofA, 16) != 0){
+		say("4. Test failed. IVs are different.");
+		exit(EXIT_FAILURE);
+	} else {
+		say("4. Test ok. IVs are the same.");
+		dump("Key", IV, 16);
+	}
+
+	say("");
+	doing("Client sends M3 to server who verifies it");
+	m3.data = create_m3(&(m3.data_len), A_key, Nb_ofA, IV_ofA);
+	if( m3.data == NULL){
+		say("6. Test failed. Cannot create M3");
+		exit(EXIT_FAILURE);
+	}else{
+		say("6. Test ok. M3 generated succesfully");
+	}
+
+	test = verifymessage_m3(m3.data, m3.data_len, Nb, B_key, IV);
+	if(test == 0){
+		say("7. Test failed. M3 is not verified correctly");
+		exit(EXIT_FAILURE);
+	} else {
+		say("7. Test ok. M3 is verified correctly");
+	}
+		
 	return 0;
 }

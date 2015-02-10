@@ -491,7 +491,7 @@ verifymessage_m3 (uint8_t* msg, size_t msg_len, BIGNUM* Nb, uint8_t* key, uint8_
     }
 
     // Check if the digests are the same
-    ret_val = (memcmp(srv_dig, cli_dig, 256) != 0)? 0 : 1;
+    ret_val = (memcmp(srv_dig, cli_dig, 256/8) != 0)? 0 : 1;
     free(Nb_bin_val);
     free(srv_dig);
     free(cli_dig);
