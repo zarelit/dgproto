@@ -182,3 +182,11 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
  * \returns a pointer to the plaintext or NULL if errors occourred.
  */
 uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv, uint8_t* ek, size_t ekl);
+
+/*
+ * Receive buffer
+ * \param s an already opened socket
+ * \param len number of bytes to wait from the socket
+ * \returns a pointer to a buffer containing len bytes or NULL in case of error
+ */
+uint8_t* recvbuf(int s, size_t len);
