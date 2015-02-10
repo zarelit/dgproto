@@ -17,6 +17,9 @@
 									 printf("\n");
 #define doing(something) printf("** "); say(something);
 
+//! How much of the file we work with at a time
+#define CHUNK_SIZE 512
+
 /**
  * \struct msg_data
  * \brief Structure for the data part of any possible message.
@@ -198,3 +201,4 @@ uint8_t* recvbuf(int s, size_t len);
  * \return 0 in case of fail, 1 otherwise
  */
 uint8_t sendfile(int s, FILE* file);
+

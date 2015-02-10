@@ -799,3 +799,18 @@ uint8_t* recvbuf(int s, size_t len){
 
 	return buf;
 }
+
+
+uint8_t sendfile(int s, FILE* file){
+	unsigned char ptextbuf[CHUNK_SIZE];
+	size_t now;
+	uint8_t status;
+
+	do{
+		now = fread(ptextbuf,1,CHUNK_SIZE,file);
+		status = sendbuf(s, ptextbuf, now);
+		if(status == 0) return 0;
+	} while(now != 0);
+
+	return 1;
+}

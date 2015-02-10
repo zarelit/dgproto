@@ -10,18 +10,10 @@
  * through the unsecure channel.
  */
 
-#include <sys/stat.h>
 #include "common.h"
 #include "protocol.h"
 #include "utils.h"
 
-//! How much of the file we work with at a time
-#define CHUNK_SIZE 512
-
-/**
- * Determine file size or quit
- */
-ssize_t getfsize(FILE* fd);
 int main (int argc, char** argv)
 
 {
@@ -36,8 +28,6 @@ int main (int argc, char** argv)
 	 * File related variables
 	 */
 	FILE* file_to_send;
-	ssize_t fsize;
-	unsigned char ptextbuf[CHUNK_SIZE];
 
 	/*
 	 * Other variables
@@ -187,7 +177,6 @@ int main (int argc, char** argv)
 	 */
 	// Get file size - used to show progress
 	doing("Send file to the server");
-	fsize = getfsize(file_to_send);
 
 	s = sendfile(servfd, file_to_send);
 	if(s == 0){
@@ -206,14 +195,3 @@ int main (int argc, char** argv)
 	return EXIT_SUCCESS;
 }
 
-ssize_t getfsize(FILE* fd){
-	struct stat status;
-	int x;
-	x=fstat(fileno(fd), &status);
-	if(x){
-		perror("Cannot determine file size.");
-		exit(EXIT_FAILURE);
-	}
-
-	return status.st_size;
-}
