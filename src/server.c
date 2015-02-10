@@ -186,19 +186,23 @@ receive_message (msg_name msg, srv_state *ss)
     switch (msg)
     {
         case M1:
+            say("Verify M1");
             ret_val = verifymessage_m1(ss -> buffer, msg_len, &(ss -> Na));
             break;
 
         case M2:
+            say("Verify M2");
             ret_val = verifymessage_m2(ss -> buffer, msg_len, ss -> Na, &(ss -> Nb), &(ss -> iv));
             break;
 
         case M3:
+            say("Verify M3");
             ret_val = verifymessage_m3(ss -> buffer, msg_len, ss -> Nb, ss -> session_key,
                                        ss -> iv);
             break;
 
         case M4:
+            say("Verify M");
             ret_val = verifymessage_m4(ss -> buffer, msg_len, ss -> Na, ss -> session_key, ss -> iv);
             break;
 
@@ -225,6 +229,7 @@ run_protocol (srv_state *ss)
     uint8_t ret_val = 0, *msg;
 
     // Receive and verify the first message
+    say("Receiving M1");
     ret_val = receive_message(M1, ss);
     if (ret_val == -1)
     {
@@ -240,7 +245,8 @@ run_protocol (srv_state *ss)
 
     // Create and send message m2 and the key
     ss -> Nb = generate_random_nonce();
-    msg = create_m2(&msg_len, 1, ss -> Nb, ss -> Na, &(ss -> iv));
+    say("Sending M2");
+    msg = create_m2(&msg_len, 'A', ss -> Nb, ss -> Na, &(ss -> iv));
     if (msg == NULL)
     {
         ret_val = -1;
@@ -256,6 +262,7 @@ run_protocol (srv_state *ss)
     ss -> session_key = generate_key(ss -> Na, ss -> Nb);
 
     // Receive and verify the message m3
+    say("Receiving M3");
     ret_val = receive_message(M3, ss);
     if (ret_val == -1)
     {
@@ -272,6 +279,7 @@ run_protocol (srv_state *ss)
     // The last message of the protocol
     msg = create_m4(&msg_len, ss -> session_key, ss -> Na, ss -> iv);
     ret_val = 0;
+    say("Sending M4");
     if (sendbuf(ss -> comm_skt, msg, msg_len) == 0)
     {
         fprintf(stderr, "Sending buffer error\n");
