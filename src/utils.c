@@ -376,7 +376,7 @@ int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
     EVP_PKEY *vkey=NULL;
 
     // Return codes and errors
-    int err_code, ret_val;
+    int err_code, ret_val=1;
     unsigned long vererr;
 
     /*
@@ -434,7 +434,6 @@ int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
         ret_val = 0;
     }
     free(N);
-    ret_val = 1;
 
 cleanup_verify:
     EVP_PKEY_CTX_free(verctx);
