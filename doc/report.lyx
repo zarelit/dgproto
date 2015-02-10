@@ -1464,6 +1464,11 @@ After the development of this project, client and server will send these
 \end_layout
 
 \begin_layout Standard
+Where the letters subscripted with env mean that they are parameters of
+ the OpenSSL's digital envelopes.
+\end_layout
+
+\begin_layout Standard
 \begin_inset Newpage newpage
 \end_inset
 
