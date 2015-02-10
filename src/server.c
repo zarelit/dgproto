@@ -17,7 +17,6 @@ typedef struct server_state
     BIGNUM *Na; // Client-created random nonce
     struct sockaddr_in addr;
     uint8_t *session_key, *iv;
-    uint8_t *env_iv;
     uint8_t *buffer;
     size_t buf_len, key_len, iv_len;
     int acc_skt; // Socket for accepting incoming requests
@@ -79,48 +78,128 @@ init_server_state (srv_state *ss)
 }
 
 /**
+ * This function permits the user to receive a buffer or size \ref len. This function will call
+ * recv() since \ref len hasn't reached or the socket \ref s has been closed. If the recv() returns
+ * a value, this is stored into \ref recv_ret_val. In the case of error \ref recv_ret_val will
+ * contain -1.
+ * \param s The socket to receive data from.
+ * \param len A variable that stores the length of the data will theorically arrive from the sender.
+ * If \ref recv_ret_val is 0 (socket closed) then this parameter will store the length of the last
+ * call to recv, otherwise
+ * \returns a pointer to a buffer containing len bytes or NULL in case of error
+ */
+uint8_t*
+receive_buf(int s, ssize_t* len, ssize_t* recv_ret_val)
+{
+    uint8_t* buf;
+    ssize_t recvd = 0;
+    ssize_t n = 0;
+
+    if (s < 0 || len == NULL || recv_ret_val == NULL)
+    {
+        fprintf(stderr, "%s: Input parameter error\n", __func__);
+        buf = NULL;
+        goto exit_receive_buf;
+    }
+
+    buf = malloc(*len);
+    if (buf == NULL)
+    {
+        fprintf(stderr, "%s: Out of memory\n", __func__);
+        goto exit_receive_buf;
+    }
+
+    while (recvd != *len)
+    {
+        n = recv(s, buf, *len - recvd, 0);
+        *recv_ret_val = n;
+        if(n != -1)
+        {
+            recvd += n;
+        }
+        else if (n == 0)
+        {
+            // Connection closed
+            *len = n;
+        }
+        else
+        {
+            perror("recv");
+            free(buf);
+            return NULL;
+        }
+    }
+exit_receive_buf:
+    return buf;
+}
+
+/**
  * This function is in charge of receiving the message msg of the D&G protocol.
  * \param msg the message of the protocol to be received. It could be M1, M2, M3, M4
  * \param ss a pointer to a server_state structure
  * \returns -1 if an error has occourred.
  * \returns 0 if the message is not valid, that is it doesn't contain what expected.
- * \returns 1 if all has gone as expected.
+ * \returns 1 if all went as expected.
  */
 int
 receive_message (msg_name msg, srv_state *ss)
 {
     int ret_val = 0;
+    ssize_t msg_len, recv_ret_val;
 
-    ss -> buffer = recvbuf(ss -> comm_skt, ss -> buffer, BUF_DIM, 0);
-    if (ss -> buffer == NULL)
-    {
-        printf("Server: Receiving error\n");
-        ret_val = -1;
-        goto exit_receive_message;
-    }
-    else if (ret_val == -1)
-    {
-        perror("recv");
-        goto exit_receive_message;
-    }
-
-    switch(msg)
+    switch (msg)
     {
         case M1:
-            ret_val = verifymessage_m1(ss -> buffer, ss -> buf_len, &(ss -> Na));
+            msg_len = M1_SIZE;
             break;
 
         case M2:
-            ret_val = verifymessage_m2(ss -> buffer, ss -> buf_len, ss -> Na, &(ss -> Nb), &(ss -> iv));
+            msg_len = M2_SIZE;
             break;
 
         case M3:
-            ret_val = verifymessage_m3(ss -> buffer, ss -> buf_len, ss -> Nb, ss -> session_key,
+            msg_len = M3_SIZE;
+            break;
+
+        case M4:
+            msg_len = M4_SIZE;
+            break;
+
+        default:
+            fprintf(stderr, "Invalid msg_name");
+            ret_val = -1;
+            goto exit_receive_message;
+            break;
+    }
+    ss -> buffer = receive_buf(ss -> comm_skt, &msg_len, &recv_ret_val);
+    if (ss -> buffer == NULL)
+    {
+        fprintf(stderr, "Server: Receiving error\n");
+        ret_val = -1;
+        goto exit_receive_message;
+    }
+    else if (recv_ret_val == 0)
+    {
+        fprintf(stderr, "Connection closed\n");
+    }
+
+    switch (msg)
+    {
+        case M1:
+            ret_val = verifymessage_m1(ss -> buffer, msg_len, &(ss -> Na));
+            break;
+
+        case M2:
+            ret_val = verifymessage_m2(ss -> buffer, msg_len, ss -> Na, &(ss -> Nb), &(ss -> iv));
+            break;
+
+        case M3:
+            ret_val = verifymessage_m3(ss -> buffer, msg_len, ss -> Nb, ss -> session_key,
                                        ss -> iv);
             break;
 
         case M4:
-            ret_val = verifymessage_m4(ss -> buffer, ss -> buf_len, ss -> Na, ss -> session_key, ss -> iv);
+            ret_val = verifymessage_m4(ss -> buffer, msg_len, ss -> Na, ss -> session_key, ss -> iv);
             break;
 
         default:
@@ -128,6 +207,7 @@ receive_message (msg_name msg, srv_state *ss)
             ret_val = -1;
             break;
     }
+    free(ss -> buffer);
 exit_receive_message:
     return ret_val;
 }
@@ -166,8 +246,13 @@ run_protocol (srv_state *ss)
         ret_val = -1;
         goto exit_run_protocol;
     }
-    sendbuf(ss -> comm_skt, msg, msg_len); // It exits the program on error
-    free(msg);
+    if(sendbuf(ss -> comm_skt, msg, msg_len) == 0)
+    {
+        fprintf(stderr, "Sending buffer error\n");
+        ret_val = -1;
+        free(ss -> buffer);
+        goto exit_run_protocol;
+    }
     ss -> session_key = generate_key(ss -> Na, ss -> Nb);
 
     // Receive and verify the message m3
@@ -186,69 +271,18 @@ run_protocol (srv_state *ss)
 
     // The last message of the protocol
     msg = create_m4(&msg_len, ss -> session_key, ss -> Na, ss -> iv);
-    sendbuf(ss -> comm_skt, msg, msg_len); // It exits the program on error
     ret_val = 0;
+    if (sendbuf(ss -> comm_skt, msg, msg_len) == 0)
+    {
+        fprintf(stderr, "Sending buffer error\n");
+        ret_val = -1;
+    }
 
 exit_run_protocol:
     if (msg != NULL) free(msg);
     return ret_val;
 }
 
-/**
- * This function permits the user to receive a buffer or size \ref len. This function will call
- * recv() since \ref len hasn't reached or the socket \ref s has been closed. If the recv() returns
- * a value, this is stored into \ref recv_ret_val. In the case the socket has been closed
- * \ref recv_ret_val contains -1.
- * \param s The socket to receive data from.
- * \param len A variable that stores the length of the data will theorically arrive from the sender.
- * If \ref recv_ret_val is 0 (socket closed) then this parameter will store the length of the last
- * call to recv, otherwise
- * \returns a pointer to a buffer containing len bytes or NULL in case of error
- */
-uint8_t*
-receive_buf(int s, ssize_t* len, ssize_t* recv_ret_val)
-{
-    uint8_t* buf;
-    ssize_t recvd = 0;
-    ssize_t n = 0;
-
-    if (s < 0 || len == NULL || recv_ret_val == NULL)
-    {
-        fprintf(stderr, "%s: Input parameter error\n", __func__);
-        buf = NULL;
-        goto exit_receive_buf;
-    }
-
-    buf = malloc(len);
-    if (buf == NULL)
-    {
-        fprintf(stderr, "%s: Out of memory\n", __func__);
-        goto exit_receive_message;
-    }
-
-    while (recvd != len)
-    {
-        n = recv(s, buf, len - recvd, 0);
-        *recv_ret_val = n;
-        if(n != -1)
-        {
-            recvd += n;
-        }
-        else if (n == 0)
-        {
-            // Connection closed
-            *len = n;
-        }
-        else
-        {
-            perror("recv");
-            free(buf);
-            return NULL;
-        }
-    }
-exit_receive_buf:
-    return buf;
-}
 /**
  * Useful function for retrieving the binary representation of the IP address (IPv4 or IPv6) in
  * order to print it successfully later with a call to inet_ntop().
