@@ -14,11 +14,11 @@ add_executable (test_proto test/proto_tests.c src/utils.c src/protocol.c)
 
 target_link_libraries(client ${OPENSSL_LIBRARIES})
 target_link_libraries(server ${OPENSSL_LIBRARIES})
-target_link_libraries(test_util ${OPENSSL_LIBRARIES})
+#target_link_libraries(test_util ${OPENSSL_LIBRARIES})
 target_link_libraries(test_proto ${OPENSSL_LIBRARIES})
 target_link_libraries(client ${OPENSSL_EXTRA_LIBRARIES})
 target_link_libraries(server ${OPENSSL_EXTRA_LIBRARIES})
-target_link_libraries(test_util ${OPENSSL_EXTRA_LIBRARIES})
+#target_link_libraries(test_util ${OPENSSL_EXTRA_LIBRARIES})
 target_link_libraries(test_proto ${OPENSSL_EXTRA_LIBRARIES})
 
 # Copy the keys under the build directory
