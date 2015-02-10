@@ -11,6 +11,8 @@
 #include "../include/protocol.h"
 #include "../include/utils.h"
 
+#define CLI_FILE_NAME "received.bin"
+
 typedef struct server_state
 {
     BIGNUM *Nb; // Server random nonce
@@ -357,6 +359,21 @@ main (int argc, char **argv)
     srv_state sstate;
     struct addrinfo hints, *servinfo, *it;
     int yes = 1, ret_val;
+    FILE *file_received, *file_sent;
+
+    if (argc != 2)
+    {
+        fprintf(stderr, "Usage: server <file>\n "
+                        "Server must send file to the client\n";
+        exit(EXIT_FAILURE);
+    }
+    file_sent = fopen(argv[1], "r");
+    if (file_sent == NULL)
+    {
+        perror("fopen");
+        fprintf(stderr, "Can't open the file to be sent to client. Exiting.\n");
+        exit(EXIT_FAILURE);
+    }
 
     init_server_state(&sstate);
     hints = init_hints();
@@ -413,8 +430,7 @@ main (int argc, char **argv)
             close_connection(&sstate);
             continue;
         }
-
-        // TODO: now we wait here until the client doesn't send something creepy
+        
 
     }
     close(sstate.acc_skt);
