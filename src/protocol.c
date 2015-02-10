@@ -505,7 +505,7 @@ exit_verifymessage_m3:
 }
 
 int
-verifymessage_m4 (uint8_t* msg, size_t msg_len, BIGNUM* Na, uint8_t* key, uint8_t* iv){
+verifymessage_m4 (uint8_t* msg, size_t msg_len, BIGNUM* Na, uint8_t* key, uint8_t* iv)
 {
     return verifymessage_m3(msg, msg_len, Na, key, iv);
 }
