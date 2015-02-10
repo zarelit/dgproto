@@ -203,7 +203,8 @@ create_m4 (size_t* msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv)
         free(Na_bin_val);
         goto exit_create_m4;
     }
-    encr_msg = do_aes256_crypt(Na_bin_val, Na_len, key, iv, &enc_len);
+
+    encr_msg = do_aes256_crypt(Na_digest, 32, key, iv, &enc_len);
     if (encr_msg == NULL)
     {
         fprintf(stderr, "Error crypting the message m4\n");
