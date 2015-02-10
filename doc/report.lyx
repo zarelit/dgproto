@@ -47,6 +47,9 @@
 % Two secret parts of the key
 \newcommand{\secretNa}{A\secret{N_{a}}B}
 \newcommand{\secretNb}{A\secret{N_{b}}B}
+
+% LyX logo
+\providecommand{\LyX}{L\kern-.1667em\lower.25em\hbox{Y}\kern-.125emX\@} 
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
@@ -212,7 +215,7 @@ La specifica del protocollo deve mettere chiaramente in evidenza le ipotesi
 \noindent
 L’implementazione deve comprende la realizzazione di un prototipo in cui
  il server ed il cliente si scambiano del materiale (testo o binario) cifrato
- con la chiave si sessione .
+ con la chiave di sessione .
 \end_layout
 
 \begin_layout Standard
@@ -408,11 +411,11 @@ The key is a function of
 \end_inset
 
 .
- In order to make it more readable we define 
+ We define 
 \begin_inset Formula $\mbox{\mbox{\ensuremath{K=\combined{K_{AB}}{N_{a},N_{b}}}}}$
 \end_inset
 
-
+for the sake of clarity.
 \begin_inset Newline newline
 \end_inset
 
@@ -482,7 +485,14 @@ Protocol actions
 \end_layout
 
 \begin_layout Standard
-A wants to communicate with B.
+\begin_inset Formula $A$
+\end_inset
+
+ wants to communicate with 
+\begin_inset Formula $B$
+\end_inset
+
+.
  In order to do this a session key must be estabilished by executing the
  following actions:
 \end_layout
@@ -1092,8 +1102,8 @@ Protocol Specification
 
 \begin_layout Standard
 The protocol will be based on the follwing specifications, some of them
- are mandatory by the professor, some others instead have been added by
- ourself.
+ are mandatory because of the scenario, some others instead have been added
+ by ourself.
 \end_layout
 
 \begin_layout Description
@@ -1102,7 +1112,7 @@ Public/private
 \end_inset
 
 keys: we recommend Elliptic Curve Cryptography, because it is faster and
- has smaller key than RSA but with the same level of confidentiality.
+ has smaller key size than RSA but with the same level of confidentiality.
  However, due to some bugs in the OpenSSL library, in the implementation
  we was forced to use RSA criptographic and signing algorithms (see 
 \begin_inset CommandInset ref
@@ -1131,7 +1141,7 @@ RANDOM
 \end_layout
 
 \begin_layout Description
-Identifiers: the length of the identifiers are not fixed.
+Identifiers: the length of the identifiers is not fixed.
  We recommend to use as the small size as possible in order to use the ID
  as the hash of a table for retrieving the correct public key (server side).
 \end_layout
@@ -1147,7 +1157,7 @@ Functions: we recommend the last standard CRHF (Collision Resistant Hash
 \series bold
 SHA-256
 \series default
- or any equivalent hash function with a 256-bit output.
+ or any equivalent hash function with 256-bit output.
 \end_layout
 
 \begin_layout Description
@@ -1249,7 +1259,7 @@ Source code files
 \begin_layout Standard
 We decided to implement separately the client and the server parts, so one
  of us wrote the client and the other one the server.
- We wrote each part using the C programming language, as requested by the
+ We wroteeverything using the C programming language, as requested by the
  professor, and we used the OpenSSL library as said by the project specification
 s.
 \end_layout
@@ -1361,7 +1371,8 @@ strange
  After some time googling in the net, we learnt that this limit is by PKCS#1
  standard, so, in our case, we couldn't encrypt more than 501 bytes.
  We tried using a smaller nonce size, but the RSA signature occupies 512
- bytes, so we couldn't crypt anything without exceeding RSA limitations.
+ bytes by itself, so we couldn't encrypt anything without exceeding RSA
+ limitations.
 \end_layout
 
 \begin_layout Standard
@@ -1370,7 +1381,8 @@ Since we didn't want to modify the protocol by moving the encrypted sign
  OpenSSL provides.
  This is useful for exchanging files or everything greater than 501 bytes
  with few changes to the code.
- Using digital envelopes 
+ Digital envelopes solved the problem, allowing exchange of an arbitrary
+ amount of data.
 \end_layout
 
 \begin_layout Subsection
@@ -1494,7 +1506,7 @@ This project wasn't been thought to be extendend in future projects, since
  do for using our protocol correctly.
  In our opinion the reusable code is written inside protocol.c and utils.c.
  The first file has been thought for users which want our protocol to use,
- when the latter file is a collection of functions with the same purpouse
+ when the latter file is a collection of functions with the same purpose
  of protocol.c, but they are more general, so we can use them, and anyone
  can do that, in any other project we will design and implement in the future.
  An example of this is conc_msgs() and extr_msgs() functions which will
@@ -1506,7 +1518,8 @@ This project wasn't been thought to be extendend in future projects, since
 \end_layout
 
 \begin_layout Standard
-We deploy our code under the GPL v3.0 Licence.
+Code is deployed under the GPL v3.0 License, whose full text is available
+ in the repository.
 \end_layout
 
 \begin_layout Standard
@@ -1518,6 +1531,64 @@ We deploy our code under the GPL v3.0 Licence.
 
 \begin_layout Part
 BAN Logic in Latex
+\end_layout
+
+\begin_layout Standard
+This report is written using a 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+LaTeX
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula $\;$
+\end_inset
+
+ frontend called 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+LyX
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Since 
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+LaTeX
+\end_layout
+
+\end_inset
+
+ 
+\begin_inset Formula $\,$
+\end_inset
+
+lacks of support for writing BAN logic, some custom commands were written
+ by us to assist in the writing of this report.
+ The commands' sources can be found in the preamble of this file; an example
+ of what the commands can do is shown below:
 \end_layout
 
 \begin_layout Standard
