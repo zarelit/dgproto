@@ -172,10 +172,9 @@ exit_create_m2:
 }
 
 uint8_t*
-create_m3 (size_t* msg_len, BIGNUM* key, BIGNUM* Nb, uint8_t* iv)
+create_m3 (size_t* msg_len, uint8_t* key, BIGNUM* Nb, uint8_t* iv)
 {
-    uint8_t* msg = NULL;
-    return msg;
+    return create_m4(msg_len, key, Nb, iv);
 }
 
 uint8_t*

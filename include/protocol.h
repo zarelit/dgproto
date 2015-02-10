@@ -78,7 +78,7 @@ uint8_t* create_m2 (size_t *msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t**
  * \param iv the initialization vector for the cipher to encrypt.
  * \returns a byte string that contains the message ready to be sent.
  */
-uint8_t* create_m3 (size_t *msg_len, BIGNUM* key, BIGNUM* Nb, uint8_t* iv);
+uint8_t* create_m3 (size_t* msg_len, uint8_t* key, BIGNUM* Nb, uint8_t* iv);
 
 /**
  * This function permits to create in one single shot the fourth message of the D&G protocol.
