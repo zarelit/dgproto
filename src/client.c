@@ -22,8 +22,8 @@
  * Determine file size or quit
  */
 ssize_t getfsize(FILE* fd);
-
 int main (int argc, char** argv)
+
 {
 	/*
 	 * Network related variables
@@ -84,7 +84,7 @@ int main (int argc, char** argv)
 	 * Step 0:
 	 * Open a TCP connection with the server.
 	 */
-	printf("About to connect to server\n");
+	doing("Connect to server");
 	servfd = socket(servers->ai_family, servers->ai_socktype, servers->ai_protocol);
 	if(servfd == -1){
 		perror("Cannot create socket");
@@ -96,18 +96,23 @@ int main (int argc, char** argv)
 		perror("Cannot connect to server");
 		exit(EXIT_FAILURE);
 	}
-	printf("Connection to server opened\n");
+	say("Connection to server opened");
 
 	/*
 	 * Step 1:
 	 * Generate Nonce and send M1
 	 */
+	doing("Generate nonce Na");
 	Na = generate_random_nonce();
+
+	doing("Build message M1")
 	m1.data = create_m1(&(m1.data_len), 'A', Na);
 	if( m1.data == NULL){
 		fprintf(stderr, "Error generating M1");
 		exit(EXIT_FAILURE);
 	}
+
+	doing("Send message M1");
 	s = sendbuf(servfd, m1.data, m1.data_len);
 	if( s != 1){
 		fprintf(stderr, "Error while sending M1");
@@ -115,15 +120,76 @@ int main (int argc, char** argv)
 	}
 
 	/*
+	 * Step 2: Receive M2 and verify it
+	 */
+	doing("Receive M2");
+	m2.data = recvbuf( servfd, M2_SIZE); 
+	if(m2.data == NULL){
+		fprintf(stderr, "Error receiving M2");
+		exit(EXIT_FAILURE);
+	}
+
+	doing("Verify M2");
+	s = verifymessage_m2 (m2.data, m2.data_len, Na, &Nb, &IV);
+	if( s == 0){
+		fprintf(stderr, "Received M2 is wrong.");
+		exit(EXIT_FAILURE);
+	}
+
+	/*
+	 * Step 3: Build the session key
+	 */
+	doing("Build session Key");
+	key = generate_key(Na, Nb);	
+	if(key == NULL){
+		fprintf(stderr, "Error building the session key.");
+		exit(EXIT_FAILURE);
+	}
+
+	/*
+	 * Step 4: Send M3 to the server to confirm the key
+	 */
+	doing("Build M3");
+	m3.data = create_m3(&(m3.data_len), key, Nb, IV);
+	if( m3.data == NULL){
+		fprintf(stderr, "Error while creating message M3");
+		exit(EXIT_FAILURE);
+	}
+
+	doing("Send M3");
+	s = sendbuf(servfd, m3.data, m3.data_len);
+	if( s != 1){
+		fprintf(stderr, "Error while sending M3");
+		exit(EXIT_FAILURE);
+	}
+
+	/*
 	 * Step 5:
+	 * Receive M4 and verify it
+	 **/
+	doing("Receive M4");
+	m4.data = recvbuf( servfd, M4_SIZE); 
+	if(m4.data == NULL){
+		fprintf(stderr, "Error receiving M4");
+		exit(EXIT_FAILURE);
+	}
+
+	doing("Verify M4");
+	s = verifymessage_m4(m4.data, m4.data_len, Na, key, IV);
+	if( s == 0){
+		fprintf(stderr, "Received M4 is wrong.");
+		exit(EXIT_FAILURE);
+	}
+
+	/*
+	 * Step 6:
 	 * Send the file to the server
 	 */
 	// Get file size - used to show progress
+	doing("Send file to the server");
 	fsize = getfsize(file_to_send);
 
-	printf("Sending the file to the server...\n");
-
-	printf("File sent.\n");
+	say("File sent.");
 
 
 
