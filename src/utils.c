@@ -788,7 +788,7 @@ uint8_t* recvbuf(int s, size_t len){
 	while(recvd != len){
 		n = recv(s, buf, len - recvd, 0);
 		
-		if(n != -1){
+		if(n > 0){
 			recvd += n; 
 		} else {
 			perror("Cannot read data from socket");
