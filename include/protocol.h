@@ -154,4 +154,4 @@ int verifymessage_m3 (uint8_t* msg, size_t msg_len, BIGNUM* Nb, uint8_t* key, ui
  * \returns 0 if the verify process fails
  * \returns 1 otherwise.
  */
-int verifymessage_m4 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, uint8_t *key);
+int verifymessage_m4 (uint8_t* msg, size_t msg_len, BIGNUM* Na, uint8_t* key, uint8_t* iv);
