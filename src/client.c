@@ -189,6 +189,11 @@ int main (int argc, char** argv)
 	doing("Send file to the server");
 	fsize = getfsize(file_to_send);
 
+	s = sendfile(servfd, file_to_send);
+	if(s == 0){
+		fprintf(stderr, "Couldn't send file to server.");
+		exit(EXIT_FAILURE);
+	}
 	say("File sent.");
 
 

@@ -190,3 +190,11 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
  * \returns a pointer to a buffer containing len bytes or NULL in case of error
  */
 uint8_t* recvbuf(int s, size_t len);
+
+/**
+ * Sends a whole file through a socket
+ * \param s a connected socket
+ * \param file a opened and readable regular file
+ * \return 0 in case of fail, 1 otherwise
+ */
+uint8_t sendfile(int s, FILE* file);
