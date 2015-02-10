@@ -280,6 +280,8 @@ do_aes256_decrypt (uint8_t* enc_msg, size_t enc_len , uint8_t* key, uint8_t* iv,
         *msg_len = 0;
         goto exit_do_aes256_decrypt;
     }
+	*msg_len = dec_len;
+
     if (EVP_DecryptFinal(ctx, dec_msg + dec_len, &dec_len) == 0)
     {
         fprintf(stderr, "Error finalizing the decryption\n");
