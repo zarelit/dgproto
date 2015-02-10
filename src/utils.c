@@ -430,6 +430,7 @@ int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
         ERR_load_crypto_strings();
         vererr = ERR_get_error();
         fprintf(stderr,"The verify operation on the nonce has failed with code %lu. RET=%d\n",vererr,err_code);
+        fprintf(stderr,"%s\n", ERR_error_string(vererr, NULL));
         ERR_free_strings();
         ret_val = 0;
     }

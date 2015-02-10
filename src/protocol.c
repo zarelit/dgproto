@@ -339,7 +339,7 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     }
     // Get the nonce client_nonce and its signature
     dec_parts[0].data = NULL;                   // Will contain Na
-    dec_parts[0].data_len = NONCE_LEN;
+    dec_parts[0].data_len = NONCE_LEN/8;
     dec_parts[1].data = NULL;                   // Will contain Na's signature by the client
     dec_parts[1].data_len = dec_len - dec_parts[0].data_len;
     ret_val = extr_msgs(dec_msg_part, dec_parts_num, &dec_parts[0], &dec_parts[1]);
