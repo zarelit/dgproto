@@ -35,3 +35,11 @@
  * Dimension of the buffer. Default is 2048 Bytes
  */
 #define BUF_DIM 2048
+
+/**
+ * Length of the messages
+ */
+#define M1_SIZE 1073
+#define M2_SIZE 1105
+#define M3_SIZE 48
+#define M4_SIZE 48
