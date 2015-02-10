@@ -91,7 +91,7 @@ extr_msgs (uint8_t* buffer, size_t argc, ...)
             fprintf(stderr, "Data len of the element number %d of the list is 0\n", (int) el_cnt);
             break;
         }
-        msg -> data = malloc(sizeof(uint8_t) * msg -> data_len);
+        msg -> data = malloc(sizeof(uint8_t) * (msg -> data_len));
         memcpy(msg -> data, data_p, msg -> data_len);
         data_p += msg -> data_len;
     }
@@ -280,6 +280,8 @@ do_aes256_decrypt (uint8_t* enc_msg, size_t enc_len , uint8_t* key, uint8_t* iv,
         *msg_len = 0;
         goto exit_do_aes256_decrypt;
     }
+	*msg_len = dec_len;
+
     if (EVP_DecryptFinal(ctx, dec_msg + dec_len, &dec_len) == 0)
     {
         fprintf(stderr, "Error finalizing the decryption\n");
@@ -430,6 +432,7 @@ int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
         ERR_load_crypto_strings();
         vererr = ERR_get_error();
         fprintf(stderr,"The verify operation on the nonce has failed with code %lu. RET=%d\n",vererr,err_code);
+        fprintf(stderr,"%s\n", ERR_error_string(vererr, NULL));
         ERR_free_strings();
         ret_val = 0;
     }

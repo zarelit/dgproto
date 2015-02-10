@@ -29,10 +29,11 @@ int
 test_do_aes256_dencrypt (void)
 {
     uint8_t ret_val;
-    const uint8_t *test_str = "asd lol rotfl undone gutoloi";
+    const uint8_t *test_str = "bAnAnAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     const uint8_t test_key[] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
                                 0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F};
-    const uint8_t test_iv[] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
+    const uint8_t test_iv[] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,
+                               0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F};
     uint8_t *enc_msg, *dec_msg;
     size_t test_str_len = strlen(test_str), dec_msg_len, enc_msg_len;
 
@@ -43,7 +44,10 @@ test_do_aes256_dencrypt (void)
         fprintf(stderr, "%s: enc_msg is NULL\n", __func__);
         ret_val = 0;
     }
+	dump("Encrypted", enc_msg, enc_msg_len);
+
     dec_msg = do_aes256_decrypt(enc_msg, enc_msg_len, test_key, test_iv, &dec_msg_len);
+	dump("Decrypted", dec_msg, dec_msg_len);
     if (dec_msg == NULL)
     {
         fprintf(stderr, "%s: dec_msg is NULL\n", __func__);

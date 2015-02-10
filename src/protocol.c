@@ -97,7 +97,9 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     }
 
     // Create the encrypted part of the message by concatenating Na, Nb and the signature
+	enc_parts[0].data = malloc(BN_num_bytes(Na));
     enc_parts[0].data_len = BN_bn2bin(Na, enc_parts[0].data);
+	enc_parts[1].data = malloc(BN_num_bytes(Nb));
     enc_parts[1].data_len = BN_bn2bin(Nb, enc_parts[1].data);
     enc_parts[2].data = sign(SERVER_KEY, enc_parts[1].data, enc_parts[1].data_len, &sig_len);
     enc_parts[2].data_len = sig_len;
@@ -105,8 +107,8 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     if (plain == NULL)
     {
         fprintf(stderr, "Error concatenating parts to be encrypted\n");
-        BN_free((BIGNUM*) enc_parts[0].data);
-        BN_free((BIGNUM*) enc_parts[1].data);
+        free(enc_parts[0].data);
+        free(enc_parts[1].data);
         free(enc_parts[2].data);
         msg = NULL;
         *msg_len = 0;
@@ -152,20 +154,16 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
         msg = NULL;
         *msg_len = 0;
     }
-    free(iv);
 
 cleanup_create_m2:
     free(plain);
     if (enc_part != NULL) free(enc_part);
 
-    BN_free((BIGNUM*) enc_parts[0].data);
-    BN_free((BIGNUM*) enc_parts[1].data);
+    free(enc_parts[0].data);
+    free(enc_parts[1].data);
     free(enc_parts[2].data);
-    free(msg_parts[0].data);
-    free(msg_parts[1].data);
     free(msg_parts[2].data);
     free(msg_parts[3].data);
-    free(msg_parts[4].data);
 
 exit_create_m2:
     return msg;
@@ -205,7 +203,8 @@ create_m4 (size_t* msg_len, uint8_t* key, BIGNUM* Na, uint8_t* iv)
         free(Na_bin_val);
         goto exit_create_m4;
     }
-    encr_msg = do_aes256_crypt(Na_bin_val, Na_len, key, iv, &enc_len);
+
+    encr_msg = do_aes256_crypt(Na_digest, 32, key, iv, &enc_len);
     if (encr_msg == NULL)
     {
         fprintf(stderr, "Error crypting the message m4\n");
@@ -257,7 +256,9 @@ generate_key (BIGNUM *Na, BIGNUM *Nb)
     }
 
     // Create the "message" to be hashed by SHA256 algorithm
+	key_parts[0].data = malloc(BN_num_bytes(Na));
     key_parts[0].data_len = BN_bn2bin(Na, key_parts[0].data);
+	key_parts[1].data = malloc(BN_num_bytes(Nb));
     key_parts[1].data_len = BN_bn2bin(Nb, key_parts[1].data);
     key_parts[2].data = (uint8_t*) &SALT;
     key_parts[2].data_len = SALT_SIZE;
@@ -289,7 +290,7 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     int ret_val = 0;
     BIGNUM *client_nonce;
     const size_t iv_len = EVP_CIPHER_iv_length(EVP_aes_256_cbc());
-    const uint8_t msg1_parts_num = 5;
+    const uint8_t msg1_parts_num = 4;
     const uint8_t dec_parts_num = 2;
     msg_data msg1_parts[msg1_parts_num]; // Plaintext and ciphertext of M1
     msg_data dec_parts[dec_parts_num];  // The nonce and the signature of the nonce
@@ -307,16 +308,13 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     // Extract the plaintext and the ciphertext parts of M1
     msg1_parts[0].data = NULL;                  // Will contain the id label of the client
     msg1_parts[0].data_len = sizeof(aid_t);
-    msg1_parts[1].data = NULL;                  // Will contain the iv for the cipher
+    msg1_parts[1].data = NULL;                  // Will contain the iv for the envelope
     msg1_parts[1].data_len = iv_len;
-    msg1_parts[2].data = NULL;                  // Will contain the iv for the envelope
-    msg1_parts[2].data_len = iv_len;
-    msg1_parts[3].data = NULL;                  // Will contain the encrypted key of the envelope
-    msg1_parts[3].data_len = KEY_LEN;
-    msg1_parts[4].data = NULL;                  // Will contain the encrypted part of M1
-    msg1_parts[4].data_len = msg_len - KEY_LEN - iv_len - sizeof(aid_t);
-    if (extr_msgs(msg, msg1_parts_num, &msg1_parts[0], &msg1_parts[1], &msg1_parts[2], &msg1_parts[3],
-                  &msg1_parts[4]) == 0)
+    msg1_parts[2].data = NULL;                  // Will contain the encrypted key of the envelope
+    msg1_parts[2].data_len = EK_LEN;
+    msg1_parts[3].data = NULL;                  // Will contain the encrypted part of M1
+    msg1_parts[3].data_len = msg_len - EK_LEN - iv_len - sizeof(aid_t);
+    if (extr_msgs(msg, msg1_parts_num, &msg1_parts[0], &msg1_parts[1], &msg1_parts[2], &msg1_parts[3]) == 0)
     {
         fprintf(stderr, "%s: Error during the extraction of m1 parts\n", __func__);
         ret_val = 0;
@@ -332,8 +330,8 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     }
 
     // Decrypt the crypted part of the message
-    dec_msg_part = decrypt(SERVER_KEY, msg1_parts[4].data, msg1_parts[4].data_len, &dec_len,
-                           msg1_parts[2].data, msg1_parts[3].data, (uint8_t) *msg1_parts[4].data);
+    dec_msg_part = decrypt(SERVER_KEY, msg1_parts[3].data, msg1_parts[3].data_len, &dec_len,
+                           msg1_parts[1].data, msg1_parts[2].data, msg1_parts[2].data_len);
     if (dec_msg_part == NULL)
     {
         fprintf(stderr, "%s: Error decrypting encrypted M1 part\n", __func__);
@@ -342,7 +340,7 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     }
     // Get the nonce client_nonce and its signature
     dec_parts[0].data = NULL;                   // Will contain Na
-    dec_parts[0].data_len = NONCE_LEN;
+    dec_parts[0].data_len = NONCE_LEN/8;
     dec_parts[1].data = NULL;                   // Will contain Na's signature by the client
     dec_parts[1].data_len = dec_len - dec_parts[0].data_len;
     ret_val = extr_msgs(dec_msg_part, dec_parts_num, &dec_parts[0], &dec_parts[1]);
@@ -385,7 +383,6 @@ exit_verifymessage_m1:
     if (msg1_parts[1].data != NULL) free(msg1_parts[1].data);
     if (msg1_parts[2].data != NULL) free(msg1_parts[2].data);
     if (msg1_parts[3].data != NULL) free(msg1_parts[3].data);
-    if (msg1_parts[4].data != NULL) free(msg1_parts[4].data);
     if (dec_parts[0].data != NULL) free(dec_parts[0].data);
     if (dec_parts[1].data != NULL) free(dec_parts[1].data);
 
@@ -393,7 +390,7 @@ exit_verifymessage_m1:
 }
 
 int
-verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_t** iv)
+verifymessage_m2 (uint8_t *msg, size_t msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_t** iv)
 {
 	// Message is "B" | IV | IV_envelope2 | EK2 | envelope{ Na | Nb | sign(Nb) }
 	// Define its components
@@ -417,13 +414,13 @@ verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_
 	// TODO: hardcoded values>:(
 	IV.data_len = 16;
 	IVenv2.data_len = 16;
-	EK2.data_len = 512;
-	outEnv.data_len = *msg_len - (id.data_len + IV.data_len + IVenv2.data_len + EK2.data_len);
+	EK2.data_len = EK_LEN;
+	outEnv.data_len = msg_len - (id.data_len + IV.data_len + IVenv2.data_len + EK2.data_len);
 	envNa.data_len = NONCE_LEN/8;
 	envNb.data_len = NONCE_LEN/8;
 
 	// Split message in its main components
-	ret = extr_msgs(msg,5, id, IV, IVenv2, EK2, outEnv);
+	ret = extr_msgs(msg,5, &id, &IV, &IVenv2, &EK2, &outEnv);
 	if (ret != 1) return 0;
 
 	// Verify ID
@@ -438,15 +435,15 @@ verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_
 
 	// Split the content of the envelope and check it
 	envNbSig.data_len = inEnv.data_len - (envNa.data_len + envNb.data_len);
-	ret = extr_msgs(inEnv.data, 3, envNa, envNb, envNbSig);
+	ret = extr_msgs(inEnv.data, 3, &envNa, &envNb, &envNbSig);
 	if( ret != 1) status = 0;
 
 	// Verify that received nonce is actually our generate Nonce
-	envNaBN = BN_bin2bn(envNa.data, envNa.data_len, envNaBN);
+	envNaBN = BN_bin2bn(envNa.data, envNa.data_len, NULL);
 	if(BN_cmp(Na,envNaBN)!= 0) status=0;
 
 	// Pack received Nb in a bignum and then verify the signature
-	*Nb = BN_bin2bn(envNb.data, envNb.data_len, *Nb);
+	*Nb = BN_bin2bn(envNb.data, envNb.data_len, NULL);
 	ret = verify(SERVER_PUBKEY, *Nb, envNbSig.data, envNbSig.data_len);
 	if(!ret) status=0;
 
@@ -495,7 +492,7 @@ verifymessage_m3 (uint8_t* msg, size_t msg_len, BIGNUM* Nb, uint8_t* key, uint8_
     }
 
     // Check if the digests are the same
-    ret_val = (memcmp(srv_dig, cli_dig, 256) != 0)? 0 : 1;
+    ret_val = (memcmp(srv_dig, cli_dig, 256/8) != 0)? 0 : 1;
     free(Nb_bin_val);
     free(srv_dig);
     free(cli_dig);
