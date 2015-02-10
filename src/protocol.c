@@ -396,59 +396,63 @@ exit_verifymessage_m1:
 int
 verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_t** iv)
 {
-	// Message is B|enc(Na|Nb|sign(Nb))
+	// Message is "B" | IV | IV_envelope2 | EK2 | envelope{ Na | Nb | sign(Nb) }
 	// Define its components
 	msg_data id;
-	msg_data encryptedPart;
-	msg_data receivedNa;
-	msg_data signedNb;
-	msg_data receivedNb;
+	msg_data IV;
+	msg_data IVenv2;
+	msg_data EK2;
+	msg_data outEnv; // Encrypted envelope
+	msg_data inEnv; // Decrypted envelope
+	msg_data envNa;
+	msg_data envNb;
+	msg_data envNbSig;
 
 	// Auxiliary variables
-	int s=1;
 	int ret;
-	msg_data temp;
-	BIGNUM* receivedNaBN=NULL;
+	int status = 1; // Ok, set 0 on error
+	BIGNUM* envNaBN = NULL;
 
-	// Split ID from encrypted part
-	id.data_len=sizeof(aid_t);
-	encryptedPart.data_len = *msg_len - id.data_len;
-    ret = extr_msgs(msg, 2, &id, &encryptedPart);
-	if(!ret) s=0;
+	// Determine components length
+	id.data_len = sizeof(aid_t);
+	// TODO: hardcoded values>:(
+	IV.data_len = 16; 
+	IVenv2.data_len = 16;
+	EK2.data_len = 512;
+	outEnv.data_len = *msg_len - (id.data_len + IV.data_len + IVenv2.data_len + EK2.data_len);
+	envNa.data_len = NONCE_LEN/8;
+	envNb.data_len = NONCE_LEN/8;
 
+	// Split message in its main components
+	ret = extr_msgs(msg,5, id, IV, IVenv2, EK2, outEnv);	
+	if (ret != 1) return 0;
+	
 	// Verify ID
-	if(id.data[0] != 'B') s=0;
+	if(id.data[0] != 'B') status=0;
 
-	// Decode the encrypted part
-	temp.data = decrypt(CLIENT_KEY,encryptedPart.data, encryptedPart.data_len, &(temp.data_len));
+	// Assign the iv we'll use later
+	*iv = IV.data;
 
-	// Split Na, Nb, sig of Nb
-	receivedNa.data_len = NONCE_LEN/8;
-	receivedNb.data_len = NONCE_LEN/8;
-	signedNb.data_len = temp.data_len - (receivedNa.data_len + receivedNb.data_len);
-	ret = extr_msgs(temp.data, 3, receivedNa, receivedNb, signedNb);
-	if(!ret) s=0;
+	// Open envelope
+	inEnv.data = decrypt(CLIENT_KEY, outEnv.data, outEnv.data_len, &(inEnv.data_len), IVenv2.data, EK2.data, EK2.data_len);
+	if(inEnv.data == NULL) status=0;
+
+	// Split the content of the envelope and check it
+	envNbSig.data_len = inEnv.data_len - (envNa.data_len + envNb.data_len);
+	ret = extr_msgs(inEnv.data, 3, envNa, envNb, envNbSig);
+	if( ret != 1) status = 0;
 
 	// Verify that received nonce is actually our generate Nonce
-	receivedNaBN = BN_bin2bn(receivedNa.data, receivedNa.data_len, receivedNaBN);
-	if(BN_cmp(Na,receivedNaBN)!= 0) s=0;
+	envNaBN = BN_bin2bn(envNa.data, envNa.data_len, envNaBN);
+	if(BN_cmp(Na,envNaBN)!= 0) status=0;
 
 	// Pack received Nb in a bignum and then verify the signature
-	*Nb = BN_bin2bn(receivedNb.data, receivedNb.data_len, *Nb);
-	ret = verify(SERVER_PUBKEY, *Nb, signedNb.data, signedNb.data_len);
-	if(!ret) s=0;
+	*Nb = BN_bin2bn(envNb.data, envNb.data_len, *Nb);
+	ret = verify(SERVER_PUBKEY, *Nb, envNbSig.data, envNbSig.data_len);
+	if(!ret) status=0;
 
-	// Cleanup
-	free(id.data);
-	free(encryptedPart.data);
-	free(receivedNa.data);
-	free(signedNb.data);
-	free(receivedNb.data);
-	free(temp.data);
-	BN_free(receivedNaBN);
-
-    if(s==0) return 0;
-	else return 1;
+	if(status != 0) return 1;
+	else return 0;
 }
 
 int
