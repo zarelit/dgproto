@@ -801,16 +801,35 @@ uint8_t* recvbuf(int s, size_t len){
 }
 
 
-uint8_t sendfile(int s, FILE* file){
-	unsigned char ptextbuf[CHUNK_SIZE];
-	size_t now;
+uint8_t sendfile(int s, FILE* file, uint8_t* key, uint8_t* iv){
+	unsigned char* ptextbuf;
+	unsigned char* ctextbuf;
+	size_t ctextlen;
 	uint8_t status;
+	long int idx;
 
-	do{
-		now = fread(ptextbuf,1,CHUNK_SIZE,file);
-		status = sendbuf(s, ptextbuf, now);
-		if(status == 0) return 0;
-	} while(now != 0);
+	/* Load file in memory */
+	if ( file != NULL ){
+		// Get file size
+	    fseek(file, 0, SEEK_END);
+    	idx = ftell(file);
+		rewind(file);
+		// Allocate a buffer to store the whole file in mem
+		ptextbuf = malloc(idx);
+		if ( ptextbuf != NULL ){
+			// Read whole file in mem
+			fread(ptextbuf, idx, 1, file);
+		}
+    }
+	
+	/* Encrypt it*/
+	ctextbuf = do_aes256_crypt(ptextbuf, idx, key, iv, &ctextlen);
 
+	/* Send it */
+	status = sendbuf(s, ctextbuf, ctextlen);
+	free(ptextbuf);
+	free(ctextbuf);
+
+	if(status == 0) return 0;
 	return 1;
 }

@@ -200,5 +200,5 @@ uint8_t* recvbuf(int s, size_t len);
  * \param file a opened and readable regular file
  * \return 0 in case of fail, 1 otherwise
  */
-uint8_t sendfile(int s, FILE* file);
+uint8_t sendfile(int s, FILE* file, uint8_t* key, uint8_t* iv);
 

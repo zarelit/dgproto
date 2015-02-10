@@ -177,10 +177,9 @@ int main (int argc, char** argv)
 	 * Step 6:
 	 * Send the file to the server
 	 */
-	// Get file size - used to show progress
 	doing("Send file to the server");
 
-	s = sendfile(servfd, file_to_send);
+	s = sendfile(servfd, file_to_send, key, IV);
 	if(s == 0){
 		fprintf(stderr, "Couldn't send file to server.");
 		exit(EXIT_FAILURE);
