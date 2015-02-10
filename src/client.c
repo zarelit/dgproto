@@ -11,8 +11,9 @@
  */
 
 #include <sys/stat.h>
-#include "../include/common.h"
-#include "../include/protocol.h"
+#include "common.h"
+#include "protocol.h"
+#include "utils.h"
 
 //! How much of the file we work with at a time
 #define CHUNK_SIZE 512
@@ -46,8 +47,11 @@ int main (int argc, char** argv)
 	/*
 	 * Protocol related variables
 	 */
-	BIGNUM*	Na;
-
+	BIGNUM*	Na=NULL;
+	BIGNUM*	Nb=NULL;
+	uint8_t* IV=NULL;
+	uint8_t* key=NULL;
+	msg_data m1, m2, m3, m4;
 
 	if(argc != 3){
 		printf("Usage: %s <Server IPv4> <file to send>\n",argv[0]);
@@ -93,6 +97,22 @@ int main (int argc, char** argv)
 		exit(EXIT_FAILURE);
 	}
 	printf("Connection to server opened\n");
+
+	/*
+	 * Step 1:
+	 * Generate Nonce and send M1
+	 */
+	Na = generate_random_nonce();
+	m1.data = create_m1(&(m1.data_len), 'A', Na);
+	if( m1.data == NULL){
+		fprintf(stderr, "Error generating M1");
+		exit(EXIT_FAILURE);
+	}
+	s = sendbuf(servfd, m1.data, m1.data_len);
+	if( s != 1){
+		fprintf(stderr, "Error while sending M1");
+		exit(EXIT_FAILURE);
+	}
 
 	/*
 	 * Step 5:
