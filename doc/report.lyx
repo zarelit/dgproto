@@ -238,8 +238,7 @@ Real protocol
 
 \begin_layout Standard
 In this section we explain the main idea, the main features and the objectives
- of the protocol, including an explanation for each message of the real
- protocol.
+ of the protocol, including a description of each message of the real protocol.
  
 \end_layout
 
@@ -264,28 +263,29 @@ We thought about a protocol that doesn't need to send the key over the unsecure
 \end_layout
 
 \begin_layout Standard
-In order to avoid any possible information that makes the key easily to
- compute, the generation method is based on the hash of the two generated
- secret.
- A cryptographic hash function has the avalanche effect: if one or more
- bits of a message m are changed, then the output of 
+In order to avoid leakage of information that makes the key easy to compute,
+ the generation method is based on the hash of the two generated secrets.
+ A cryptographic hash function is used because of its avalanche effect:
+ if one or more bits of a message m are changed, then the output of 
 \begin_inset Formula $hash(m)$
 \end_inset
 
  will substantially change, i.e.
- SHA-1 changes the entire output also if only one bit of m has been changed.
+ small differences in the original message lead to big and unpredictable
+ differences in the hash.
 \end_layout
 
 \begin_layout Standard
-This property of the hash function plays an important role in the protocol
- because it is sufficient to generate only one fresh nonce each session,
- instead of two, for creating a totally new fresh session key.
- What do we say with that? If either the client or the server implementation
- is wrong in the sense that a lazy programmer has implemented a nonce generation
- function which returns the same nonce each time, the key isn't compromised
- due to the fact that it depends on the other (hopefully) random nonce,
- too, so when the two nonces will be combined, the avalanche effect will
- create a key which will be unrelated to any other one and is still 
+The avalanche effect plays an important role in the protocol because it
+ makes sufficient to generate only one fresh nonce each session, instead
+ of two, in order to create a completely new session key.
+ What does this mean from a practical standpoint? If either the client or
+ the server implementation is poorly written in the sense that a lazy programmer
+ has implemented a nonce generation function which returns the same nonce
+ each time, the key isn't compromised due to the fact that each bit of it
+ depends on the other (hopefully) random nonce, so when the two nonces will
+ be combined, the avalanche effect will create a key which will be unrelated
+ to any other one and is still 
 \begin_inset Quotes eld
 \end_inset
 
@@ -293,14 +293,14 @@ difficult
 \begin_inset Quotes erd
 \end_inset
 
- to compute.
+ to bruteforce.
 \end_layout
 
 \begin_layout Standard
-Clearly the specification of our protocol imposes the random generation
- of the two nonces, in order to increase the level of security of the applicatio
-n, but our protocol is still secure also if someone makes a mistake in the
- implementation either the server or the client.
+The specification of our protocol clearly states that a random generation
+ of the two nonces is needed, in order to increase the level of security,
+ but the protocol doesn't fall even if one of the actors makes use of a
+ wrong implementation, be either the server or the client.
  Of course, if both implementations are wrong then someone doesn't actually
  use our protocol.
 \end_layout
@@ -323,7 +323,8 @@ reference "sec:Scenario-(in-Italian)"
 
 \end_inset
 
- we can extract these two objectives for our protocol:
+ we can extract (and express in BAN logic) these two objectives for our
+ protocol:
 \end_layout
 
 \begin_layout Itemize
@@ -360,17 +361,17 @@ Key Confirmation:
 \end_layout
 
 \begin_layout Standard
-Key Authentication says each part of the protocol must know the key K is
- the current session key, this objective is mandatory.
- Key confirmation says each part of the protocol knows the other part has
- the same session key for communicating.
+Key Authentication means that each partecipant must know that the key K
+ is the current session key, this objective is mandatory.
+ Key confirmation means that each partecipant knows that the other part
+ truly has the same session key for communicating.
 \end_layout
 
 \begin_layout Standard
 The structure of our protocol reaches also another objective that isn't
- explain in the specification: Key Freshness.
- The way this object is met is to create the same fresh key for each part
- involved in the protocol.
+ required by the scenario: Key Freshness.
+ This achievement is met by involving quantities that are believed to be
+ fresh by both the actors A and B.
 \end_layout
 
 \begin_layout Subsection
