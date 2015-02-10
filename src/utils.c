@@ -780,16 +780,16 @@ uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_
 uint8_t* recvbuf(int s, size_t len){
 	uint8_t* buf;
 	size_t recvd=0;
-	size_t n=0;
+	ssize_t n=0;
 
    	buf	= malloc(len);
 	if(buf == NULL) return buf;
 
 	while(recvd != len){
 		n = recv(s, buf, len - recvd, 0);
-		
+
 		if(n > 0){
-			recvd += n; 
+			recvd += n;
 		} else {
 			perror("Cannot read data from socket");
 			free(buf);
