@@ -22,6 +22,7 @@
  * Length of the key in bit.
  */
 #define KEY_LEN 256
+// Length of envelope key in bytes
 #define EK_LEN 512
 
 /**

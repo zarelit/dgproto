@@ -255,7 +255,9 @@ generate_key (BIGNUM *Na, BIGNUM *Nb)
     }
 
     // Create the "message" to be hashed by SHA256 algorithm
+	key_parts[0].data = malloc(BN_num_bytes(Na));
     key_parts[0].data_len = BN_bn2bin(Na, key_parts[0].data);
+	key_parts[1].data = malloc(BN_num_bytes(Nb));
     key_parts[1].data_len = BN_bn2bin(Nb, key_parts[1].data);
     key_parts[2].data = (uint8_t*) &SALT;
     key_parts[2].data_len = SALT_SIZE;
