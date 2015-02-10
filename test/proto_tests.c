@@ -55,7 +55,7 @@ int main(){
 
 	doing("Client verifies M2 and extracts Nb and IV from it");
 	test = verifymessage_m2 (m2.data, m2.data_len, Na, &Nb_ofA, &IV_ofA);
-	if(test == 0){
+	if(test != 0){
 		say("3. Test failed. M2 is not verified correctly");
 		exit(EXIT_FAILURE);
 	} else {

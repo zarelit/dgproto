@@ -411,13 +411,13 @@ verifymessage_m2 (uint8_t *msg, size_t msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_t
 	// TODO: hardcoded values>:(
 	IV.data_len = 16;
 	IVenv2.data_len = 16;
-	EK2.data_len = 512;
+	EK2.data_len = EK_LEN;
 	outEnv.data_len = msg_len - (id.data_len + IV.data_len + IVenv2.data_len + EK2.data_len);
 	envNa.data_len = NONCE_LEN/8;
 	envNb.data_len = NONCE_LEN/8;
 
 	// Split message in its main components
-	ret = extr_msgs(msg,5, id, IV, IVenv2, EK2, outEnv);
+	ret = extr_msgs(msg,5, &id, &IV, &IVenv2, &EK2, &outEnv);
 	if (ret != 1) return 0;
 
 	// Verify ID
@@ -432,15 +432,15 @@ verifymessage_m2 (uint8_t *msg, size_t msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_t
 
 	// Split the content of the envelope and check it
 	envNbSig.data_len = inEnv.data_len - (envNa.data_len + envNb.data_len);
-	ret = extr_msgs(inEnv.data, 3, envNa, envNb, envNbSig);
+	ret = extr_msgs(inEnv.data, 3, &envNa, &envNb, &envNbSig);
 	if( ret != 1) status = 0;
 
 	// Verify that received nonce is actually our generate Nonce
-	envNaBN = BN_bin2bn(envNa.data, envNa.data_len, envNaBN);
+	envNaBN = BN_bin2bn(envNa.data, envNa.data_len, NULL);
 	if(BN_cmp(Na,envNaBN)!= 0) status=0;
 
 	// Pack received Nb in a bignum and then verify the signature
-	*Nb = BN_bin2bn(envNb.data, envNb.data_len, *Nb);
+	*Nb = BN_bin2bn(envNb.data, envNb.data_len, NULL);
 	ret = verify(SERVER_PUBKEY, *Nb, envNbSig.data, envNbSig.data_len);
 	if(!ret) status=0;
 
