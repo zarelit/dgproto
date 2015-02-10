@@ -109,6 +109,24 @@ int main(){
 	} else {
 		say("7. Test ok. M3 is verified correctly");
 	}
+
+	say("");
+	doing("Server sends M4 to client who verifies it");
+	m4.data = create_m4(&(m4.data_len), B_key, Na_ofB, IV);
+	if( m4.data == NULL){
+		say("8. Test failed. Cannot create M4");
+		exit(EXIT_FAILURE);
+	}else{
+		say("8. Test ok. M4 generated succesfully");
+	}
+
+	test = verifymessage_m4(m4.data, m4.data_len, Na, A_key, IV_ofA);
+	if(test == 0){
+		say("9. Test failed. M4 is not verified correctly");
+		exit(EXIT_FAILURE);
+	} else {
+		say("9. Test ok. M4 is verified correctly");
+	}
 		
 	return 0;
 }
