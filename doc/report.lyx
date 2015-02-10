@@ -1186,6 +1186,14 @@ K=H(N_{a}|N_{b}|"FzHp3CbMao")
  is an hash function with output of 256-bit and so is the key.
 \end_layout
 
+\begin_layout Description
+Initialization
+\begin_inset space ~
+\end_inset
+
+Vectors: They must be random numbers.
+\end_layout
+
 \begin_layout Section
 Implementation details
 \begin_inset CommandInset label
@@ -1419,7 +1427,7 @@ recv() and send() could not send all the bytes user wants them to send,
  the data the user wants to.
  In order to solve this problem we have implemented sendbuf() function that
  is in charge of continuously try to send the buffer passed by parameter
- until all the bytes has been sent.
+ until all bytes has been sent.
 \end_layout
 
 \begin_layout Subsection
@@ -1433,7 +1441,7 @@ After the development of this project, client and server will send these
 \end_inset
 
 
-\begin_inset Formula $M1\quad A\to B:\quad A,\ IV_{env},\ E_{kenv}\encryptedfor{B}{\signed{A}{N_{a}}}$
+\begin_inset Formula $M1\quad A\to B:\quad A,\ IV_{env},\ E_{kenv},\ \encryptedfor{B}{\signed{A}{N_{a}}}$
 \end_inset
 
 
@@ -1441,7 +1449,7 @@ After the development of this project, client and server will send these
 
 \begin_layout Standard
 \noindent
-\begin_inset Formula $M2\quad B\to A:\quad B,\; IV,\ \encryptedfor{A}{N_{a},\;\signed{B}{N_{b}}}$
+\begin_inset Formula $M2\quad B\to A:\quad B,\; IV,\ IV_{env},\ E_{kenv},\ \encryptedfor{A}{N_{a},\;\signed{B}{N_{b}}}$
 \end_inset
 
 
@@ -1464,8 +1472,8 @@ After the development of this project, client and server will send these
 \end_layout
 
 \begin_layout Standard
-Where the letters subscripted with env mean that they are parameters of
- the OpenSSL's digital envelopes.
+Where letters subscripted with env means that they are parameters of the
+ OpenSSL's digital envelopes.
 \end_layout
 
 \begin_layout Standard

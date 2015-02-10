@@ -25,7 +25,8 @@ typedef struct server_state
 } srv_state;
 
 /**
- * Name of the messages of the protocol. For more information see report.pdf.
+ * Name of the messages of the protocol. For more information about messages client and server will
+ * exvhange see report.pdf.
  */
 typedef enum {
     M1, M2, M3, M4
@@ -110,7 +111,7 @@ receive_message (msg_name msg, srv_state *ss)
             break;
 
         case M2:
-            ret_val = verifymessage_m2(ss -> buffer, &(ss -> buf_len), ss -> Na);
+            ret_val = verifymessage_m2(ss -> buffer, ss -> buf_len, ss -> Na, &(ss -> Nb), &(ss -> iv));
             break;
 
         case M3:
@@ -119,7 +120,7 @@ receive_message (msg_name msg, srv_state *ss)
             break;
 
         case M4:
-            ret_val = verifymessage_m4(ss -> buffer, &(ss -> buf_len), ss -> Na, ss -> session_key);
+            ret_val = verifymessage_m4(ss -> buffer, ss -> buf_len, ss -> Na, ss -> session_key, ss -> iv);
             break;
 
         default:

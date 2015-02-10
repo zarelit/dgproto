@@ -336,7 +336,7 @@ verifymessage_m1 (uint8_t *msg, size_t msg_len, BIGNUM** Na)
     {
         fprintf(stderr, "%s: Error decrypting encrypted M1 part\n", __func__);
         ret_val = 0;
-
+        goto exit_verifymessage_m1;
     }
     // Get the nonce client_nonce and its signature
     dec_parts[0].data = NULL;                   // Will contain Na

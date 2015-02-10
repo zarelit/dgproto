@@ -32,6 +32,6 @@
 #define SERVER_PUBKEY KEYS_DIR "server.pub.pem"
 
 /**
- * Dimension of the buffer. Default is 1024 Bytes
+ * Dimension of the buffer. Default is 2048 Bytes
  */
-#define BUF_DIM 1024
+#define BUF_DIM 2048
