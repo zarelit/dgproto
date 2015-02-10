@@ -55,7 +55,7 @@ conc_msgs (size_t* buf_len, size_t argc, ...)
     }
     va_end(msgs);
 
-    exit_conc_msgs:
+exit_conc_msgs:
     return buffer;
 }
 
@@ -220,11 +220,11 @@ do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
     }
     *msg_len = enc_len;
 
-    cleanup_do_aes256_crypt:
+cleanup_do_aes256_crypt:
     EVP_CIPHER_CTX_cleanup(ctx);
     free(ctx);
 
-    exit_do_aes256_crypt:
+exit_do_aes256_crypt:
     return encr_msg;
 }
 
@@ -272,7 +272,7 @@ do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len)
     }
     *msg_len = dec_len;
 
-    exit_do_aes256_decrypt:
+exit_do_aes256_decrypt:
     EVP_CIPHER_CTX_cleanup(ctx);
     free(ctx);
     return dec_msg;
@@ -339,12 +339,12 @@ uint8_t* sign(const char* keypath, const uint8_t* payload, const size_t plen, si
         sig = NULL;
     }
 
-    cleanup_sign:
+cleanup_sign:
     fclose(ckeyfh);
     EVP_PKEY_CTX_free(sigctx);
     EVP_PKEY_free(ckey);
 
-    exit_sign:
+exit_sign:
     return sig;
 }
 
@@ -419,12 +419,12 @@ int verify(const char* keypath, BIGNUM* nonce, const uint8_t* sig, size_t slen){
     free(N);
     ret_val = 1;
 
-    cleanup_verify:
+cleanup_verify:
     EVP_PKEY_CTX_free(verctx);
     EVP_PKEY_free(vkey);
     fclose(vkeyfh);
 
-    exit_verify:
+exit_verify:
     return ret_val;
 }
 
@@ -468,7 +468,7 @@ generate_random_aes_iv (size_t *iv_len)
         *iv_len = 0;
     }
     *iv_len = buf_len;
-    exit_generate_random_aes_iv:
+exit_generate_random_aes_iv:
     return buffer;
 }
 
@@ -476,7 +476,7 @@ uint8_t*
 do_sha256_digest (uint8_t* msg, size_t msg_len)
 {
     uint8_t *dig;
-    size_t dig_len;
+    unsigned int dig_len;
     EVP_MD_CTX *ctx;
 
     if (msg == NULL || msg_len == 0)
@@ -508,7 +508,7 @@ do_sha256_digest (uint8_t* msg, size_t msg_len)
         dig = NULL;
         goto cleanup_do_sha256_digest;
     }
-    if (EVP_DigestFinal(ctx, dig, (unsigned int*) &dig_len) != 1)
+    if (EVP_DigestFinal(ctx, dig, &dig_len) != 1)
     {
         fprintf(stderr, "Error finalizing the digest\n");
         free(dig);
@@ -524,11 +524,11 @@ do_sha256_digest (uint8_t* msg, size_t msg_len)
         dig = NULL;
     }
 
-    cleanup_do_sha256_digest:
+cleanup_do_sha256_digest:
     EVP_MD_CTX_cleanup(ctx);
     free(ctx);
 
-    exit_do_sha256_digest:
+exit_do_sha256_digest:
     return dig;
 }
 
