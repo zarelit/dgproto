@@ -98,25 +98,28 @@ void hexdump(FILE* fh, unsigned char* buf, size_t buflen);
  * It permits to encrypt the message <b>msg</b> with the key <b>key</b> using AES 256
  * bit encryption algorithm.
  * \param[in] msg the message to be encrypted.
+ * \param[in] msg_len length of the message to be encrypted.
  * \param[in] key the key you need for encryption.
  * \param[in] iv the initialization vector for the cipher to crypt.
- * \param[out] msg_len the length of msg, if the function succeed this variable will store the length
+ * \param[out] enc_len the length of msg, if the function succeed this variable will store the length
  * of the encrypted message, otherwise it will be equal to 0.
  * \returns a string of bytes which contains the encrypted message or NULL in case of error.
  */
-uint8_t* do_aes256_crypt (uint8_t* msg, uint8_t* key, uint8_t* iv, size_t* msg_len);
+uint8_t* do_aes256_crypt (uint8_t* msg, size_t msg_len, uint8_t* key, uint8_t* iv, size_t* enc_len);
 
 /**
  * It permits to decrypt the message <b>msg</b> with the key <b>key</b> using AES 256
  * bit decryption algorithm.
- * \param msg the message to be decrypted.
+ * \param enc_msg the message to be decrypted.
+ * \param enc_len the length of the message to be decrypted.
  * \param key the key you need for decryption.
+ * \param iv the initialization vector for the cipher.
  * \param msg_len the length of msg, if the function succeed this variable will store the length
  * of the decrypted message, otherwise it will be equal to 0.
  * \param iv the initialization vector for the cipher to crypt.
  * \returns a string of bytes which contains the decrypted message or NULL in case of error.
  */
-uint8_t* do_aes256_decrypt (uint8_t* enc_msg, uint8_t* key, uint8_t* iv, size_t* msg_len);
+uint8_t* do_aes256_decrypt (uint8_t* enc_msg, size_t enc_len , uint8_t* key, uint8_t* iv, size_t* msg_len);
 
 /**
  * Signs a buffer using a private key

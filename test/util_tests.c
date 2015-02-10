@@ -26,32 +26,36 @@ test_generate_random_aes_iv (void)
 }
 
 int
-test_do_aes256_crypt (void)
+test_do_aes256_dencrypt (void)
 {
     uint8_t ret_val;
-    const uint8_t *test_str = "asd lol";
-    const uint8_t test_enc[] = {0xa9,0xb8,0x51,0xf8,0x62,0xf2,0x6a,0x81,
-                                0xb7,0xef,0x89,0x14,0x36,0x99,0x4f,0x82};
+    const uint8_t *test_str = "asd lol rotfl undone gutoloi";
     const uint8_t test_key[] = {0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,
                                 0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x0F};
     const uint8_t test_iv[] = {0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08};
-    uint8_t *enc_msg;
-    size_t test_str_len = strlen(test_str);
+    uint8_t *enc_msg, *dec_msg;
+    size_t test_str_len = strlen(test_str), dec_msg_len, enc_msg_len;
 
     ret_val = 1;
-    enc_msg = do_aes256_crypt(test_str, &test_key[0], &test_iv[0], &test_str_len);
+    enc_msg = do_aes256_crypt(test_str, test_str_len, &test_key[0], &test_iv[0], &enc_msg_len);
     if (enc_msg == NULL)
     {
         fprintf(stderr, "%s: enc_msg is NULL\n", __func__);
         ret_val = 0;
     }
-    else if (memcmp(&test_enc[0], enc_msg, 16) != 0)
+    dec_msg = do_aes256_decrypt(enc_msg, enc_msg_len, test_key, test_iv, &dec_msg_len);
+    if (dec_msg == NULL)
     {
-        fprintf(stderr, "%s: enc_msg differs from test_enc", __func__);
+        fprintf(stderr, "%s: dec_msg is NULL\n", __func__);
+        ret_val = 0;
+    }
+    else if (memcmp(test_str, dec_msg, dec_msg_len) != 0)
+    {
+        fprintf(stderr, "%s: dec_msg differs from test_str", __func__);
         ret_val = 0;
     }
     free(enc_msg);
-
+    free(dec_msg);
     return ret_val;
 }
 
@@ -243,52 +247,52 @@ int main(){
 
 	ret = verify("keys/client.pub.pem", No, sig, siglen);
 	if(!ret){
-		say("2. Test ok. Verification failed.");
+		say("\n2. Test ok. Verification failed.");
 	}else{
-		say("2. Test fail. Verification successful.");
+		say("\n2. Test fail. Verification successful.");
 	}
 	free(sig);
 	free(noise);
 
     if (test_conc_msgs() == 0)
     {
-        say("3. test_conc_msgs(): test failed.");
+        say("\n3. test_conc_msgs(): test failed.");
     }
     else
     {
-        say("3. test_conc_msgs(): test succeded.");
+        say("\n3. test_conc_msgs(): test succeded.");
     }
     if (test_extr_msgs() == 0)
     {
-        say("4. test_extr_msgs(): test failed.");
+        say("\n4. test_extr_msgs(): test failed.");
     }
     else
     {
-        say("4. test_extr_msgs(): test succeded.");
+        say("\n4. test_extr_msgs(): test succeded.");
     }
     if (test_generate_random_aes_iv() == 0)
     {
-        say("5. test_generate_random_aes_iv: test failed.");
+        say("\n5. test_generate_random_aes_iv: test failed.");
     }
     else
     {
-        say("5. test_generate_random_aes_iv(): test succeded.");
+        say("\n5. test_generate_random_aes_iv(): test succeded.");
     }
     if (test_do_sha256_digest() == 0)
     {
-        say("6. test_do_sha256_digest: test failed.");
+        say("\n6. test_do_sha256_digest: test failed.");
     }
     else
     {
-        say("6. test_do_sha256_digest(): test succeded.");
+        say("\n6. test_do_sha256_digest(): test succeded.");
     }
-    if (test_do_aes256_crypt() == 0)
+    if (test_do_aes256_dencrypt() == 0)
     {
-        say("7. test_do_aes256_crypt: test failed.");
+        say("\n7. test_do_aes256_dencrypt: test failed.");
     }
     else
     {
-        say("7. test_do_aes256_crypt(): test succeded.");
+        say("\n7. test_do_aes256_dencrypt(): test succeded.");
     }
 
 	doing("Encrypt the nonce");
