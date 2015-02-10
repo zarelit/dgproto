@@ -183,7 +183,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
  */
 uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv, uint8_t* ek, size_t ekl);
 
-/*
+/**
  * Receive buffer
  * \param s an already opened socket
  * \param len number of bytes to wait from the socket
