@@ -389,7 +389,7 @@ exit_verifymessage_m1:
 }
 
 int
-verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_t** iv)
+verifymessage_m2 (uint8_t *msg, size_t msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_t** iv)
 {
 	// Message is "B" | IV | IV_envelope2 | EK2 | envelope{ Na | Nb | sign(Nb) }
 	// Define its components
@@ -414,7 +414,7 @@ verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_
 	IV.data_len = 16;
 	IVenv2.data_len = 16;
 	EK2.data_len = 512;
-	outEnv.data_len = *msg_len - (id.data_len + IV.data_len + IVenv2.data_len + EK2.data_len);
+	outEnv.data_len = msg_len - (id.data_len + IV.data_len + IVenv2.data_len + EK2.data_len);
 	envNa.data_len = NONCE_LEN/8;
 	envNb.data_len = NONCE_LEN/8;
 
