@@ -97,7 +97,9 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     }
 
     // Create the encrypted part of the message by concatenating Na, Nb and the signature
+	enc_parts[0].data = malloc(BN_num_bytes(Na));
     enc_parts[0].data_len = BN_bn2bin(Na, enc_parts[0].data);
+	enc_parts[1].data = malloc(BN_num_bytes(Nb));
     enc_parts[1].data_len = BN_bn2bin(Nb, enc_parts[1].data);
     enc_parts[2].data = sign(SERVER_KEY, enc_parts[1].data, enc_parts[1].data_len, &sig_len);
     enc_parts[2].data_len = sig_len;
@@ -105,8 +107,8 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
     if (plain == NULL)
     {
         fprintf(stderr, "Error concatenating parts to be encrypted\n");
-        BN_free((BIGNUM*) enc_parts[0].data);
-        BN_free((BIGNUM*) enc_parts[1].data);
+        free(enc_parts[0].data);
+        free(enc_parts[1].data);
         free(enc_parts[2].data);
         msg = NULL;
         *msg_len = 0;
@@ -152,20 +154,16 @@ create_m2 (size_t* msg_len, aid_t id, BIGNUM* Nb, BIGNUM* Na, uint8_t** iv)
         msg = NULL;
         *msg_len = 0;
     }
-    free(iv);
 
 cleanup_create_m2:
     free(plain);
     if (enc_part != NULL) free(enc_part);
 
-    BN_free((BIGNUM*) enc_parts[0].data);
-    BN_free((BIGNUM*) enc_parts[1].data);
+    free(enc_parts[0].data);
+    free(enc_parts[1].data);
     free(enc_parts[2].data);
-    free(msg_parts[0].data);
-    free(msg_parts[1].data);
     free(msg_parts[2].data);
     free(msg_parts[3].data);
-    free(msg_parts[4].data);
 
 exit_create_m2:
     return msg;
