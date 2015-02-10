@@ -35,7 +35,7 @@ create_m1 (size_t* msg_len, aid_t id, BIGNUM* Na_bn)
 	// IV of the seal and the key
 	msg_data iv;
 	msg_data ek;
-	int eklen;
+	size_t eklen;
 
 	// Convert the nonce in a bytestring
 	Na.data = malloc(BN_num_bytes(Na_bn));
@@ -394,7 +394,7 @@ exit_verifymessage_m1:
 }
 
 int
-verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb)
+verifymessage_m2 (uint8_t *msg, size_t *msg_len, BIGNUM *Na, BIGNUM **Nb, uint8_t** iv)
 {
 	// Message is B|enc(Na|Nb|sign(Nb))
 	// Define its components

@@ -532,7 +532,7 @@ do_sha256_digest (uint8_t* msg, size_t msg_len)
     return dig;
 }
 
-uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t** iv, size_t* ivlen, uint8_t** ek, int* ekl){
+uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_t* clen, uint8_t** iv, size_t* ivlen, uint8_t** ek, size_t* ekl){
     // Context and key
     FILE* ckeyfh;
     EVP_PKEY *ckey=NULL;
@@ -547,6 +547,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
     EVP_CIPHER_CTX *encctx = NULL;
     const EVP_CIPHER* type = EVP_aes_256_cbc(); // Type of encryption
     int outl, outf;
+	int eklint;
 
     /*
      * Open a public key for encryption
@@ -610,7 +611,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
         goto cleanup_encrypt;
     }
 
-    if (EVP_SealInit(encctx, type, ek, ekl, *iv, &ckey, 1) != 1){
+    if (EVP_SealInit(encctx, type, ek, &eklint, *iv, &ckey, 1) != 1){
         ERR_load_crypto_strings();
         encerr = ERR_get_error();
         fprintf(stderr,"Encrypt failed\n");
@@ -622,6 +623,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
         c = NULL;
         goto cleanup_encrypt;
     }
+	*ekl = eklint;
 
     /* Encrypt data, then finalize */
     if (EVP_SealUpdate(encctx, c, &outl, p, plen) != 1){
@@ -660,7 +662,7 @@ uint8_t* encrypt(const char* keypath, const uint8_t* p, const size_t plen, size_
 }
 
 
-uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv, uint8_t* ek, int ekl){
+uint8_t* decrypt(const char* keypath, const uint8_t* c, const size_t clen, size_t* plen, uint8_t* iv, uint8_t* ek, size_t ekl){
     // Context and key
     EVP_CIPHER_CTX *decctx;
     FILE* dkeyfh;
