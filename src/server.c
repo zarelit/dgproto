@@ -480,6 +480,7 @@ main (int argc, char **argv)
             fclose(file_received);
             continue;
         }
+        say("Writing decrypted file");
         if (fwrite(plaintext, sizeof(uint8_t), plain_len, file_received) < plain_len)
         {
             fprintf(stderr, "Writing file failed.\n");
