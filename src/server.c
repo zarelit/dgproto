@@ -360,14 +360,14 @@ main (int argc, char **argv)
     struct addrinfo hints, *servinfo, *it;
     int yes = 1, ret_val;
     FILE *file_received;
-    uint8_t *plaintext;
-    size_t plain_len;
+    uint8_t *plaintext, *file_buf;
+    size_t plain_len, recv_bytes, file_buf_len;
 
     // Input error checking
     if (argc != 2)
     {
         fprintf(stderr, "Usage: server <file>\n"
-                        "Server must receive a file to the client. Please name it\n");
+                        "Server must receive a file from the client.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -427,11 +427,7 @@ main (int argc, char **argv)
             continue;
         }
         // Release and reallocate the buffer
-        if (sstate.buffer != NULL)
-        {
-            free(sstate.buffer);
-        }
-        sstate.buffer = malloc(sizeof(uint8_t) * BUF_DIM);
+        sstate.buffer = calloc(BUF_DIM, sizeof(uint8_t));
         if (sstate.buffer == NULL)
         {
             fprintf(stderr, "Out of memory");
@@ -445,15 +441,36 @@ main (int argc, char **argv)
             fprintf(stderr, "Can't open the file client sent. Exiting.\n");
             close_connection(&sstate);
         }
+        say("Waiting for file");
         // Waiting for the client to be sent an encrypted file
-        ret_val = recv(sstate.comm_skt, sstate.buffer, BUF_DIM, 0);
-        if (ret_val == -1)
+        file_buf_len = sizeof(uint8_t) * BUF_DIM;
+        recv_bytes = 0;
+        file_buf = malloc(file_buf_len);
+        if (file_buf == NULL)
         {
-            fprintf(stderr, "Receiving file error\n");
-            close_connection(&sstate);
-            continue;
+            fprintf(stderr, "Out of memory");
+            break;
         }
-        plaintext = do_aes256_decrypt(sstate.buffer, ret_val, sstate.session_key, sstate.iv,
+        do
+        {
+            ret_val = recv(sstate.comm_skt, sstate.buffer, BUF_DIM, 0);
+            if (ret_val == -1)
+            {
+                fprintf(stderr, "Receiving file error\n");
+                free(file_buf);
+                close_connection(&sstate);
+                break;
+            }
+            if (recv_bytes + ret_val > file_buf_len)
+            {
+                file_buf = realloc(file_buf, recv_bytes + ret_val);
+                file_buf_len = recv_bytes;
+            }
+            memcpy(file_buf + recv_bytes, sstate.buffer, ret_val);
+            recv_bytes += ret_val;
+        } while (ret_val > 0);
+        say("Decrypting received file");
+        plaintext = do_aes256_decrypt(file_buf, recv_bytes, sstate.session_key, sstate.iv,
                                       &plain_len);
         if (plaintext == NULL)
         {
